@@ -30,6 +30,12 @@ This repository currently contains product and implementation specifications for
 - `specs/requirements.md`: product requirements and domain rules.
 - `specs/design.md`: intended Next.js, Supabase, database, and UI architecture.
 - `specs/tasks.md`: phased implementation checklist.
+- `specs/progress.md`: concise work-status handoff notes for future sessions.
+
+Before starting a new implementation phase or resuming after a context reset,
+review `specs/progress.md` along with `specs/tasks.md`. After completing a
+meaningful work unit, update `specs/progress.md` with what changed, how it was
+verified, current state, next steps, and any remaining risk.
 
 Agent and skill metadata lives in `.agents/` and `skills-lock.json`. When application code is scaffolded, follow the planned structure in `specs/design.md`: `src/app/` for Next.js routes, `src/components/` for UI and feature components, `src/actions/` for server actions, `src/lib/` for Supabase utilities, and `src/types/` for shared TypeScript types.
 
