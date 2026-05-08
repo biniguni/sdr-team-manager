@@ -128,7 +128,7 @@
 3. THE System SHALL 서로 다른 period에서 동일한 선수가 서로 다른 포지션 슬롯에 배정되는 것을 허용한다.
 4. WHEN Operator가 period의 라인업을 저장할 때, THE System SHALL 각 Lineup_Entry를 (period_id, position_slot_id, player_id)의 조합으로 저장한다.
 5. THE System SHALL period별 라인업 화면에서 포메이션 다이어그램 위에 선수 이름과 등번호를 포지션 슬롯 좌표에 맞게 표시한다.
-6. WHEN Operator가 기존 라인업의 포지션 슬롯 배정을 변경할 때, THE System SHALL 해당 period에 이미 기록된 Match_Event의 포지션 귀속 정보를 함께 업데이트한다.
+6. WHEN Operator가 기존 라인업의 포지션 슬롯 배정을 변경할 때, THE System SHALL 해당 period에 이미 기록된 Match_Event의 포지션 귀속 정보를 함께 업데이트한다. **(Phase 2에서 구현 — MVP에서는 match_events 테이블이 없음)**
 7. IF 포메이션이 선택되지 않은 상태에서 라인업 저장이 요청되면, THEN THE System SHALL 포메이션 미선택 오류 메시지를 반환한다.
 
 ---
@@ -163,7 +163,7 @@
 1. THE System SHALL 대시보드에 현재 활성 시즌의 승·무·패 기록과 득점·실점 합계를 표시한다.
 2. THE System SHALL 대시보드에 현재 활성 시즌 기준 골 수 상위 5명의 선수 랭킹을 표시한다 (player_match_stats 기반).
 3. THE System SHALL 대시보드에 선수별 성과 섹션을 제공하며, 특정 선수 선택 시 해당 선수의 시즌 누적 출전 횟수, 출전 시간, 골, 도움 을 표시한다.
-4. THE System SHALL 대시보드에 포메이션별 성과 섹션을 제공하며, 포메이션별 사용 횟수와 해당 포메이션 사용 period의 팀 득점 합계를 표시한다.
+4. THE System SHALL 대시보드에 포메이션별 성과 섹션을 제공하며, 포메이션별 사용 횟수를 표시한다. **(MVP에서는 포메이션 사용 period의 팀 득점 합계 대신, 해당 포메이션이 사용된 경기의 our_score 합계로 대체)**
 5. THE System SHALL 대시보드에 시즌 선택 필터를 제공하여 특정 시즌의 요약 데이터를 조회할 수 있도록 한다.
 6. WHEN Operator가 대시보드를 열 때, THE System SHALL 가장 최근 활성 시즌의 데이터를 기본값으로 표시한다.
 7. THE System SHALL 대시보드 데이터를 player_match_stats 저장 후 5초 이내에 반영한다.

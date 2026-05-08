@@ -19,31 +19,33 @@
 
 ## Phase 0: 프로젝트 실행 확인
 
-- [ ] 0.1 Next.js 프로젝트 생성 및 실행 확인
+- [x] 0.1 Next.js 프로젝트 생성 및 실행 확인
   - `npx create-next-app@latest` (TypeScript, Tailwind CSS, App Router 선택)
   - `npm run dev` 실행 후 `http://localhost:3000` 접속 확인
   - 요구사항: 기술 스택
 
-- [ ] 0.2 의존성 패키지 설치
+- [x] 0.2 의존성 패키지 설치
   - `@supabase/supabase-js`, `@supabase/ssr`
   - `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
+    - ⚠️ React 19 호환성: `npm install @dnd-kit/core --legacy-peer-deps` 플래그 사용
+    - ⚠️ 드래그 시 시각적 글리치 발생 시 대안 라이브러리 고려: `@atlaskit/pragmatic-drag-and-drop` 또는 `@hello-pangea/dnd`
   - `recharts`
   - 요구사항: 기술 스택
 
-- [ ] 0.3 Supabase 프로젝트 연결
+- [x] 0.3 Supabase 프로젝트 연결
   - Supabase 대시보드에서 프로젝트 생성
   - `.env.local` 파일 생성: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `src/lib/supabase/client.ts` (브라우저용), `src/lib/supabase/server.ts` (서버용) 작성
   - Supabase 연결 테스트 (간단한 SELECT 쿼리 실행 확인)
   - 요구사항: 요구사항 11
 
-- [ ] 0.4 Tailwind CSS 디자인 토큰 설정
+- [x] 0.4 Tailwind CSS 디자인 토큰 설정
   - `tailwind.config.ts`에 커스텀 색상 추가
   - `bg-primary: #0b1120`, `bg-secondary: #111827`, `accent-blue: #38bdf8` 등
   - `reference/sandro_fc_dashboard.html`의 CSS 변수 참고
   - 요구사항: 대시보드 UI 레퍼런스
 
-- [ ] 0.5 공통 TypeScript 타입 정의
+- [x] 0.5 공통 TypeScript 타입 정의
   - `src/types/index.ts` 파일 생성
   - `Player`, `Season`, `Match`, `Period`, `Formation`, `PositionSlot`, `PeriodLineup`, `PlayerMatchStats`, `PositionPerformance` 타입 정의
   - 요구사항: 전체
@@ -235,6 +237,8 @@
   - 선수 → 슬롯 드래그앤드롭
   - 슬롯 간 이동, 슬롯 → 미배정 목록 이동 지원
   - 동일 period 내 중복 배정 클라이언트 측 방지
+  - ⚠️ Phase 3 시작 전 dnd-kit의 React 19 호환성 최신 상태 재확인
+  - ⚠️ 필요 시 LineupBoard를 추상화하여 대안 라이브러리로 전환 가능하도록 설계
   - 요구사항: 요구사항 7
 
 - [ ] 3.4 라인업 배정 페이지 업그레이드 (드래그앤드롭 버전)
@@ -248,6 +252,10 @@
   - `saveLineup()` 완료 후 `position_performance` UPSERT:
     - `period_count`: 해당 시즌 내 해당 포지션 출전 period 수 재집계
     - `match_count`: 해당 시즌 내 해당 포지션 출전 경기 수 재집계
+  - 라인업 수정/삭제 시 역갱신 로직:
+    - 변경 전 라인업 데이터 기준으로 영향받는 (season_id, player_id, position_code) 조합 추출
+    - 해당 시즌 전체 period_lineups를 재집계하여 position_performance 갱신
+    - 더 이상 출전 기록이 없는 포지션은 period_count=0, match_count=0으로 갱신 또는 레코드 삭제
   - 요구사항: 요구사항 7 (포지션별 출전 추적)
 
 ---

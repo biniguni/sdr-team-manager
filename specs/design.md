@@ -12,7 +12,7 @@
 
 | 영역 | 기술 | 버전 |
 |------|------|------|
-| 프레임워크 | Next.js (App Router) | 14.x |
+| 프레임워크 | Next.js (App Router) | 16.x |
 | 언어 | TypeScript | 5.x |
 | 스타일링 | Tailwind CSS | 3.x |
 | 데이터베이스 | Supabase PostgreSQL | - |
@@ -20,6 +20,30 @@
 | 드래그앤드롭 | dnd-kit | 6.x |
 | 차트 | Recharts | 2.x |
 | 배포 | Vercel | - |
+
+---
+
+## 환경 변수
+
+`.env.local`은 프로젝트 최상위 폴더에 생성합니다. 이 위치는 `AGENTS.md`,
+`specs/`, `skills-lock.json`과 같은 층입니다.
+
+```
+sdr-team-manager/
+├── .env.local
+├── AGENTS.md
+├── specs/
+└── skills-lock.json
+```
+
+Supabase 연결에 필요한 값은 아래처럼 저장합니다.
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=Supabase 프로젝트 URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=Supabase anon public key
+```
+
+`.env.local`은 개인 환경 설정 파일이므로 Git에 커밋하지 않습니다.
 
 ---
 
@@ -169,11 +193,8 @@ CREATE TABLE position_slots (
   x               NUMERIC(5,2) NOT NULL, -- 0~100 (%) 좌우 좌표
   y               NUMERIC(5,2) NOT NULL, -- 0~100 (%) 상하 좌표
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (formation_id, position_code),
-  CONSTRAINT chk_slot_count CHECK (
-    (SELECT COUNT(*) FROM position_slots ps2
-     WHERE ps2.formation_id = formation_id) <= 11
-  )
+  UNIQUE (formation_id, position_code)
+  -- 포메이션당 최대 11개 슬롯 제한은 Server Action에서 검증
 );
 ```
 
@@ -267,6 +288,11 @@ CREATE TABLE position_performance (
   2. position_performance UPSERT:
      - period_count = 해당 시즌 내 해당 포지션 출전 period 수 재집계
      - match_count  = 해당 시즌 내 해당 포지션 출전 경기 수 재집계
+
+라인업 수정/삭제 시:
+  1. 변경 전 라인업 데이터 기준으로 영향받는 (season_id, player_id, position_code) 조합 추출
+  2. 해당 시즌 전체 period_lineups를 재집계하여 position_performance 갱신
+  3. 더 이상 출전 기록이 없는 포지션은 period_count=0, match_count=0으로 갱신 또는 레코드 삭제
 ```
 
 ### 기본 데이터 시드 (Seed)
@@ -539,11 +565,19 @@ colors: {
 -- 예시 RLS 정책 (players 테이블)
 ALTER TABLE players ENABLE ROW LEVEL SECURITY;
 
+-- 읽기 정책
 CREATE POLICY "authenticated users can read players"
   ON players FOR SELECT USING (true);
 
-CREATE POLICY "authenticated users can modify players"
-  ON players FOR ALL USING (auth.uid() IS NOT NULL);
+-- 쓰기 정책 (INSERT/UPDATE/DELETE 분리)
+CREATE POLICY "authenticated users can insert players"
+  ON players FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "authenticated users can update players"
+  ON players FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "authenticated users can delete players"
+  ON players FOR DELETE TO authenticated USING (true);
 ```
 
 ---
