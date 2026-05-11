@@ -12,12 +12,28 @@ create table if not exists players (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   number integer not null unique,
+  player_type text not null default 'member' check (player_type in ('member', 'guest')),
   birth_date date,
   contact text,
+  memo text,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table players add column if not exists player_type text not null default 'member';
+alter table players add column if not exists memo text;
+alter table players alter column player_type set default 'member';
+update players set player_type = 'member' where player_type is null;
+alter table players alter column player_type set not null;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'players_player_type_check') then
+    alter table players add constraint players_player_type_check
+      check (player_type in ('member', 'guest'));
+  end if;
+end $$;
 
 create table if not exists seasons (
   id uuid primary key default gen_random_uuid(),

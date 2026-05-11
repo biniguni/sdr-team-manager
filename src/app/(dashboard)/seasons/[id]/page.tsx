@@ -81,7 +81,9 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
               <Select name="player_id" required>
                 <option value="">Choose active player</option>
                 {availablePlayers.map((player) => (
-                  <option key={player.id} value={player.id}>#{player.number} {player.name}</option>
+                  <option key={player.id} value={player.id}>
+                    #{player.number} {player.name}{player.player_type === "guest" ? " [용병]" : ""}
+                  </option>
                 ))}
               </Select>
               <Button type="submit">Add</Button>
@@ -92,7 +94,10 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
               .sort((a, b) => a.players.number - b.players.number)
               .map((row) => (
                 <div key={row.player_id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3">
-                  <span className="text-sm">#{row.players.number} {row.players.name}</span>
+                  <span className="flex items-center gap-2 text-sm">
+                    #{row.players.number} {row.players.name}
+                    {row.players.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                  </span>
                   {canEdit ? (
                     <form action={removeSquadMemberSubmit}>
                       <input type="hidden" name="season_id" value={id} />

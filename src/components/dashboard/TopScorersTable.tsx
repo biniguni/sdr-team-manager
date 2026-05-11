@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/Badge";
 import type { PlayerAggregate } from "@/components/dashboard/StatCards";
 
 type SortKey = "goals" | "assists" | "points" | "match_count";
@@ -32,7 +33,12 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
               <td className="px-4 py-3 text-center">
                 <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
               </td>
-              <td className="px-4 py-3 font-semibold">{row.player.name}</td>
+              <td className="px-4 py-3 font-semibold">
+                <span className="flex items-center gap-2">
+                  {row.player.name}
+                  {row.player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                </span>
+              </td>
               <td className="px-4 py-3 text-center font-mono text-slate-400">#{row.player.number}</td>
               <td className="px-4 py-3 text-center">{row.match_count}</td>
               <td className="px-4 py-3 text-center font-bold text-accent-blue">{row.goals}</td>

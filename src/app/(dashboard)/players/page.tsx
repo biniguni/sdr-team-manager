@@ -59,7 +59,10 @@ export default async function PlayersPage({
               <details key={player.id} className="rounded-lg border border-slate-800 bg-slate-950 p-4">
                 <summary className="flex cursor-pointer items-center justify-between gap-3">
                   <span className="font-medium">{player.name} <span className="text-slate-500">#{player.number}</span></span>
-                  <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "Active" : "Inactive"}</Badge>
+                  <span className="flex gap-2">
+                    {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                    <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "Active" : "Inactive"}</Badge>
+                  </span>
                 </summary>
                 {canEdit ? (
                   <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto]">
@@ -75,6 +78,7 @@ export default async function PlayersPage({
                   <dl className="mt-4 grid gap-2 text-sm text-slate-300">
                     <div>Birth date: {player.birth_date ?? "-"}</div>
                     <div>Contact: {player.contact ?? "-"}</div>
+                    <div>Memo: {player.memo ?? "-"}</div>
                   </dl>
                 )}
               </details>

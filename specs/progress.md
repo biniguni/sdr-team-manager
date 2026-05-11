@@ -4,6 +4,38 @@ This document is the working handoff log for future coding sessions. Keep it
 short and factual so a new session can quickly understand what changed, how it
 was verified, what is next, and what risks remain.
 
+## 2026-05-11 - Guest Player Support
+
+### Completed
+
+- Added guest-player data fields: `players.player_type` (`member` / `guest`) and optional `players.memo`.
+- Added `supabase-guest-players.sql` for applying the guest-player columns to an existing Supabase database.
+- Added `+ 용병 추가` on the lineup screen for approved editors.
+- Guest creation now inserts a `players` row with `player_type = 'guest'`, assigns a 9000-range number when needed, and immediately adds the player to the current season squad.
+- Kept lineup and stats storage on `player_id`, so guest players work with `period_lineups`, `player_match_stats`, MOM selections, dashboard, and rankings.
+- Added `용병` badges across player management, season squad, lineup, stats, MOM options, and ranking displays.
+- Added `specs/guest-player-support.md` and updated requirements/design notes with the guest-player decision.
+
+### Verified
+
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+
+### Current State
+
+- Code support for guest players is implemented and builds successfully.
+- The live Supabase database must run `supabase-guest-players.sql` before the deployed app can create or read `player_type` and `memo`.
+
+### Next Steps
+
+- Run `supabase-guest-players.sql` in the Supabase SQL Editor.
+- Deploy the updated app to Vercel.
+- Smoke-test as an approved editor: open a match lineup, add a guest without a number, confirm a 9000-range number appears, drag the guest into a slot, save, and confirm the guest appears on the stats page.
+
+### Remaining Risk
+
+- Guest number assignment is app-level and retries on conflicts; simultaneous guest creation by multiple editors should be rare, but a unique-number conflict can still require retrying.
+
 ## 2026-05-11 - Mobile Lineup Drag Fix
 
 ### Completed

@@ -1,11 +1,14 @@
 "use client";
 
 import { DndContext, DragEndEvent, DragOverlay, PointerSensor, TouchSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
-import { useActionState, useMemo, useState } from "react";
-import { saveLineup } from "@/actions/lineups";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { createGuestPlayerForLineup, saveLineup } from "@/actions/lineups";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
 import { PositionSlotDroppable } from "@/components/lineup/PositionSlotDroppable";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { ActionResult, Formation, Period, PeriodLineup, Player, PositionSlot } from "@/types";
 
@@ -52,6 +55,7 @@ export function LineupBoard({
   existingLineups: ExistingLineup[];
   canEdit: boolean;
 }) {
+  const router = useRouter();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
@@ -69,7 +73,14 @@ export function LineupBoard({
     Object.fromEntries(periodLineup.map((entry) => [entry.position_slot_id, entry.player_id])),
   );
   const [activePlayer, setActivePlayer] = useState<Player | null>(null);
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [state, formAction, pending] = useActionState(saveLineup, initialState);
+  const [guestState, guestFormAction, guestPending] = useActionState(createGuestPlayerForLineup, initialState);
+
+  useEffect(() => {
+    if (!guestState.ok || !guestState.message) return;
+    router.refresh();
+  }, [guestState.ok, guestState.message, router]);
 
   const selectedFormation = formations.find((formation) => formation.id === selectedFormationId);
   const slots = useMemo(() => selectedFormation?.position_slots ?? [], [selectedFormation]);
@@ -155,7 +166,19 @@ export function LineupBoard({
           <section>
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-100">Squad</h2>
-              <span className="text-xs text-slate-400">{unassignedPlayers.length} available</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">{unassignedPlayers.length} available</span>
+                {canEdit ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="min-h-8 px-3 py-1 text-xs"
+                    onClick={() => setGuestModalOpen(true)}
+                  >
+                    + 용병 추가
+                  </Button>
+                ) : null}
+              </div>
             </div>
             <BenchDroppable>
               {unassignedPlayers.map((player) => (
@@ -163,7 +186,10 @@ export function LineupBoard({
                   <PlayerDraggable key={player.id} player={player} />
                 ) : (
                   <div key={player.id} className="rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300">
-                    #{player.number} {player.name}
+                    <span className="flex items-center gap-2">
+                      #{player.number} {player.name}
+                      {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                    </span>
                   </div>
                 )
               ))}
@@ -208,10 +234,55 @@ export function LineupBoard({
       <DragOverlay>
         {activePlayer ? (
           <div className="rounded-md border border-accent-blue bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-100 shadow-xl">
-            #{activePlayer.number} {activePlayer.name}
+            <span className="flex items-center gap-2">
+              #{activePlayer.number} {activePlayer.name}
+              {activePlayer.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+            </span>
           </div>
         ) : null}
       </DragOverlay>
+
+      {guestModalOpen ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 px-4">
+          <div className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-950 p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-100">용병 추가</h2>
+                <p className="mt-1 text-sm text-slate-400">저장하면 현재 시즌 스쿼드에 바로 추가됩니다.</p>
+              </div>
+              <button
+                type="button"
+                className="rounded-md border border-slate-700 px-2 py-1 text-sm text-slate-300 hover:bg-slate-900"
+                onClick={() => setGuestModalOpen(false)}
+              >
+                닫기
+              </button>
+            </div>
+            <form action={guestFormAction} className="grid gap-3">
+              <input type="hidden" name="season_id" value={seasonId} />
+              <input type="hidden" name="match_id" value={matchId} />
+              <label className="grid gap-1 text-sm text-slate-300">
+                이름
+                <Input name="name" required placeholder="용병 이름" />
+              </label>
+              <label className="grid gap-1 text-sm text-slate-300">
+                등번호
+                <Input name="number" type="number" min="0" placeholder="비워두면 9000번대 자동 부여" />
+              </label>
+              <label className="grid gap-1 text-sm text-slate-300">
+                메모
+                <Textarea name="memo" placeholder="예: 골키퍼 용병, 지인 소개, 첫 참가일 등" />
+              </label>
+              {guestState.message ? (
+                <p className={`text-sm ${guestState.ok ? "text-accent-green" : "text-accent-red"}`}>{guestState.message}</p>
+              ) : null}
+              <Button type="submit" disabled={guestPending}>
+                {guestPending ? "Adding..." : "Add guest"}
+              </Button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </DndContext>
   );
 }

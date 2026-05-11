@@ -189,3 +189,15 @@
 - The system shall calculate match result from `our_score` and `opponent_score` instead of storing a separate result column, preventing conflicts between score and result.
 - The system shall store four optional MOM selections on each match: overall match MOM, defense MOM, midfield MOM, and attack MOM.
 - Each MOM value shall reference a player record and may be empty for older or incomplete match records.
+
+## Guest Player Addendum
+
+- The system shall distinguish regular members and guest players with `players.player_type`, using `member` for regular players and `guest` for guest players.
+- The system shall default new player records to `member` unless the operator explicitly creates a guest player.
+- The system shall store guest players in `players` and shall continue to save lineups, MOM selections, and match stats by `player_id`, not by free-text guest names.
+- The lineup screen shall provide a `+ 용병 추가` action for approved editors.
+- When an approved editor adds a guest from the lineup screen, the system shall create a `players` row with `player_type = 'guest'` and immediately add that player to the current season's `squad_members`.
+- If the editor does not provide a number for a guest player, the system shall automatically assign the next available 9000-range temporary number.
+- Guest players assigned to a period lineup shall be draggable into formation slots like regular players and shall be eligible for `player_match_stats` entry.
+- Guest players shall be visually marked with a `용병` badge in operational screens where regular and guest players appear together.
+- The system may store an optional player memo for guest context, such as referral, role, or first participation note.

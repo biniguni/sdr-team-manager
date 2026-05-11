@@ -37,6 +37,7 @@ export function PlayerStatsForm({
         <div>
           <h3 className="font-semibold text-slate-100">#{player.number} {player.name}</h3>
           <div className="mt-1 flex gap-2">
+            {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
             <Badge tone={isAssigned ? "green" : "default"}>{isAssigned ? "Lineup assigned" : "Not in lineup"}</Badge>
             {isAssigned && !stats ? <Badge tone="red">Not entered</Badge> : null}
             {stats ? <Badge tone="blue">Entered</Badge> : null}

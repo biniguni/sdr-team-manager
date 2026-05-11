@@ -38,7 +38,7 @@ function MomSelect({
         <option value="">Not selected</option>
         {players.map((player) => (
           <option key={player.id} value={player.id}>
-            #{player.number} {player.name}
+            #{player.number} {player.name}{player.player_type === "guest" ? " [용병]" : ""}
           </option>
         ))}
       </Select>

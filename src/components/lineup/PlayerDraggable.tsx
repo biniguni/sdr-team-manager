@@ -1,6 +1,7 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
+import { Badge } from "@/components/ui/Badge";
 import type { Player } from "@/types";
 
 export function PlayerDraggable({
@@ -35,7 +36,10 @@ export function PlayerDraggable({
       {...listeners}
       {...attributes}
     >
-      <span className="block truncate font-semibold text-slate-100">#{player.number} {player.name}</span>
+      <span className="flex min-w-0 items-center gap-1.5">
+        <span className="truncate font-semibold text-slate-100">#{player.number} {player.name}</span>
+        {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+      </span>
     </button>
   );
 }

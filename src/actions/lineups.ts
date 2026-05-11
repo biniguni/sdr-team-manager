@@ -93,6 +93,73 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   return { ok: true, message: "Lineup saved." };
 }
 
+export async function createGuestPlayerForLineup(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const seasonId = text(formData, "season_id");
+  const matchId = text(formData, "match_id");
+  const name = text(formData, "name");
+  const numberText = text(formData, "number");
+  const memo = text(formData, "memo");
+
+  if (!seasonId || !matchId) return fail("Match context is missing.");
+  if (!name) return fail("Guest name is required.");
+
+  const explicitNumber = numberText ? Number(numberText) : null;
+  if (explicitNumber !== null && (!Number.isInteger(explicitNumber) || explicitNumber < 0)) {
+    return fail("Guest number must be zero or greater.");
+  }
+
+  const supabase = await createClient();
+  let nextNumber = explicitNumber;
+
+  if (nextNumber === null) {
+    const { data: latestGuest, error: latestGuestError } = await supabase
+      .from("players")
+      .select("number")
+      .gte("number", 9000)
+      .lt("number", 10000)
+      .order("number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (latestGuestError) return fail(latestGuestError.message);
+    nextNumber = Math.max((latestGuest?.number ?? 9000) + 1, 9001);
+  }
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const candidateNumber = explicitNumber ?? nextNumber + attempt;
+    const { data: player, error: playerError } = await supabase
+      .from("players")
+      .insert({
+        name,
+        number: candidateNumber,
+        player_type: "guest",
+        memo: memo || null,
+      })
+      .select("id")
+      .single();
+
+    if (playerError) {
+      if (!explicitNumber && playerError.code === "23505") continue;
+      return fail(playerError.code === "23505" ? "That player number is already in use." : playerError.message);
+    }
+
+    const { error: squadError } = await supabase.from("squad_members").upsert(
+      { season_id: seasonId, player_id: player.id },
+      { onConflict: "season_id,player_id" },
+    );
+
+    if (squadError) return fail(squadError.message);
+
+    revalidatePath(`/seasons/${seasonId}`);
+    revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
+    revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
+    revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
+    return { ok: true, message: `Guest player added: #${candidateNumber} ${name}` };
+  }
+
+  return fail("Could not assign a temporary guest number. Try entering a number manually.");
+}
+
 async function refreshPositionPerformance(seasonId: string): Promise<string | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

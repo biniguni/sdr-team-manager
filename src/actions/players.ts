@@ -35,8 +35,10 @@ export async function createPlayer(formData: FormData): Promise<ActionResult> {
   const { error } = await supabase.from("players").insert({
     name,
     number,
+    player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
     birth_date: optionalText(formData, "birth_date"),
     contact: optionalText(formData, "contact"),
+    memo: optionalText(formData, "memo"),
   });
 
   if (error) {
@@ -68,6 +70,8 @@ export async function updatePlayer(formData: FormData): Promise<ActionResult> {
       number,
       birth_date: optionalText(formData, "birth_date"),
       contact: optionalText(formData, "contact"),
+      memo: optionalText(formData, "memo"),
+      player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
       is_active: formData.get("is_active") === "on",
     })
     .eq("id", id);

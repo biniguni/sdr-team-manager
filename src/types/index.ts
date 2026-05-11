@@ -1,11 +1,14 @@
 export type UUID = string;
+export type PlayerType = "member" | "guest";
 
 export interface Player {
   id: UUID;
   name: string;
   number: number;
+  player_type: PlayerType;
   birth_date: string | null;
   contact: string | null;
+  memo: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

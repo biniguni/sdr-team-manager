@@ -109,13 +109,22 @@ CREATE TABLE players (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name          TEXT NOT NULL,
   number        INTEGER NOT NULL UNIQUE,
+  player_type   TEXT NOT NULL DEFAULT 'member'
+                CHECK (player_type IN ('member', 'guest')),
   birth_date    DATE,
   contact       TEXT,
+  memo          TEXT,
   is_active     BOOLEAN NOT NULL DEFAULT true,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
+
+`player_type` separates regular members from guest players. Guest players still
+live in `players` so lineups, match stats, MOM selections, and rankings keep the
+same `player_id`-based data model. Guest records can use optional `memo` for
+operational context, and when no number is supplied the app assigns a temporary
+9000-range number.
 
 #### seasons
 ```sql
