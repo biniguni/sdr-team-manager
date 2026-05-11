@@ -1,6 +1,6 @@
 "use client";
 
-import { DndContext, DragEndEvent, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, PointerSensor, TouchSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { useActionState, useMemo, useState } from "react";
 import { saveLineup } from "@/actions/lineups";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
@@ -52,7 +52,15 @@ export function LineupBoard({
   existingLineups: ExistingLineup[];
   canEdit: boolean;
 }) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+  );
   const [selectedPeriodId, setSelectedPeriodId] = useState(periods[0]?.id ?? "");
   const periodLineup = existingLineups.filter((entry) => entry.period_id === selectedPeriodId);
   const initialFormationId = periodLineup[0]?.formation_id ?? formations[0]?.id ?? "";

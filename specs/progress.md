@@ -4,6 +4,65 @@ This document is the working handoff log for future coding sessions. Keep it
 short and factual so a new session can quickly understand what changed, how it
 was verified, what is next, and what risks remain.
 
+## 2026-05-11 - Mobile Lineup Drag Fix
+
+### Completed
+
+- Added a dedicated dnd-kit `TouchSensor` to the lineup board so mobile touch input can start drag-and-drop.
+- Added `touch-action: none` and non-selectable drag styling to player cards so phone browsers do not treat lineup dragging as page scrolling or text selection.
+
+### Verified
+
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+
+### Current State
+
+- Mobile lineup drag-and-drop has code-level support for touch input.
+- The fix still needs a real phone browser smoke test on the deployed app after deployment updates.
+
+### Next Steps
+
+- Deploy the latest commit to Vercel.
+- On mobile, sign in as an approved editor and test dragging a squad player onto a field slot, moving between slots, moving back to the bench, and saving.
+
+### Remaining Risk
+
+- Some mobile browsers can still prioritize vertical scrolling if the drag starts from outside the player card; test by long-pressing briefly on the player card before moving.
+
+## 2026-05-11 - Vercel Connected and Public Read / Approved Edit Mode
+
+### Completed
+
+- Confirmed the project owner connected the app to Vercel.
+- Confirmed the latest intended operating mode is public read access with editing limited to authenticated users listed in `team_editors`.
+- Kept route protection disabled so visitors can open the deployed app directly without being forced to log in.
+- Kept login available for approved editors who need create, update, delete, lineup save, or stats save controls.
+
+### Verified
+
+- Prior local verification for this mode passed with `npm.cmd run lint` and `npm.cmd run build`.
+- Deployment connection was completed outside this coding session by the project owner, so no local Vercel CLI deployment output is recorded here.
+
+### Current State
+
+- Vercel is connected.
+- The app should be usable as a public read-only dashboard for visitors.
+- Approved editors must sign in and must have their Supabase Auth user id present in `team_editors`.
+- `supabase-rls.sql` is the current security script for enforcing this mode.
+
+### Next Steps
+
+- Confirm the deployed Vercel URL opens directly without login.
+- Confirm a non-editor can browse but cannot see edit/save controls.
+- Confirm an approved editor can sign in and perform a small edit/save smoke test.
+- Keep `team_editors` updated as people are added or removed from edit access.
+
+### Remaining Risk
+
+- The actual deployed URL and final production smoke-test result are not recorded in this file yet.
+- If `supabase-rls.sql` has not been applied in Supabase, the intended public-read/approved-edit permission model may not be enforced at the database level.
+
 ## 2026-05-11 - Legacy Stats Import Helper
 
 ### Completed

@@ -6,6 +6,7 @@
 
 - Added Vercel deployment prep instructions and updated Phase 6 status.
 - Added authenticated-write deployment guidance with Supabase RLS.
+- Recorded that Vercel was connected by the project owner and that the current operating mode is public read access with approved-user editing.
 - Added `team_editors` allowlist policies so only approved users can edit deployed data.
 - Added read-only UI behavior for users who are not approved editors.
 - Added Phase 1 database schema SQL for players, seasons, squads, matches, periods, formations, lineups, match stats, and position performance.

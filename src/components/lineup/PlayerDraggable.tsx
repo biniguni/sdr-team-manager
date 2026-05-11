@@ -19,15 +19,15 @@ export function PlayerDraggable({
   });
 
   const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, touchAction: "none" }
+    : { touchAction: "none" };
 
   return (
     <button
       ref={setNodeRef}
       type="button"
       style={style}
-      className={`w-full rounded-md border border-slate-700 bg-slate-950 text-left transition hover:border-accent-blue ${
+      className={`w-full cursor-grab select-none rounded-md border border-slate-700 bg-slate-950 text-left transition hover:border-accent-blue active:cursor-grabbing ${
         compact ? "px-1.5 py-1 text-[11px]" : "px-3 py-2 text-sm"
       } ${
         isDragging ? "opacity-40" : ""

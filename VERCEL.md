@@ -1,6 +1,6 @@
-# Vercel Deployment Prep
+# Vercel Deployment
 
-This project is ready to connect to Vercel.
+This project has been connected to Vercel by the project owner.
 
 ## Required environment variables
 
@@ -11,18 +11,24 @@ Add these in the Vercel project settings for Production, Preview, and Developmen
 
 Use the same values currently stored in the local `.env.local` file.
 
-## Deployment steps
+## Deployment status
 
-1. Connect the Git repository to Vercel.
-2. Import the project as a Next.js app.
-3. Add the environment variables listed above.
-4. Deploy the `main` branch.
-5. Confirm the dashboard opens directly without login blocking.
+- Vercel connection: completed by the project owner.
+- Intended access mode: public read access, approved-user editing only.
+- Login blocking: disabled, so the app opens directly.
+- Editor login: available at `/login`.
+
+## Deployment checks
+
+1. Confirm the dashboard opens directly without login blocking.
+2. Confirm public visitors can browse data but do not see edit/save controls.
+3. Confirm an approved editor can sign in at `/login`.
+4. Confirm the approved editor can complete a small create/update/save test.
 
 ## Current app state
 
-- Login scaffolding exists, but route protection is disabled by request.
-- The app is intended to open directly for now.
+- Login scaffolding exists, and route protection is disabled by request.
+- The app is intended to open directly.
 - Public access is for reading only.
 - Editing is reserved for authenticated users listed in `team_editors`.
 - Run `supabase-rls.sql` in the Supabase SQL Editor before using the deployed app.
