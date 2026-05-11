@@ -21,7 +21,19 @@ export interface Season {
   updated_at: string;
 }
 
+export interface SquadMember {
+  id: UUID;
+  season_id: UUID;
+  player_id: UUID;
+  created_at: string;
+}
+
 export type MatchStatus = "scheduled" | "completed";
+
+export interface ActionResult {
+  ok: boolean;
+  message: string;
+}
 
 export interface Match {
   id: UUID;
@@ -32,6 +44,10 @@ export interface Match {
   is_home: boolean;
   our_score: number | null;
   opponent_score: number | null;
+  match_mom_player_id: UUID | null;
+  defense_mom_player_id: UUID | null;
+  midfield_mom_player_id: UUID | null;
+  attack_mom_player_id: UUID | null;
   status: MatchStatus;
   created_at: string;
   updated_at: string;

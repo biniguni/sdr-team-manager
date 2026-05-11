@@ -1,0 +1,79 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import type { ActionResult } from "@/types";
+
+function text(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function integer(formData: FormData, key: string) {
+  const value = text(formData, key);
+  if (!value) return 0;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) ? parsed : Number.NaN;
+}
+
+function optionalText(formData: FormData, key: string) {
+  const value = text(formData, key);
+  return value ? value : null;
+}
+
+function fail(message: string): ActionResult {
+  return { ok: false, message };
+}
+
+export async function savePlayerMatchStats(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const matchId = text(formData, "match_id");
+  const seasonId = text(formData, "season_id");
+  const playerId = text(formData, "player_id");
+
+  if (!matchId || !seasonId || !playerId) return fail("Match or player context is missing.");
+
+  const goals = integer(formData, "goals");
+  const assists = integer(formData, "assists");
+  const yellowCards = integer(formData, "yellow_cards");
+  const redCards = integer(formData, "red_cards");
+
+  if ([goals, assists, yellowCards, redCards].some((value) => !Number.isInteger(value) || value < 0)) {
+    return fail("Goals, assists, yellow cards, and red cards must be zero or greater.");
+  }
+
+  const supabase = await createClient();
+  const { data: assigned } = await supabase
+    .from("period_lineups")
+    .select("id, periods!inner(match_id)")
+    .eq("player_id", playerId)
+    .eq("periods.match_id", matchId)
+    .limit(1);
+
+  if (!assigned || assigned.length === 0) {
+    return fail("Only players assigned to this match lineup can receive match stats.");
+  }
+
+  const { error } = await supabase.from("player_match_stats").upsert(
+    {
+      match_id: matchId,
+      player_id: playerId,
+      played: formData.get("played") === "on",
+      goals,
+      assists,
+      yellow_cards: yellowCards,
+      red_cards: redCards,
+      memo: optionalText(formData, "memo"),
+    },
+    { onConflict: "match_id,player_id" },
+  );
+
+  if (error) return fail(error.message);
+
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
+  return { ok: true, message: "Stats saved." };
+}
+
+export async function getMatchStats(matchId: string) {
+  const supabase = await createClient();
+  return supabase.from("player_match_stats").select("*").eq("match_id", matchId);
+}

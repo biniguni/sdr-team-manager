@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-05-11
+
+### Added
+
+- Added Vercel deployment prep instructions and updated Phase 6 status.
+- Added Phase 1 database schema SQL for players, seasons, squads, matches, periods, formations, lineups, match stats, and position performance.
+- Added management screens for players, seasons, squads, matches, match periods, and formations.
+- Added automatic match result display from scores and four match MOM selections: match, defense, midfield, and attack.
+- Added Phase 2 dropdown-based lineup assignment by period and formation.
+- Added duplicate-player prevention within the same period lineup.
+- Added Phase 3 drag-and-drop field board for lineup assignment.
+- Added automatic `position_performance` refresh after lineup saves.
+- Added Phase 4 player match stats entry for played, goals, assists, cards, and memo.
+- Added Phase 5 dashboard and ranking pages based on live Supabase data.
+- Added Phase 6 Supabase login scaffolding and RLS SQL preparation.
+- Added dashboard navigation for desktop and mobile layouts.
+- Added default formation seed data for 4-4-2, 4-3-3, and 3-5-2.
+
+### Verified
+
+- `npm.cmd run lint` passed twice.
+- `npm.cmd run build` passed twice.
+
 ## 2026-05-08
 
 ### Added

@@ -153,12 +153,26 @@ CREATE TABLE matches (
   is_home         BOOLEAN NOT NULL DEFAULT true,
   our_score       INTEGER,
   opponent_score  INTEGER,
+  match_mom_player_id     UUID REFERENCES players(id) ON DELETE SET NULL,
+  defense_mom_player_id   UUID REFERENCES players(id) ON DELETE SET NULL,
+  midfield_mom_player_id  UUID REFERENCES players(id) ON DELETE SET NULL,
+  attack_mom_player_id    UUID REFERENCES players(id) ON DELETE SET NULL,
   status          TEXT NOT NULL DEFAULT 'scheduled'
                   CHECK (status IN ('scheduled', 'completed')),
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
+
+Match result is not stored as a separate column. The application derives it from
+`our_score` and `opponent_score` so score and result cannot conflict:
+`Win` when `our_score > opponent_score`, `Draw` when equal, `Loss` when lower,
+and `Pending` when either score is missing.
+
+The four MOM fields preserve the prior spreadsheet workflow:
+overall match MOM, defense MOM, midfield MOM, and attack MOM. Each points to a
+player record and is nullable because older or incomplete match records may not
+have MOM selections yet.
 
 #### periods
 ```sql
@@ -533,6 +547,10 @@ type LineupState = {
 | `players[].total_assists` | `player_match_stats` GROUP BY `player_id` SUM `assists` |
 | `players[].match_count` | `player_match_stats` WHERE `played = true` COUNT |
 | `matches[].result` | `matches.our_score vs opponent_score` 비교 |
+| `matches[].match_mom_player_id` | `matches` FK to `players.id` |
+| `matches[].defense_mom_player_id` | `matches` FK to `players.id` |
+| `matches[].midfield_mom_player_id` | `matches` FK to `players.id` |
+| `matches[].attack_mom_player_id` | `matches` FK to `players.id` |
 
 ### 디자인 토큰 (Tailwind 커스텀)
 

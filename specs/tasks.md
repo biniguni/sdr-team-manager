@@ -64,7 +64,8 @@
   - 요구사항: 요구사항 1~3, 11
 
 - [ ] 1.2 경기 및 Period 테이블 생성
-  - `matches`: id, season_id(FK), opponent, match_date, venue, is_home, our_score, opponent_score, status(scheduled/completed), created_at, updated_at
+  - `matches`: id, season_id(FK), opponent, match_date, venue, is_home, our_score, opponent_score, match_mom_player_id(FK nullable), defense_mom_player_id(FK nullable), midfield_mom_player_id(FK nullable), attack_mom_player_id(FK nullable), status(scheduled/completed), created_at, updated_at
+  - Match result is calculated from `our_score` and `opponent_score`; do not store a separate result column.
   - `periods`: id, match_id(FK CASCADE), label, order_num + UNIQUE(match_id, label), UNIQUE(match_id, order_num)
   - 요구사항: 요구사항 4~5, 11
 
@@ -182,7 +183,7 @@
 
 > 드래그앤드롭 구현 전에 라인업 저장 로직을 먼저 안정화합니다.
 
-- [ ] 2.1 라인업 Server Actions 구현
+- [x] 2.1 라인업 Server Actions 구현
   - `src/actions/lineups.ts`
   - `saveLineup(periodId, formationId, entries[])`:
     - 기존 `period_lineups` 삭제 후 일괄 INSERT
@@ -190,7 +191,7 @@
   - `getLineup(periodId)`: 현재 라인업 조회
   - 요구사항: 요구사항 7
 
-- [ ] 2.2 드롭다운 기반 단순 라인업 입력 UI 구현
+- [x] 2.2 드롭다운 기반 단순 라인업 입력 UI 구현
   - `src/components/lineup/SimpleLineupForm.tsx` (CSC)
   - 포메이션 선택 드롭다운
   - 각 포지션 슬롯별 선수 선택 드롭다운 (스쿼드 선수 목록)
@@ -198,14 +199,14 @@
   - "저장" 버튼 → Server Action 호출
   - 요구사항: 요구사항 7
 
-- [ ] 2.3 라인업 배정 페이지 구현 (단순 버전)
+- [x] 2.3 라인업 배정 페이지 구현 (단순 버전)
   - `src/app/(dashboard)/seasons/[id]/matches/[matchId]/lineup/page.tsx`
   - period 탭 전환
   - SimpleLineupForm 연동
   - 저장 후 현재 라인업 표시 (포지션 코드 + 선수 이름)
   - 요구사항: 요구사항 7
 
-- [ ] 2.4 라인업 저장 동작 검증
+- [x] 2.4 라인업 저장 동작 검증
   - 동일 period 내 선수 중복 배정 방지 확인
   - 다른 period에서 동일 선수 다른 포지션 배정 허용 확인
   - 포메이션 미선택 시 오류 메시지 확인
@@ -217,20 +218,20 @@
 
 > Phase 2의 라인업 저장 로직을 재사용하고, UI만 드래그앤드롭으로 교체합니다.
 
-- [ ] 3.1 드래그 가능한 선수 카드 구현
+- [x] 3.1 드래그 가능한 선수 카드 구현
   - `src/components/lineup/PlayerDraggable.tsx` (CSC)
   - dnd-kit `useDraggable` 훅 사용
   - 선수 이름, 등번호 표시
   - 요구사항: 요구사항 7
 
-- [ ] 3.2 드롭 가능한 포지션 슬롯 구현
+- [x] 3.2 드롭 가능한 포지션 슬롯 구현
   - `src/components/lineup/PositionSlotDroppable.tsx` (CSC)
   - dnd-kit `useDroppable` 훅 사용
   - 포지션 코드 표시, 배정된 선수 이름/등번호 표시
   - x, y 좌표 기반 절대 위치 배치 (포메이션 다이어그램 위)
   - 요구사항: 요구사항 7
 
-- [ ] 3.3 드래그앤드롭 라인업 보드 구현
+- [x] 3.3 드래그앤드롭 라인업 보드 구현
   - `src/components/lineup/LineupBoard.tsx` (CSC, dnd-kit DndContext)
   - 왼쪽 패널: 스쿼드 선수 목록 (미배정 선수)
   - 오른쪽 패널: 포메이션 다이어그램 (포지션 슬롯)
@@ -241,13 +242,13 @@
   - ⚠️ 필요 시 LineupBoard를 추상화하여 대안 라이브러리로 전환 가능하도록 설계
   - 요구사항: 요구사항 7
 
-- [ ] 3.4 라인업 배정 페이지 업그레이드 (드래그앤드롭 버전)
+- [x] 3.4 라인업 배정 페이지 업그레이드 (드래그앤드롭 버전)
   - Phase 2의 SimpleLineupForm을 LineupBoard로 교체
   - "저장" 버튼 → Phase 2에서 구현한 Server Action 재사용
   - 낙관적 업데이트(optimistic update) 적용
   - 요구사항: 요구사항 7
 
-- [ ] 3.5 position_performance 재계산 로직 추가
+- [x] 3.5 position_performance 재계산 로직 추가
   - `src/actions/lineups.ts` 확장
   - `saveLineup()` 완료 후 `position_performance` UPSERT:
     - `period_count`: 해당 시즌 내 해당 포지션 출전 period 수 재집계
@@ -262,7 +263,7 @@
 
 ## Phase 4: 경기 후 선수 기록 입력
 
-- [ ] 4.1 선수 기록 Server Actions 구현
+- [x] 4.1 선수 기록 Server Actions 구현
   - `src/actions/stats.ts`
   - `savePlayerMatchStats(matchId, playerId, data)`:
     - UPSERT `player_match_stats`
@@ -271,14 +272,14 @@
   - `getMatchStats(matchId)`: 경기별 전체 선수 기록 조회
   - 요구사항: 요구사항 9
 
-- [ ] 4.2 선수 기록 입력 폼 구현
+- [x] 4.2 선수 기록 입력 폼 구현
   - `src/components/stats/PlayerStatsForm.tsx` (CSC)
   - 입력 필드: `played` (출전 여부 체크박스), `goals`, `assists`, `yellow_cards`, `red_cards`, `memo`
   - ⚠️ `minutes_played` 입력 필드 제외 (향후 확장 컬럼)
   - 유효성 검증 및 오류 메시지
   - 요구사항: 요구사항 9
 
-- [ ] 4.3 경기 후 선수 기록 페이지 구현
+- [x] 4.3 경기 후 선수 기록 페이지 구현
   - `src/app/(dashboard)/seasons/[id]/matches/[matchId]/stats/page.tsx` (RSC)
   - 시즌 스쿼드 선수 목록 표시
   - `period_lineups` 배정 선수: 기록 입력 가능
@@ -290,47 +291,47 @@
 
 ## Phase 5: 대시보드
 
-- [ ] 5.1 시즌 선택 필터 구현
+- [x] 5.1 시즌 선택 필터 구현
   - `src/components/dashboard/SeasonFilter.tsx` (CSC)
   - 시즌 드롭다운 (기본값: 최근 활성 시즌)
   - URL 쿼리 파라미터로 시즌 상태 관리
   - 요구사항: 요구사항 10
 
-- [ ] 5.2 시즌 요약 카드 구현
+- [x] 5.2 시즌 요약 카드 구현
   - `src/components/dashboard/SeasonSummaryCard.tsx` (RSC)
   - 승/무/패 기록, 득점/실점 합계, 득실차
   - 최근 전적 폼 (W/D/L 도트)
   - 레퍼런스 `record-card` 스타일 적용
   - 요구사항: 요구사항 10
 
-- [ ] 5.3 통계 카드 (2×2 그리드) 구현
+- [x] 5.3 통계 카드 (2×2 그리드) 구현
   - `src/components/dashboard/StatCards.tsx` (RSC)
   - 득점왕, 도움왕, 공격포인트 1위, 최다출전 선수
   - `player_match_stats` 집계 기반
   - 레퍼런스 `stat-grid-2x2` 스타일 적용
   - 요구사항: 요구사항 10
 
-- [ ] 5.4 전체 경기 기록 패널 구현
+- [x] 5.4 전체 경기 기록 패널 구현
   - `src/components/dashboard/MatchHistoryPanel.tsx` (RSC)
   - 경기 카드 목록 (스크롤), 경기 일시, 상대팀, 스코어, 승/무/패 배지
   - 레퍼런스 `match-panel` 스타일 적용
   - 요구사항: 요구사항 10
 
-- [ ] 5.5 공격포인트 랭킹 테이블 구현
+- [x] 5.5 공격포인트 랭킹 테이블 구현
   - `src/components/dashboard/TopScorersTable.tsx` (CSC)
   - 순위, 선수, 등번호, 경기수, 득점, 도움, 공격포인트 컬럼
   - 컬럼 클릭 정렬 기능
   - 레퍼런스 `table-wrap` 스타일 적용
   - 요구사항: 요구사항 10
 
-- [ ] 5.6 대시보드 메인 페이지 구현
+- [x] 5.6 대시보드 메인 페이지 구현
   - `src/app/(dashboard)/page.tsx` (RSC)
   - 2단 레이아웃: 좌측 (SeasonSummaryCard + StatCards), 우측 (MatchHistoryPanel)
   - `Promise.all`로 병렬 데이터 조회
   - SeasonFilter 연동
   - 요구사항: 요구사항 10
 
-- [ ] 5.7 공격포인트 랭킹 페이지 구현
+- [x] 5.7 공격포인트 랭킹 페이지 구현
   - `src/app/(dashboard)/ranking/page.tsx` (RSC + CSC)
   - TopScorersTable 전체 선수 표시, 시즌 필터 연동
   - 요구사항: 요구사항 10
@@ -341,47 +342,46 @@
 
 > Phase 0~5 기능 구현 완료 후 적용합니다.
 
-- [ ] 6.1 Supabase Auth 로그인 페이지 구현
-  - `src/app/(auth)/login/page.tsx`
-  - 이메일/패스워드 로그인 폼
-  - 요구사항: 요구사항 11
+- [x] 6.1 Supabase Auth 로그인 페이지 구현
+  - `/login` 페이지 추가
+  - 이메일/비밀번호 로그인 폼
+  - 요구사항: 11
 
 - [ ] 6.2 인증 미들웨어 설정
-  - `src/middleware.ts`: 비인증 사용자 `/login` 리다이렉트
-  - 대시보드 읽기 전용 접근 허용 (선택적)
-  - 요구사항: 요구사항 11
+  - `src/proxy.ts`: 현재는 비활성화 상태
+  - 나중에 비인증 사용자 `/login` 리다이렉트로 전환
+  - 요구사항: 11
 
 - [ ] 6.3 RLS 정책 적용
   - 모든 테이블에 RLS 활성화
   - SELECT: 전체 허용 (`USING (true)`)
   - INSERT/UPDATE/DELETE: `auth.uid() IS NOT NULL` 조건
-  - 요구사항: 요구사항 11
+  - 요구사항: 11
 
 - [ ] 6.4 반응형 레이아웃 최종 검증
-  - 모바일 (< 900px): 사이드바 숨김, 하단 네비게이션 표시
-  - 데스크톱 (≥ 900px): 사이드바 고정 표시
-  - 요구사항: 요구사항 10
+  - 모바일: 사이드바 접힘, 하단 네비게이션 표시
+  - 데스크톱: 사이드바 고정 표시
+  - 요구사항: 10
 
-- [ ] 6.5 Vercel 배포
-  - Vercel 프로젝트 연결 및 환경변수 설정
+- [ ] 6.5 Vercel 배포 준비
+  - Vercel 프로젝트 연결, 환경변수 설정, 배포 확인
+  - `VERCEL.md`에 배포 체크리스트 정리
   - 프로덕션 빌드 검증 (`next build`)
-  - 요구사항: 기술 스택
 
 ---
 
-## 구현 순서 요약
+## 구현 요약
 
-```
+```text
 Phase 0  프로젝트 실행 확인
   ↓
 Phase 1  기본 CRUD
-  (DB 스키마 → 레이아웃 → 선수 → 시즌/스쿼드 → 경기/Period → 포메이션)
   ↓
-Phase 2  단순 라인업 저장 (드롭다운)   ← 라인업 로직 안정화
+Phase 2  단순 라인업 저장(드롭다운)
   ↓
-Phase 3  드래그앤드롭 라인업 보드      ← UI 업그레이드 + position_performance
+Phase 3  드래그앤드롭 라인업 보드
   ↓
-Phase 4  경기 후 선수 기록 입력
+Phase 4  경기 후 선수별 기록 입력
   ↓
 Phase 5  대시보드
   ↓

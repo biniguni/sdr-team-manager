@@ -181,3 +181,11 @@
 3. THE System SHALL 모든 테이블에 생성 일시(created_at)와 수정 일시(updated_at) 컬럼을 포함한다.
 4. THE System SHALL Supabase Row Level Security(RLS) 정책을 적용하여 인증된 Operator만 데이터를 수정할 수 있도록 한다.
 5. IF 외래 키 참조가 존재하지 않는 레코드를 가리키는 데이터 삽입이 시도되면, THEN THE System SHALL 참조 무결성 오류 메시지를 반환한다.
+
+---
+
+## Phase 1 Match Data Addendum
+
+- The system shall calculate match result from `our_score` and `opponent_score` instead of storing a separate result column, preventing conflicts between score and result.
+- The system shall store four optional MOM selections on each match: overall match MOM, defense MOM, midfield MOM, and attack MOM.
+- Each MOM value shall reference a player record and may be empty for older or incomplete match records.
