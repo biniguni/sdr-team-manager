@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { createPlayerForm, deactivatePlayerSubmit, updatePlayerForm } from "@/actions/players";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,7 @@ export default async function PlayersPage({
 }) {
   const { status = "active" } = await searchParams;
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
   let query = supabase.from("players").select("*").order("name").order("number");
 
   if (status === "active") query = query.eq("is_active", true);
@@ -28,10 +30,19 @@ export default async function PlayersPage({
       />
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+        {canEdit ? (
         <Card>
           <h2 className="mb-4 text-lg font-semibold">Add player</h2>
           <PlayerForm action={createPlayerForm} submitLabel="Add player" />
         </Card>
+        ) : (
+        <Card>
+          <h2 className="mb-2 text-lg font-semibold">Read-only access</h2>
+          <p className="text-sm leading-6 text-slate-400">
+            Sign in with an approved editor account to add or update players.
+          </p>
+        </Card>
+        )}
 
         <Card>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -50,15 +61,22 @@ export default async function PlayersPage({
                   <span className="font-medium">{player.name} <span className="text-slate-500">#{player.number}</span></span>
                   <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "Active" : "Inactive"}</Badge>
                 </summary>
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto]">
-                  <PlayerForm player={player} action={updatePlayerForm} submitLabel="Save changes" />
-                  {player.is_active ? (
-                    <form action={deactivatePlayerSubmit} className="self-end">
-                      <input type="hidden" name="id" value={player.id} />
-                      <Button type="submit" variant="danger">Deactivate</Button>
-                    </form>
-                  ) : null}
-                </div>
+                {canEdit ? (
+                  <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto]">
+                    <PlayerForm player={player} action={updatePlayerForm} submitLabel="Save changes" />
+                    {player.is_active ? (
+                      <form action={deactivatePlayerSubmit} className="self-end">
+                        <input type="hidden" name="id" value={player.id} />
+                        <Button type="submit" variant="danger">Deactivate</Button>
+                      </form>
+                    ) : null}
+                  </div>
+                ) : (
+                  <dl className="mt-4 grid gap-2 text-sm text-slate-300">
+                    <div>Birth date: {player.birth_date ?? "-"}</div>
+                    <div>Contact: {player.contact ?? "-"}</div>
+                  </dl>
+                )}
               </details>
             ))}
             {players?.length === 0 ? <p className="text-sm text-slate-400">No players found.</p> : null}

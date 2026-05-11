@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { logout } from "@/actions/auth";
+import { getAuthStatus } from "@/lib/authz";
 
 const links = [
   { href: "/", label: "Dashboard" },
@@ -8,7 +10,9 @@ const links = [
   { href: "/ranking", label: "Ranking" },
 ];
 
-export function Sidebar() {
+export async function Sidebar() {
+  const { user, canEdit } = await getAuthStatus();
+
   return (
     <aside className="hidden min-h-screen w-64 shrink-0 border-r border-slate-800 bg-slate-950 px-5 py-6 lg:block">
       <Link href="/" className="block text-xl font-bold tracking-wide text-slate-100">
@@ -25,6 +29,20 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
+      <div className="mt-8 border-t border-slate-800 pt-4 text-sm text-slate-400">
+        {user ? (
+          <form action={logout} className="grid gap-2">
+            <span>{canEdit ? "Editor mode" : "Signed in"}</span>
+            <button type="submit" className="text-left font-semibold text-accent-blue">
+              Sign out
+            </button>
+          </form>
+        ) : (
+          <Link href="/login" className="font-semibold text-accent-blue">
+            Editor login
+          </Link>
+        )}
+      </div>
     </aside>
   );
 }

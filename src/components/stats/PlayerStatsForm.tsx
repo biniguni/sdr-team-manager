@@ -15,15 +15,17 @@ export function PlayerStatsForm({
   player,
   stats,
   isAssigned,
+  canEdit,
 }: {
   seasonId: string;
   matchId: string;
   player: Player;
   stats: PlayerMatchStats | null;
   isAssigned: boolean;
+  canEdit: boolean;
 }) {
   const [state, formAction, pending] = useActionState(savePlayerMatchStats, initialState);
-  const disabled = !isAssigned || pending;
+  const disabled = !canEdit || !isAssigned || pending;
 
   return (
     <form action={formAction} className="rounded-lg border border-slate-800 bg-slate-950 p-4">
@@ -72,9 +74,13 @@ export function PlayerStatsForm({
       </fieldset>
 
       {state.message ? <p className={`mt-3 text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
-      <Button type="submit" disabled={disabled} className="mt-4">
-        {pending ? "Saving..." : "Save stats"}
-      </Button>
+      {canEdit ? (
+        <Button type="submit" disabled={disabled} className="mt-4">
+          {pending ? "Saving..." : "Save stats"}
+        </Button>
+      ) : (
+        <p className="mt-3 text-sm text-slate-400">Sign in with an approved editor account to update stats.</p>
+      )}
     </form>
   );
 }

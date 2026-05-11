@@ -1,5 +1,6 @@
 import { createFormationSubmit, deleteFormationSubmit } from "@/actions/formations";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
@@ -12,6 +13,7 @@ type FormationRow = Formation & {
 
 export default async function FormationsPage() {
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
   const { data: formations = [], error } = await supabase
     .from("formations")
     .select("*, position_slots(*)")
@@ -26,6 +28,7 @@ export default async function FormationsPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
+        {canEdit ? (
         <Card>
           <h2 className="mb-4 text-lg font-semibold">Create custom formation</h2>
           <form action={createFormationSubmit} className="grid gap-3">
@@ -40,6 +43,14 @@ export default async function FormationsPage() {
             <Button type="submit">Create formation</Button>
           </form>
         </Card>
+        ) : (
+        <Card>
+          <h2 className="mb-2 text-lg font-semibold">Read-only access</h2>
+          <p className="text-sm leading-6 text-slate-400">
+            Sign in with an approved editor account to create or delete formations.
+          </p>
+        </Card>
+        )}
 
         <Card>
           <h2 className="mb-4 text-lg font-semibold">Formation list</h2>
@@ -54,7 +65,7 @@ export default async function FormationsPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     {formation.is_default ? <Badge tone="blue">Default</Badge> : null}
-                    {!formation.is_default ? (
+                    {canEdit && !formation.is_default ? (
                       <form action={deleteFormationSubmit}>
                         <input type="hidden" name="id" value={formation.id} />
                         <Button type="submit" variant="danger" className="min-h-8 px-3 py-1">Delete</Button>

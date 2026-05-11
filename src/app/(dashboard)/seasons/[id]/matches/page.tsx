@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createMatchSubmit } from "@/actions/matches";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
@@ -11,6 +12,7 @@ import type { Match, Season } from "@/types";
 export default async function SeasonMatchesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
   const [{ data: season }, { data: matches = [], error }] = await Promise.all([
     supabase.from("seasons").select("*").eq("id", id).single(),
     supabase.from("matches").select("*").eq("season_id", id).order("match_date", { ascending: false }),
@@ -26,6 +28,7 @@ export default async function SeasonMatchesPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+        {canEdit ? (
         <Card>
           <h2 className="mb-4 text-lg font-semibold">Create match</h2>
           <form action={createMatchSubmit} className="grid gap-3">
@@ -41,6 +44,14 @@ export default async function SeasonMatchesPage({ params }: { params: Promise<{ 
             <Button type="submit">Create match</Button>
           </form>
         </Card>
+        ) : (
+        <Card>
+          <h2 className="mb-2 text-lg font-semibold">Read-only access</h2>
+          <p className="text-sm leading-6 text-slate-400">
+            Sign in with an approved editor account to create matches.
+          </p>
+        </Card>
+        )}
 
         <Card>
           <h2 className="mb-4 text-lg font-semibold">Match list</h2>

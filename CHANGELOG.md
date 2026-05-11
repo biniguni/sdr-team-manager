@@ -5,6 +5,9 @@
 ### Added
 
 - Added Vercel deployment prep instructions and updated Phase 6 status.
+- Added authenticated-write deployment guidance with Supabase RLS.
+- Added `team_editors` allowlist policies so only approved users can edit deployed data.
+- Added read-only UI behavior for users who are not approved editors.
 - Added Phase 1 database schema SQL for players, seasons, squads, matches, periods, formations, lineups, match stats, and position performance.
 - Added management screens for players, seasons, squads, matches, match periods, and formations.
 - Added automatic match result display from scores and four match MOM selections: match, defense, midfield, and attack.

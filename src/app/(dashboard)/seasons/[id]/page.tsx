@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { addSquadMemberSubmit, removeSquadMemberSubmit, updateSeasonSubmit } from "@/actions/seasons";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
@@ -16,6 +17,7 @@ type SquadRow = {
 export default async function SeasonDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
   const [{ data: season }, { data: squad = [] }, { data: activePlayers = [] }] = await Promise.all([
     supabase.from("seasons").select("*").eq("id", id).single(),
     supabase
@@ -42,6 +44,7 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+        {canEdit ? (
         <Card>
           <h2 className="mb-4 text-lg font-semibold">Season details</h2>
           <form action={updateSeasonSubmit} className="grid gap-3">
@@ -56,33 +59,47 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
             <Button type="submit">Save season</Button>
           </form>
         </Card>
+        ) : (
+        <Card>
+          <h2 className="mb-2 text-lg font-semibold">Season details</h2>
+          <div className="grid gap-2 text-sm text-slate-300">
+            <div>Name: {(season as Season).name}</div>
+            <div>Period: {(season as Season).start_date} to {(season as Season).end_date}</div>
+            <div>Status: {(season as Season).is_active ? "Active" : "Closed"}</div>
+          </div>
+        </Card>
+        )}
 
         <Card>
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">Squad</h2>
             <Badge tone="blue">{squadRows.length} players</Badge>
           </div>
-          <form action={addSquadMemberSubmit} className="mb-5 flex flex-col gap-3 sm:flex-row">
-            <input type="hidden" name="season_id" value={id} />
-            <Select name="player_id" required>
-              <option value="">Choose active player</option>
-              {availablePlayers.map((player) => (
-                <option key={player.id} value={player.id}>#{player.number} {player.name}</option>
-              ))}
-            </Select>
-            <Button type="submit">Add</Button>
-          </form>
+          {canEdit ? (
+            <form action={addSquadMemberSubmit} className="mb-5 flex flex-col gap-3 sm:flex-row">
+              <input type="hidden" name="season_id" value={id} />
+              <Select name="player_id" required>
+                <option value="">Choose active player</option>
+                {availablePlayers.map((player) => (
+                  <option key={player.id} value={player.id}>#{player.number} {player.name}</option>
+                ))}
+              </Select>
+              <Button type="submit">Add</Button>
+            </form>
+          ) : null}
           <div className="grid gap-2">
             {squadRows
               .sort((a, b) => a.players.number - b.players.number)
               .map((row) => (
                 <div key={row.player_id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3">
                   <span className="text-sm">#{row.players.number} {row.players.name}</span>
-                  <form action={removeSquadMemberSubmit}>
-                    <input type="hidden" name="season_id" value={id} />
-                    <input type="hidden" name="player_id" value={row.player_id} />
-                    <Button type="submit" variant="danger" className="min-h-8 px-3 py-1">Remove</Button>
-                  </form>
+                  {canEdit ? (
+                    <form action={removeSquadMemberSubmit}>
+                      <input type="hidden" name="season_id" value={id} />
+                      <input type="hidden" name="player_id" value={row.player_id} />
+                      <Button type="submit" variant="danger" className="min-h-8 px-3 py-1">Remove</Button>
+                    </form>
+                  ) : null}
                 </div>
               ))}
             {squadRows.length === 0 ? <p className="text-sm text-slate-400">No squad players yet.</p> : null}

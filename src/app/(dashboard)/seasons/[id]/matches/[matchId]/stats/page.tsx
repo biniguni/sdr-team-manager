@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { PlayerStatsForm } from "@/components/stats/PlayerStatsForm";
 import type { Match, Player, PlayerMatchStats } from "@/types";
@@ -15,6 +16,7 @@ export default async function MatchStatsPage({
 }) {
   const { id, matchId } = await params;
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
 
   const [{ data: match }, { data: squad = [] }, { data: assigned = [] }, { data: stats = [] }] =
     await Promise.all([
@@ -67,6 +69,7 @@ export default async function MatchStatsPage({
               player={player}
               stats={statsByPlayerId.get(player.id) ?? null}
               isAssigned={assignedPlayerIds.has(player.id)}
+              canEdit={canEdit}
             />
           ))}
           {squadPlayers.length === 0 ? <p className="text-sm text-slate-400">No squad players found for this season.</p> : null}

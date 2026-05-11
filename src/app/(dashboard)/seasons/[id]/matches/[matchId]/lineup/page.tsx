@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { LineupBoard } from "@/components/lineup/LineupBoard";
 import type { Formation, Match, Period, PeriodLineup, Player, PositionSlot } from "@/types";
@@ -24,6 +25,7 @@ export default async function LineupPage({
 }) {
   const { id, matchId } = await params;
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
 
   const [
     { data: match },
@@ -74,6 +76,7 @@ export default async function LineupPage({
           formations={formations as unknown as FormationRow[]}
           squadPlayers={squadPlayers}
           existingLineups={existingLineups as unknown as ExistingLineupRow[]}
+          canEdit={canEdit}
         />
       </Card>
     </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { completeMatchSubmit, updateMatchSubmit } from "@/actions/matches";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthStatus } from "@/lib/authz";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
@@ -52,6 +53,7 @@ export default async function MatchDetailPage({
 }) {
   const { id, matchId } = await params;
   const supabase = await createClient();
+  const { canEdit } = await getAuthStatus();
   const [{ data: match }, { data: periods = [] }, { data: squad = [] }] = await Promise.all([
     supabase.from("matches").select("*").eq("id", matchId).single(),
     supabase.from("periods").select("*").eq("match_id", matchId).order("order_num"),
@@ -90,37 +92,48 @@ export default async function MatchDetailPage({
               <Badge tone={currentMatch.status === "completed" ? "green" : "default"}>{currentMatch.status}</Badge>
             </span>
           </div>
-          <form action={updateMatchSubmit} className="grid gap-3">
-            <input type="hidden" name="id" value={matchId} />
-            <input type="hidden" name="season_id" value={id} />
-            <Input name="opponent" defaultValue={currentMatch.opponent} required />
-            <Input name="match_date" type="datetime-local" defaultValue={toDateTimeLocal(currentMatch.match_date)} required />
-            <Input name="venue" defaultValue={currentMatch.venue ?? ""} placeholder="Venue" />
-            <label className="flex items-center gap-2 text-sm text-slate-300">
-              <input name="is_home" type="checkbox" defaultChecked={currentMatch.is_home} />
-              Home match
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <Input name="our_score" type="number" min="0" placeholder="Sandro score" defaultValue={currentMatch.our_score ?? ""} />
-              <Input name="opponent_score" type="number" min="0" placeholder="Opponent score" defaultValue={currentMatch.opponent_score ?? ""} />
+          {canEdit ? (
+            <>
+              <form action={updateMatchSubmit} className="grid gap-3">
+                <input type="hidden" name="id" value={matchId} />
+                <input type="hidden" name="season_id" value={id} />
+                <Input name="opponent" defaultValue={currentMatch.opponent} required />
+                <Input name="match_date" type="datetime-local" defaultValue={toDateTimeLocal(currentMatch.match_date)} required />
+                <Input name="venue" defaultValue={currentMatch.venue ?? ""} placeholder="Venue" />
+                <label className="flex items-center gap-2 text-sm text-slate-300">
+                  <input name="is_home" type="checkbox" defaultChecked={currentMatch.is_home} />
+                  Home match
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input name="our_score" type="number" min="0" placeholder="Sandro score" defaultValue={currentMatch.our_score ?? ""} />
+                  <Input name="opponent_score" type="number" min="0" placeholder="Opponent score" defaultValue={currentMatch.opponent_score ?? ""} />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <MomSelect label="Match MOM" name="match_mom_player_id" players={squadPlayers} value={currentMatch.match_mom_player_id} />
+                  <MomSelect label="Defense MOM" name="defense_mom_player_id" players={squadPlayers} value={currentMatch.defense_mom_player_id} />
+                  <MomSelect label="Midfield MOM" name="midfield_mom_player_id" players={squadPlayers} value={currentMatch.midfield_mom_player_id} />
+                  <MomSelect label="Attack MOM" name="attack_mom_player_id" players={squadPlayers} value={currentMatch.attack_mom_player_id} />
+                </div>
+                <Select name="status" defaultValue={currentMatch.status}>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                </Select>
+                <Button type="submit">Save match</Button>
+              </form>
+              <form action={completeMatchSubmit} className="mt-3">
+                <input type="hidden" name="id" value={matchId} />
+                <input type="hidden" name="season_id" value={id} />
+                <Button type="submit" variant="secondary">Complete with lineup check</Button>
+              </form>
+            </>
+          ) : (
+            <div className="grid gap-2 text-sm text-slate-300">
+              <div>Date: {new Date(currentMatch.match_date).toLocaleString()}</div>
+              <div>Venue: {currentMatch.venue ?? "-"}</div>
+              <div>Home/Away: {currentMatch.is_home ? "Home" : "Away"}</div>
+              <div>Score: {currentMatch.our_score ?? "-"} - {currentMatch.opponent_score ?? "-"}</div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <MomSelect label="Match MOM" name="match_mom_player_id" players={squadPlayers} value={currentMatch.match_mom_player_id} />
-              <MomSelect label="Defense MOM" name="defense_mom_player_id" players={squadPlayers} value={currentMatch.defense_mom_player_id} />
-              <MomSelect label="Midfield MOM" name="midfield_mom_player_id" players={squadPlayers} value={currentMatch.midfield_mom_player_id} />
-              <MomSelect label="Attack MOM" name="attack_mom_player_id" players={squadPlayers} value={currentMatch.attack_mom_player_id} />
-            </div>
-            <Select name="status" defaultValue={currentMatch.status}>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-            </Select>
-            <Button type="submit">Save match</Button>
-          </form>
-          <form action={completeMatchSubmit} className="mt-3">
-            <input type="hidden" name="id" value={matchId} />
-            <input type="hidden" name="season_id" value={id} />
-            <Button type="submit" variant="secondary">Complete with lineup check</Button>
-          </form>
+          )}
         </Card>
 
         <Card>

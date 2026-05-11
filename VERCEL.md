@@ -23,4 +23,19 @@ Use the same values currently stored in the local `.env.local` file.
 
 - Login scaffolding exists, but route protection is disabled by request.
 - The app is intended to open directly for now.
-- RLS enforcement is prepared for later use, not required for this deployment.
+- Public access is for reading only.
+- Editing is reserved for authenticated users listed in `team_editors`.
+- Run `supabase-rls.sql` in the Supabase SQL Editor before using the deployed app.
+
+## Grant edit access
+
+1. Create or invite the user in Supabase Auth.
+2. Find the user's UUID in Supabase Auth.
+3. Add that UUID to `team_editors`.
+
+```sql
+insert into public.team_editors (user_id, role)
+values ('USER_UUID_HERE', 'owner');
+```
+
+Use `owner` for yourself and `editor` for other people who should be able to update records.

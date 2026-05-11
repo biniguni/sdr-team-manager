@@ -42,6 +42,7 @@ export function LineupBoard({
   formations,
   squadPlayers,
   existingLineups,
+  canEdit,
 }: {
   seasonId: string;
   matchId: string;
@@ -49,6 +50,7 @@ export function LineupBoard({
   formations: FormationWithSlots[];
   squadPlayers: Player[];
   existingLineups: ExistingLineup[];
+  canEdit: boolean;
 }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [selectedPeriodId, setSelectedPeriodId] = useState(periods[0]?.id ?? "");
@@ -81,6 +83,8 @@ export function LineupBoard({
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    if (!canEdit) return;
+
     const player = event.active.data.current?.player as Player | undefined;
     const overId = event.over?.id.toString();
     setActivePlayer(null);
@@ -129,7 +133,7 @@ export function LineupBoard({
           </label>
           <label className="grid gap-1 text-sm text-slate-300">
             Formation
-            <Select value={selectedFormationId} onChange={(event) => changeFormation(event.target.value)}>
+            <Select value={selectedFormationId} onChange={(event) => changeFormation(event.target.value)} disabled={!canEdit}>
               {formations.map((formation) => (
                 <option key={formation.id} value={formation.id}>
                   {formation.name}
@@ -147,7 +151,13 @@ export function LineupBoard({
             </div>
             <BenchDroppable>
               {unassignedPlayers.map((player) => (
-                <PlayerDraggable key={player.id} player={player} />
+                canEdit ? (
+                  <PlayerDraggable key={player.id} player={player} />
+                ) : (
+                  <div key={player.id} className="rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300">
+                    #{player.number} {player.name}
+                  </div>
+                )
               ))}
               {unassignedPlayers.length === 0 ? <p className="text-sm text-slate-500">All selected players are on the board.</p> : null}
             </BenchDroppable>
@@ -178,9 +188,13 @@ export function LineupBoard({
         {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">Add players to this season squad before saving a lineup.</p> : null}
         {state.message ? <p className={`text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
 
-        <Button type="submit" disabled={pending || !selectedPeriodId || !selectedFormationId || assignedCount === 0}>
-          {pending ? "Saving..." : "Save lineup"}
-        </Button>
+        {canEdit ? (
+          <Button type="submit" disabled={pending || !selectedPeriodId || !selectedFormationId || assignedCount === 0}>
+            {pending ? "Saving..." : "Save lineup"}
+          </Button>
+        ) : (
+          <p className="text-sm text-slate-400">Sign in with an approved editor account to update the lineup.</p>
+        )}
       </form>
 
       <DragOverlay>

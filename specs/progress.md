@@ -4,6 +4,38 @@ This document is the working handoff log for future coding sessions. Keep it
 short and factual so a new session can quickly understand what changed, how it
 was verified, what is next, and what risks remain.
 
+## 2026-05-11 - Legacy Stats Import Helper
+
+### Completed
+
+- Added `data/import/legacy-26-season-matches.tsv` and `data/import/legacy-26-season-player-stats.tsv` with the provided legacy match list and player goal/assist records.
+- Added `scripts/import-legacy-26-season.mjs` to validate legacy rows against the live Supabase `players`, `seasons`, and `matches` tables.
+- Added `npm` scripts for dry-run, SQL generation, and direct apply attempts.
+- Generated `data/import/legacy-26-season-import.sql`, a ready-to-run SQL file that inserts missing squad members and upserts `player_match_stats`.
+
+### Verified
+
+- Supabase read verification confirmed `26시즌` exists, the 16 legacy matches already exist, and all 235 legacy stat rows resolved to current `player_id` and `match_id` values.
+- `node scripts/import-legacy-26-season.mjs` dry-run reported 235 resolved stat rows, 31 squad additions, and no missing players or matches.
+- `node scripts/import-legacy-26-season.mjs --sql` generated the SQL import file successfully.
+- `npm.cmd run lint` passed after adding the migration helper files.
+
+### Current State
+
+- The import mapping is complete and reproducible from local files.
+- Direct API writes from the local script are blocked by Supabase RLS for `squad_members` when using the anon key without an authenticated session.
+- The generated SQL file is the safest current import path because it runs in the Supabase SQL Editor with project-admin privileges.
+
+### Next Steps
+
+- Run `data/import/legacy-26-season-import.sql` in the Supabase SQL Editor.
+- After the SQL runs, verify that `player_match_stats` contains 235 imported rows for the 16 legacy matches and that the season squad includes the imported players.
+
+### Remaining Risk
+
+- The current app UI still treats lineup assignment as the gate for manual stat editing, so imported stats can exist without historical lineup records.
+- If you later want the historical match pages to behave like fully entered matches, lineup backfill would be a separate migration task.
+
 ## 2026-05-11 - Phase 1
 
 ### Completed
@@ -225,6 +257,29 @@ was verified, what is next, and what risks remain.
 - Connect the repository to Vercel.
 - Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 - Deploy the `main` branch and confirm the app opens directly.
+
+## 2026-05-11 - Authenticated Write Mode
+
+### Completed
+
+- Restored the intended permission model: public read access with authenticated writes only.
+- Updated `supabase-rls.sql` to use a `team_editors` allowlist table so only approved authenticated users can write.
+- Updated `VERCEL.md` with the owner/editor grant workflow.
+- Added UI gating so non-editors can browse data but do not see create, update, delete, lineup save, or stats save controls.
+- Kept `supabase-open-access.sql` only as a legacy fallback for a future no-login operating mode.
+
+### Verified
+
+- Static review confirmed the affected writes use the public Supabase client path: player edits, match MOM edits, and player match stats.
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+
+### Current State
+
+- The deployed app can stay open to everyone for reading.
+- Users who are allowed to edit must sign in and exist in `team_editors`.
+- Run `supabase-rls.sql` in the Supabase SQL Editor to enforce this mode.
+- Add your own Supabase Auth user id to `team_editors` as `owner`, and add other approved users as `editor`.
 
 ## 2026-05-08 - Phase 0
 
