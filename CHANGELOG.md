@@ -7,7 +7,7 @@
 - Added guest-player support with `member` / `guest` player types and optional player notes.
 - Added a lineup-screen `+ 용병 추가` flow that creates a guest, assigns a 9000-range temporary number when needed, and adds the guest to the current season squad.
 - Added `용병` badges in player, season squad, lineup, stats, MOM, and ranking views.
-- Added `supabase-guest-players.sql` for updating existing Supabase databases before deployment.
+- Added `docs/database/supabase-guest-players.sql` for updating existing Supabase databases before deployment.
 - Added Vercel deployment prep instructions and updated Phase 6 status.
 - Added authenticated-write deployment guidance with Supabase RLS.
 - Recorded that Vercel was connected by the project owner and that the current operating mode is public read access with approved-user editing.
@@ -43,7 +43,7 @@
 
 ### Changed
 
-- Marked Phase 0 tasks as complete in `specs/tasks.md`.
+- Marked Phase 0 tasks as complete in `docs/specs/tasks.md`.
 - Corrected the local Supabase project URL format in `.env.local` so the Supabase client can build valid REST requests.
 - Removed external Google Font fetching from the base layout so production builds work in restricted network environments.
 

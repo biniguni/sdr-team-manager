@@ -365,7 +365,7 @@
 
 - [ ] 6.5 Vercel 배포 준비
   - Vercel 프로젝트 연결, 환경변수 설정, 배포 확인
-  - `VERCEL.md`에 배포 체크리스트 정리
+  - `docs/deployment/vercel.md`에 배포 체크리스트 정리
   - 프로덕션 빌드 검증 (`next build`)
 
 ---

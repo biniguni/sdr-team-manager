@@ -4,17 +4,45 @@ This document is the working handoff log for future coding sessions. Keep it
 short and factual so a new session can quickly understand what changed, how it
 was verified, what is next, and what risks remain.
 
+## 2026-05-13 - Docs Knowledge Restructure
+
+### Completed
+
+- Moved project knowledge documents under `docs/` so product specs, deployment notes, handoff notes, and database SQL are easier to find.
+- Moved former `specs/` files to `docs/specs/`.
+- Moved Vercel deployment notes to `docs/deployment/vercel.md`.
+- Moved Supabase SQL scripts to `docs/database/`.
+- Updated `AGENTS.md`, `docs/handoff.md`, and document path references to point at the new locations.
+
+### Verified
+
+- Searched repository text for stale root-level spec, deployment, and Supabase SQL references.
+- Confirmed the new `docs/` file layout exists.
+
+### Current State
+
+- Human-readable project knowledge now lives under `docs/`.
+- App source code, data import files, scripts, and runtime config remain in their existing top-level folders.
+
+### Next Steps
+
+- Use `docs/specs/progress.md` and `docs/specs/tasks.md` as the starting point for future implementation sessions.
+
+### Remaining Risk
+
+- Some Korean text still displays as mojibake in terminal output, so future broad edits to Korean documents should continue to be handled carefully.
+
 ## 2026-05-11 - Guest Player Support
 
 ### Completed
 
 - Added guest-player data fields: `players.player_type` (`member` / `guest`) and optional `players.memo`.
-- Added `supabase-guest-players.sql` for applying the guest-player columns to an existing Supabase database.
+- Added `docs/database/supabase-guest-players.sql` for applying the guest-player columns to an existing Supabase database.
 - Added `+ 용병 추가` on the lineup screen for approved editors.
 - Guest creation now inserts a `players` row with `player_type = 'guest'`, assigns a 9000-range number when needed, and immediately adds the player to the current season squad.
 - Kept lineup and stats storage on `player_id`, so guest players work with `period_lineups`, `player_match_stats`, MOM selections, dashboard, and rankings.
 - Added `용병` badges across player management, season squad, lineup, stats, MOM options, and ranking displays.
-- Added `specs/guest-player-support.md` and updated requirements/design notes with the guest-player decision.
+- Added `docs/specs/guest-player-support.md` and updated requirements/design notes with the guest-player decision.
 
 ### Verified
 
@@ -24,11 +52,11 @@ was verified, what is next, and what risks remain.
 ### Current State
 
 - Code support for guest players is implemented and builds successfully.
-- The live Supabase database must run `supabase-guest-players.sql` before the deployed app can create or read `player_type` and `memo`.
+- The live Supabase database must run `docs/database/supabase-guest-players.sql` before the deployed app can create or read `player_type` and `memo`.
 
 ### Next Steps
 
-- Run `supabase-guest-players.sql` in the Supabase SQL Editor.
+- Run `docs/database/supabase-guest-players.sql` in the Supabase SQL Editor.
 - Deploy the updated app to Vercel.
 - Smoke-test as an approved editor: open a match lineup, add a guest without a number, confirm a 9000-range number appears, drag the guest into a slot, save, and confirm the guest appears on the stats page.
 
@@ -81,7 +109,7 @@ was verified, what is next, and what risks remain.
 - Vercel is connected.
 - The app should be usable as a public read-only dashboard for visitors.
 - Approved editors must sign in and must have their Supabase Auth user id present in `team_editors`.
-- `supabase-rls.sql` is the current security script for enforcing this mode.
+- `docs/database/supabase-rls.sql` is the current security script for enforcing this mode.
 
 ### Next Steps
 
@@ -93,7 +121,7 @@ was verified, what is next, and what risks remain.
 ### Remaining Risk
 
 - The actual deployed URL and final production smoke-test result are not recorded in this file yet.
-- If `supabase-rls.sql` has not been applied in Supabase, the intended public-read/approved-edit permission model may not be enforced at the database level.
+- If `docs/database/supabase-rls.sql` has not been applied in Supabase, the intended public-read/approved-edit permission model may not be enforced at the database level.
 
 ## 2026-05-11 - Legacy Stats Import Helper
 
@@ -131,7 +159,7 @@ was verified, what is next, and what risks remain.
 
 ### Completed
 
-- Added `supabase-schema.sql` with Phase 1 tables, constraints, updated-at triggers, and default formation seed data.
+- Added `docs/database/supabase-schema.sql` with Phase 1 tables, constraints, updated-at triggers, and default formation seed data.
 - Implemented basic management screens for players, seasons, season squads, matches, match periods, and formations.
 - Added Server Actions for creating/updating/deactivating players, creating/updating seasons, adding/removing squad members, creating/updating/completing matches, and creating/deleting custom formations.
 - Added automatic match result calculation from Sandro/opponent scores and added four match-level MOM fields: match, defense, midfield, and attack.
@@ -147,19 +175,19 @@ was verified, what is next, and what risks remain.
 ### Current State
 
 - Phase 1 application code is implemented and builds successfully.
-- Supabase database changes are captured in `supabase-schema.sql`, including MOM columns and an idempotent migration for existing `matches` tables. The SQL has not been executed from this coding session.
+- Supabase database changes are captured in `docs/database/supabase-schema.sql`, including MOM columns and an idempotent migration for existing `matches` tables. The SQL has not been executed from this coding session.
 - Basic form validation exists in Server Actions. Some simple server-submitted forms currently ignore returned validation messages unless the action redirects successfully.
 
 ### Next Steps
 
-- Run `supabase-schema.sql` in the Supabase SQL Editor before using the new screens with real data.
+- Run `docs/database/supabase-schema.sql` in the Supabase SQL Editor before using the new screens with real data.
 - Manually smoke-test create/edit flows against Supabase once the schema is applied.
 - Start Phase 2: simple period lineup saving using the squad, match period, and formation records now in place.
 
 ### Remaining Risk
 
 - Because the schema was not applied during this session, database-level verification against live Supabase data is still pending.
-- `specs/tasks.md` appears with broken Korean encoding in the terminal; avoid broad automated edits until the file encoding is confirmed.
+- `docs/specs/tasks.md` appears with broken Korean encoding in the terminal; avoid broad automated edits until the file encoding is confirmed.
 
 ## 2026-05-11 - Phase 2
 
@@ -169,7 +197,7 @@ was verified, what is next, and what risks remain.
 - Added `SimpleLineupForm` for choosing a period, choosing a formation, and assigning squad players to formation slots.
 - Replaced the lineup placeholder page with the actual lineup assignment page.
 - Added client-side and server-side duplicate-player prevention for the same period.
-- Marked Phase 2 complete in `specs/tasks.md` after browser save/reload smoke testing was confirmed.
+- Marked Phase 2 complete in `docs/specs/tasks.md` after browser save/reload smoke testing was confirmed.
 
 ### Verified
 
@@ -201,7 +229,7 @@ was verified, what is next, and what risks remain.
 - Replaced the lineup dropdown UI with an interactive field board.
 - Supported dragging players from the squad list to slots, moving players between slots, and dragging players back to the bench area.
 - Extended lineup saving to refresh `position_performance` counts for each season/player/position combination.
-- Marked Phase 3 tasks complete in `specs/tasks.md`.
+- Marked Phase 3 tasks complete in `docs/specs/tasks.md`.
 
 ### Verified
 
@@ -232,7 +260,7 @@ was verified, what is next, and what risks remain.
 - Replaced the match stats placeholder page with a real stats entry page.
 - Limited stat entry to players assigned in at least one period lineup for the match.
 - Added validation that goals, assists, yellow cards, and red cards are zero or greater.
-- Marked Phase 4 tasks complete in `specs/tasks.md`.
+- Marked Phase 4 tasks complete in `docs/specs/tasks.md`.
 
 ### Verified
 
@@ -265,7 +293,7 @@ was verified, what is next, and what risks remain.
 - Added match history panel with score, result, venue, home/away, and MOM badges.
 - Added sortable attacking ranking table and ranking page.
 - Replaced the dashboard home placeholder with live Supabase aggregations.
-- Marked Phase 5 tasks complete in `specs/tasks.md`.
+- Marked Phase 5 tasks complete in `docs/specs/tasks.md`.
 
 ### Verified
 
@@ -296,8 +324,8 @@ was verified, what is next, and what risks remain.
 - Added sign-out action to the desktop sidebar.
 - Added `/login` and login/logout actions as optional auth scaffolding.
 - Added `src/proxy.ts` as a disabled placeholder for future route protection.
-- Added `supabase-rls.sql` with RLS enablement and read/write policies for Phase 0-5 tables.
-- Marked Phase 6 task 6.1 complete in `specs/tasks.md`; task 6.2 is intentionally deferred so the app opens directly.
+- Added `docs/database/supabase-rls.sql` with RLS enablement and read/write policies for Phase 0-5 tables.
+- Marked Phase 6 task 6.1 complete in `docs/specs/tasks.md`; task 6.2 is intentionally deferred so the app opens directly.
 
 ### Verified
 
@@ -316,9 +344,9 @@ was verified, what is next, and what risks remain.
 ### Next Steps
 
 - Create or confirm a Supabase Auth user for later use.
-- Run `supabase-rls.sql` in the Supabase SQL Editor when you want to enforce auth.
+- Run `docs/database/supabase-rls.sql` in the Supabase SQL Editor when you want to enforce auth.
 - Connect Vercel, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and deploy.
-- Follow `VERCEL.md` for the deployment prep checklist.
+- Follow `docs/deployment/vercel.md` for the deployment prep checklist.
 
 ### Remaining Risk
 
@@ -329,7 +357,7 @@ was verified, what is next, and what risks remain.
 
 ### Completed
 
-- Added `VERCEL.md` at the repo root with deployment prep steps.
+- Added `docs/deployment/vercel.md` with deployment prep steps.
 - Documented the required Vercel environment variables.
 - Kept the app in direct-open mode with login protection disabled by request.
 
@@ -354,10 +382,10 @@ was verified, what is next, and what risks remain.
 ### Completed
 
 - Restored the intended permission model: public read access with authenticated writes only.
-- Updated `supabase-rls.sql` to use a `team_editors` allowlist table so only approved authenticated users can write.
-- Updated `VERCEL.md` with the owner/editor grant workflow.
+- Updated `docs/database/supabase-rls.sql` to use a `team_editors` allowlist table so only approved authenticated users can write.
+- Updated `docs/deployment/vercel.md` with the owner/editor grant workflow.
 - Added UI gating so non-editors can browse data but do not see create, update, delete, lineup save, or stats save controls.
-- Kept `supabase-open-access.sql` only as a legacy fallback for a future no-login operating mode.
+- Kept `docs/database/supabase-open-access.sql` only as a legacy fallback for a future no-login operating mode.
 
 ### Verified
 
@@ -369,7 +397,7 @@ was verified, what is next, and what risks remain.
 
 - The deployed app can stay open to everyone for reading.
 - Users who are allowed to edit must sign in and exist in `team_editors`.
-- Run `supabase-rls.sql` in the Supabase SQL Editor to enforce this mode.
+- Run `docs/database/supabase-rls.sql` in the Supabase SQL Editor to enforce this mode.
 - Add your own Supabase Auth user id to `team_editors` as `owner`, and add other approved users as `editor`.
 
 ## 2026-05-08 - Phase 0
@@ -382,7 +410,7 @@ was verified, what is next, and what risks remain.
 - Added shared TypeScript domain types.
 - Added the planned source directory structure for future phases.
 - Added Tailwind dashboard color tokens.
-- Marked Phase 0 complete in `specs/tasks.md`.
+- Marked Phase 0 complete in `docs/specs/tasks.md`.
 - Added `CHANGELOG.md` for user-facing change summaries.
 
 ### Verified

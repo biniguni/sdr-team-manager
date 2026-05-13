@@ -26,13 +26,13 @@
 ## 환경 변수
 
 `.env.local`은 프로젝트 최상위 폴더에 생성합니다. 이 위치는 `AGENTS.md`,
-`specs/`, `skills-lock.json`과 같은 층입니다.
+`docs/`, `skills-lock.json`과 같은 층입니다.
 
 ```
 sdr-team-manager/
 ├── .env.local
 ├── AGENTS.md
-├── specs/
+├── docs/specs/
 └── skills-lock.json
 ```
 

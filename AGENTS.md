@@ -25,19 +25,19 @@ the exact text is needed for troubleshooting.
 
 ## Project Structure & Module Organization
 
-This repository currently contains product and implementation specifications for the SDR team manager app. Core planning documents live in `specs/`:
+This repository keeps human-readable project knowledge under `docs/`. Core planning documents live in `docs/specs/`:
 
-- `specs/requirements.md`: product requirements and domain rules.
-- `specs/design.md`: intended Next.js, Supabase, database, and UI architecture.
-- `specs/tasks.md`: phased implementation checklist.
-- `specs/progress.md`: concise work-status handoff notes for future sessions.
+- `docs/specs/requirements.md`: product requirements and domain rules.
+- `docs/specs/design.md`: intended Next.js, Supabase, database, and UI architecture.
+- `docs/specs/tasks.md`: phased implementation checklist.
+- `docs/specs/progress.md`: concise work-status handoff notes for future sessions.
 
 Before starting a new implementation phase or resuming after a context reset,
-review `specs/progress.md` along with `specs/tasks.md`. After completing a
-meaningful work unit, update `specs/progress.md` with what changed, how it was
+review `docs/specs/progress.md` along with `docs/specs/tasks.md`. After completing a
+meaningful work unit, update `docs/specs/progress.md` with what changed, how it was
 verified, current state, next steps, and any remaining risk.
 
-Agent and skill metadata lives in `.agents/` and `skills-lock.json`. When application code is scaffolded, follow the planned structure in `specs/design.md`: `src/app/` for Next.js routes, `src/components/` for UI and feature components, `src/actions/` for server actions, `src/lib/` for Supabase utilities, and `src/types/` for shared TypeScript types.
+Agent and skill metadata lives in `.agents/` and `skills-lock.json`. When application code is scaffolded, follow the planned structure in `docs/specs/design.md`: `src/app/` for Next.js routes, `src/components/` for UI and feature components, `src/actions/` for server actions, `src/lib/` for Supabase utilities, and `src/types/` for shared TypeScript types.
 
 ## Build, Test, and Development Commands
 
@@ -48,11 +48,11 @@ No runnable application package is present yet. After the Next.js scaffold is cr
 - `npm run lint`: run lint checks.
 - `npm test`: run the test suite once tests are added.
 
-Before scaffolding, validate changes by reviewing Markdown and keeping `specs/tasks.md` aligned with `specs/design.md`.
+Before scaffolding, validate changes by reviewing Markdown and keeping `docs/specs/tasks.md` aligned with `docs/specs/design.md`.
 
 ## Coding Style & Naming Conventions
 
-Use TypeScript with Next.js App Router conventions. Prefer Server Components for data-loading pages and Client Components only for interactive UI such as filters, forms, charts, and drag-and-drop lineup boards. Use PascalCase for React components (`PlayerForm.tsx`), camelCase for functions and variables, and kebab-case or route parameter folders for routes following Next.js conventions. Keep database table and column names snake_case, matching the Supabase schema in `specs/design.md`.
+Use TypeScript with Next.js App Router conventions. Prefer Server Components for data-loading pages and Client Components only for interactive UI such as filters, forms, charts, and drag-and-drop lineup boards. Use PascalCase for React components (`PlayerForm.tsx`), camelCase for functions and variables, and kebab-case or route parameter folders for routes following Next.js conventions. Keep database table and column names snake_case, matching the Supabase schema in `docs/specs/design.md`.
 
 ## Testing Guidelines
 
@@ -64,4 +64,4 @@ Current history only shows an initial commit, so no detailed convention is estab
 
 ## Security & Configuration Tips
 
-Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow the Auth and RLS plan in `specs/design.md` before production deployment.
+Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow the Auth and RLS plan in `docs/specs/design.md` before production deployment.
