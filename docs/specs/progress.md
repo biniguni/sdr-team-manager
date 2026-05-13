@@ -32,6 +32,30 @@ was verified, what is next, and what risks remain.
 
 - Some Korean text still displays as mojibake in terminal output, so future broad edits to Korean documents should continue to be handled carefully.
 
+## 2026-05-13 - Docs Index Guidance
+
+### Completed
+
+- Added `docs/AGENTS.md` as a docs-only placement guide and index.
+- Documented the preferred reading order for documentation work inside `docs/`.
+- Added folder-level placement rules for `docs/specs/`, `docs/deployment/`, `docs/database/`, and `docs/handoff.md`.
+
+### Verified
+
+- Checked the current `docs/` tree and aligned the index with the files that exist now.
+
+### Current State
+
+- `docs/AGENTS.md` can now guide future documentation work without changing repository-wide instructions in the root `AGENTS.md`.
+
+### Next Steps
+
+- Keep `docs/AGENTS.md` updated whenever new documentation areas are added under `docs/`.
+
+### Remaining Risk
+
+- If document categories grow beyond the current `specs`, `deployment`, and `database` groups, this index will need to be expanded to stay useful.
+
 ## 2026-05-11 - Guest Player Support
 
 ### Completed
