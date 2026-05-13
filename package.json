@@ -6,10 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "import:legacy-26": "node scripts/import-legacy-26-season.mjs --apply",
-    "import:legacy-26:dry": "node scripts/import-legacy-26-season.mjs",
-    "import:legacy-26:sql": "node scripts/import-legacy-26-season.mjs --sql"
+    "lint": "eslint"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

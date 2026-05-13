@@ -56,6 +56,32 @@ was verified, what is next, and what risks remain.
 
 - If document categories grow beyond the current `specs`, `deployment`, and `database` groups, this index will need to be expanded to stay useful.
 
+## 2026-05-13 - Legacy Import Cleanup
+
+### Completed
+
+- Removed the one-time 26-season legacy import source files from `data/import/`.
+- Removed `scripts/import-legacy-26-season.mjs`.
+- Removed the legacy import npm scripts from `package.json`.
+- Kept the previous `Legacy Stats Import Helper` progress entry below as the historical record of how the import was prepared and verified.
+
+### Verified
+
+- Confirmed the cleanup targets were limited to the legacy import data files, helper script, and npm script entries.
+
+### Current State
+
+- The repository no longer exposes one-time legacy import commands.
+- The import history remains documented in this progress log.
+
+### Next Steps
+
+- If the 26-season import ever needs to be recreated, use the historical progress notes and database state as the starting point rather than a live npm command.
+
+### Remaining Risk
+
+- Re-running the exact old import is no longer possible from checked-in local helper files.
+
 ## 2026-05-11 - Guest Player Support
 
 ### Completed
