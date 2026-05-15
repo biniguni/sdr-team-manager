@@ -1,67 +1,87 @@
 # Handoff - SDR Team Manager
 
-## Purpose Of This Handoff
-
-The user invoked the local `handoff` skill with no extra arguments. This document is for a fresh agent to continue work in `D:\kk\backup\project\sdr-team-manager` without rereading the full conversation.
+This file is an ephemeral next-session brief. It is safe to replace the whole
+file when preparing a new handoff. Historical detail belongs in
+`docs/specs/progress-history.md`; current status belongs in
+`docs/specs/progress.md`.
 
 ## Project Context
 
-Follow `AGENTS.md` closely. The project owner is a non-developer with statistics/data-analysis experience, so explain product impact first, then technical details in plain language. For any meaningful completed work unit, update `docs/specs/progress.md` with what changed, how it was verified, current state, next steps, and remaining risk.
+- Repository: `D:\kk\backup\project\sdr-team-manager`
+- Owner context: explain product impact first, then implementation details in
+  plain language.
+- Current operating mode: public read access, approved-editor write access.
+- Global login blocking is intentionally disabled. Do not turn `src/proxy.ts`
+  into a logged-out redirect unless the product decision changes to private
+  access.
 
-Core reference files now live under `docs/`:
+## Documentation Structure
 
-- `docs/specs/progress.md`: best current source of implementation status and deployment/data risks.
-- `docs/specs/tasks.md`: phased checklist, but note the Korean text appears mojibake/encoding-corrupted in terminal output. Avoid broad automated edits unless encoding is handled carefully.
-- `docs/specs/design.md` and `docs/specs/requirements.md`: product and architecture decisions.
+- `docs/specs/progress.md`: current state, next actions, remaining risk.
+- `docs/specs/progress-history.md`: detailed historical implementation log.
+- `docs/security.md`: source of truth for Auth, RLS, editor access, key handling,
+  and security smoke tests.
+- `docs/specs/requirements.md`: product-level requirements.
+- `docs/specs/design.md`: app/data/component design; security details point to
+  `docs/security.md`.
+- `docs/specs/tasks.md`: phased checklist plus `Security Hardening`.
 - `docs/deployment/vercel.md`: deployment checklist.
-- `docs/database/supabase-schema.sql`, `docs/database/supabase-rls.sql`, `docs/database/supabase-guest-players.sql`: database scripts relevant to current live state.
+- `docs/AGENTS.md`: documentation index and placement rules.
 
-## Current Repository State
+## What Changed In The Last Session
 
-`git status --short` before the docs restructure showed uncommitted skill/agent metadata changes:
+- Added `docs/security.md` as the central security guide.
+- Updated `requirements.md`, `design.md`, and `tasks.md` so security details are
+  not scattered across specs and instead reference `docs/security.md`.
+- Updated `tasks.md` Phase 6 to clarify that login middleware remains disabled
+  for public-read mode.
+- Added `Security Hardening` tasks for RLS, `team_editors`, and smoke tests.
+- Refreshed `design.md` environment-variable guidance, package versions, and
+  actual `src/` folder/component structure.
+- Split the long `progress.md` into a concise current-state file and
+  `progress-history.md`.
+- Marked guest-player DB columns as confirmed in Supabase:
+  `players.player_type` and `players.memo` exist.
+- Updated `AGENTS.md`, `docs/AGENTS.md`, and deployment docs to reflect the new
+  documentation roles.
 
-- Modified: `skills-lock.json`
-- Untracked: `.agents/skills/caveman/`
-- Untracked: `.agents/skills/grill-me/`
-- Untracked: `.agents/skills/handoff/`
-- Untracked: `.agents/skills/tdd/`
+## Current App And Database State
 
-Do not assume these are disposable; they are likely user-installed/local skill changes. Work with them and avoid reverting.
+- Phase 0-6 app foundation is implemented.
+- Vercel is connected by the project owner, but final production smoke-test
+  results are not recorded.
+- Guest-player schema columns exist in the live Supabase `players` table.
+- `docs/database/supabase-guest-players.sql` is now only a reference migration
+  for another database missing those columns.
+- `docs/database/supabase-rls.sql` is the current public-read and
+  approved-editor write policy script.
+- Live application status of `docs/database/supabase-rls.sql` still needs
+  confirmation.
 
-## Functional State To Trust
+## Immediate Next Actions
 
-The app appears to have progressed through Phase 0-6 plus later guest-player and import work. `docs/specs/progress.md` records successful `npm.cmd run lint` and `npm.cmd run build` checks for the major implemented phases.
+1. Apply or confirm `docs/database/supabase-rls.sql` in Supabase SQL Editor.
+2. Confirm/create the owner Supabase Auth user.
+3. Insert the owner user id into `public.team_editors` as `owner`.
+4. Smoke-test deployed behavior:
+   - Logged-out visitor can browse public pages and cannot write.
+   - Signed-in unapproved user can browse but cannot write.
+   - Approved editor can create/update/save a small record, lineup, and stats.
+5. Smoke-test guest-player flow as an approved editor.
+6. Smoke-test mobile lineup dragging on a real phone browser.
 
-Most recent important product state:
+## Verification Notes
 
-- Public read access with approved-editor write access is the intended mode.
-- Route protection is disabled so visitors can open the app directly.
-- Editors must sign in and exist in `team_editors` to see/use write controls.
-- Guest player support is implemented in code, but the live Supabase database must run `docs/database/supabase-guest-players.sql` before deployed guest creation/read paths are safe.
-- `docs/database/supabase-rls.sql` is the current security script for public-read/approved-edit permissions and may still need to be applied in Supabase.
-- Legacy 26-season stats import is prepared as `data/import/legacy-26-season-import.sql`; running it in Supabase SQL Editor is the safest path because anon-key API writes were blocked by RLS.
+- This session changed documentation only.
+- No `npm.cmd run lint` or `npm.cmd run build` was run for these docs changes.
+- Use `npm.cmd` in PowerShell for app commands; prior sessions hit `npm.ps1`
+  execution-policy issues with plain `npm`.
 
-## Likely Next Work
+## Cautions
 
-Depending on the user's next ask, likely useful work includes:
-
-- Deployment smoke test: confirm deployed Vercel URL opens without login, non-editors can browse only, and approved editors can sign in and save a small edit.
-- Database follow-through: run or guide running `docs/database/supabase-guest-players.sql`, `docs/database/supabase-rls.sql`, and/or `data/import/legacy-26-season-import.sql` in Supabase SQL Editor.
-- Mobile lineup smoke test: on a real phone browser, test dragging player cards into lineup slots, moving between slots, returning to bench, and saving.
-- Encoding cleanup: investigate mojibake in `docs/specs/tasks.md` before editing Korean text.
-
-## Verification Pattern
-
-For code changes, prefer:
-
-- `npm.cmd run lint`
-- `npm.cmd run build`
-
-Use `npm.cmd` in PowerShell because prior notes say plain `npm run ...` hit PowerShell `npm.ps1` execution policy issues.
-
-## Skills Suggested For Next Session
-
-- Use `handoff` again if the next session needs a compact continuation note.
-- Use `tdd` if the next task is a bug fix or feature where validation rules/server actions should be protected by tests.
-- Use `grill-me` only if the user asks to stress-test a plan or design choice.
-- Use `caveman` only if the user explicitly asks for very terse output.
+- Do not commit secrets or service role keys.
+- Keep Supabase service role keys out of browser code and Vercel public env vars.
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are browser
+  public values; RLS must protect the database.
+- Some Korean text in `docs/specs/tasks.md` has appeared as mojibake in terminal
+  output. Avoid broad automated edits unless encoding is handled carefully.

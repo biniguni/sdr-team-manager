@@ -179,8 +179,23 @@
 1. THE System SHALL PostgreSQL 외래 키 제약 조건을 사용하여 Player, Season, Squad, Match, Period, Formation, Lineup_Entry, Match_Event 간의 참조 무결성을 보장한다.
 2. WHEN 상위 레코드(예: 경기)가 삭제될 때, THE System SHALL 연관된 하위 레코드(period, 라인업, 이벤트)를 CASCADE 방식으로 함께 삭제한다.
 3. THE System SHALL 모든 테이블에 생성 일시(created_at)와 수정 일시(updated_at) 컬럼을 포함한다.
-4. THE System SHALL Supabase Row Level Security(RLS) 정책을 적용하여 인증된 Operator만 데이터를 수정할 수 있도록 한다.
+4. THE System SHALL allow public read access for operational dashboards and records while restricting create, update, delete, lineup save, and stats save actions to approved editors.
 5. IF 외래 키 참조가 존재하지 않는 레코드를 가리키는 데이터 삽입이 시도되면, THEN THE System SHALL 참조 무결성 오류 메시지를 반환한다.
+
+---
+
+## Security Requirements Addendum
+
+`docs/security.md` is the source of truth for security design, Supabase RLS
+policy shape, editor access operations, key handling, and security smoke tests.
+This requirements document records only the product-level security rules.
+
+- The system shall allow logged-out visitors to read public team data unless the product decision changes to private access.
+- The system shall require users to sign in before they can perform write actions.
+- The system shall allow write actions only for authenticated users listed in `public.team_editors`.
+- The system shall enforce write restrictions at the Supabase RLS layer, not only by hiding UI controls.
+- The system shall not globally redirect logged-out visitors to `/login` while public-read mode is the intended operating mode.
+- The system shall not expose Supabase service role keys in committed files, browser code, or public deployment environment variables.
 
 ---
 

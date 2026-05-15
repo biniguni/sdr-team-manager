@@ -30,25 +30,43 @@ This repository keeps human-readable project knowledge under `docs/`. Core plann
 - `docs/specs/requirements.md`: product requirements and domain rules.
 - `docs/specs/design.md`: intended Next.js, Supabase, database, and UI architecture.
 - `docs/specs/tasks.md`: phased implementation checklist.
-- `docs/specs/progress.md`: concise work-status handoff notes for future sessions.
+- `docs/specs/progress.md`: concise current status, next actions, and remaining risk.
+- `docs/specs/progress-history.md`: detailed historical implementation log.
+- `docs/security.md`: security model, RLS checklist, editor access rules, and key handling.
+- `docs/handoff.md`: short next-session brief that may be fully replaced at the end of each session.
 
 Before starting a new implementation phase or resuming after a context reset,
-review `docs/specs/progress.md` along with `docs/specs/tasks.md`. After completing a
-meaningful work unit, update `docs/specs/progress.md` with what changed, how it was
-verified, current state, next steps, and any remaining risk.
+review `docs/specs/progress.md` along with `docs/specs/tasks.md`. Use
+`docs/specs/progress-history.md` only when older implementation detail is needed.
+Before changing Supabase tables, RLS, Auth, editor access, environment keys, or
+deployment security, review `docs/security.md`.
+After completing a meaningful work unit, keep `docs/specs/progress.md` short and
+focused on current state, verification, next steps, and any remaining risk. Move
+long historical detail to `docs/specs/progress-history.md`.
+
+Use `docs/handoff.md` as an ephemeral continuation note, not a permanent log.
+It is acceptable and preferred to replace the whole file before a new session or
+at the end of a session, keeping only the current app/database/deployment state,
+the work just completed, immediate next actions, cautions, and key document
+links. Do not use `handoff.md` to preserve historical detail; use
+`docs/specs/progress-history.md` for that.
 
 Agent and skill metadata lives in `.agents/` and `skills-lock.json`. When application code is scaffolded, follow the planned structure in `docs/specs/design.md`: `src/app/` for Next.js routes, `src/components/` for UI and feature components, `src/actions/` for server actions, `src/lib/` for Supabase utilities, and `src/types/` for shared TypeScript types.
 
 ## Build, Test, and Development Commands
 
-No runnable application package is present yet. After the Next.js scaffold is created, use the standard project commands:
+The Next.js application package is present. In PowerShell, prefer `npm.cmd`
+because prior sessions hit the Windows `npm.ps1` execution policy when using
+plain `npm`.
 
-- `npm run dev`: start the local Next.js development server.
-- `npm run build`: create a production build and catch server/client boundary issues.
-- `npm run lint`: run lint checks.
-- `npm test`: run the test suite once tests are added.
+- `npm.cmd run dev`: start the local Next.js development server.
+- `npm.cmd run build`: create a production build and catch server/client boundary issues.
+- `npm.cmd run lint`: run lint checks.
+- `npm test`: not currently defined in `package.json`.
 
-Before scaffolding, validate changes by reviewing Markdown and keeping `docs/specs/tasks.md` aligned with `docs/specs/design.md`.
+For documentation-only changes, validate by reviewing Markdown and keeping
+`docs/specs/progress.md`, `docs/specs/design.md`, and `docs/AGENTS.md` aligned
+with the current repository state.
 
 ## Coding Style & Naming Conventions
 
@@ -64,4 +82,4 @@ Current history only shows an initial commit, so no detailed convention is estab
 
 ## Security & Configuration Tips
 
-Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow the Auth and RLS plan in `docs/specs/design.md` before production deployment.
+Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow `docs/security.md` for Auth, RLS, editor access, key handling, and security smoke tests before production deployment.

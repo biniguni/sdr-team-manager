@@ -341,6 +341,9 @@
 ## Phase 6: Auth / RLS / 배포
 
 > Phase 0~5 기능 구현 완료 후 적용합니다.
+> 보안 설계의 기준 문서는 `docs/security.md`입니다. 이 체크리스트는 구현
+> 진행 상태를 추적하고, 상세 정책/운영 절차/스모크 테스트는
+> `docs/security.md`를 따릅니다.
 
 - [x] 6.1 Supabase Auth 로그인 페이지 구현
   - `/login` 페이지 추가
@@ -349,13 +352,16 @@
 
 - [ ] 6.2 인증 미들웨어 설정
   - `src/proxy.ts`: 현재는 비활성화 상태
-  - 나중에 비인증 사용자 `/login` 리다이렉트로 전환
+  - 공개 읽기 운영 모드에서는 비인증 사용자 `/login` 리다이렉트를 켜지 않음
+  - 전체 비공개 앱으로 제품 결정이 바뀔 때만 재검토
   - 요구사항: 11
 
 - [ ] 6.3 RLS 정책 적용
   - 모든 테이블에 RLS 활성화
   - SELECT: 전체 허용 (`USING (true)`)
-  - INSERT/UPDATE/DELETE: `auth.uid() IS NOT NULL` 조건
+  - INSERT/UPDATE/DELETE: `public.team_editors`에 등록된 인증 사용자만 허용
+  - 기준 스크립트: `docs/database/supabase-rls.sql`
+  - 설계/검증 기준: `docs/security.md`
   - 요구사항: 11
 
 - [ ] 6.4 반응형 레이아웃 최종 검증
@@ -367,6 +373,20 @@
   - Vercel 프로젝트 연결, 환경변수 설정, 배포 확인
   - `docs/deployment/vercel.md`에 배포 체크리스트 정리
   - 프로덕션 빌드 검증 (`next build`)
+
+---
+
+## Security Hardening
+
+> 보안 관련 상세 설계와 운영 절차는 `docs/security.md`에서 관리합니다.
+
+- [ ] S1 `docs/database/supabase-rls.sql`을 Supabase SQL Editor에 적용 또는 적용 여부 확인
+- [ ] S2 Supabase Auth owner 계정 생성/확인
+- [ ] S3 owner user id를 `public.team_editors`에 `owner`로 등록
+- [ ] S4 로그아웃 방문자 스모크 테스트: 공개 페이지 조회 가능, 쓰기 컨트롤 없음
+- [ ] S5 미승인 로그인 사용자 스모크 테스트: 조회 가능, 쓰기 컨트롤 없음, 직접 쓰기 실패
+- [ ] S6 승인 편집자 스모크 테스트: 작은 생성/수정, 라인업 저장, 선수 기록 저장 가능
+- [ ] S7 새 테이블 또는 쓰기 기능을 추가할 때 `docs/security.md`의 Change Checklist로 RLS/권한 재검토
 
 ---
 

@@ -32,6 +32,7 @@ Use the same values currently stored in the local `.env.local` file.
 - Public access is for reading only.
 - Editing is reserved for authenticated users listed in `team_editors`.
 - Run `docs/database/supabase-rls.sql` in the Supabase SQL Editor before using the deployed app.
+- Review `docs/security.md` before changing RLS, editor access, environment keys, or login behavior.
 
 ## Grant edit access
 

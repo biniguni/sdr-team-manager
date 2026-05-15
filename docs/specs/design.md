@@ -13,37 +13,47 @@
 | 영역 | 기술 | 버전 |
 |------|------|------|
 | 프레임워크 | Next.js (App Router) | 16.x |
+| UI 런타임 | React | 19.x |
 | 언어 | TypeScript | 5.x |
-| 스타일링 | Tailwind CSS | 3.x |
+| 스타일링 | Tailwind CSS | 3.4.x |
 | 데이터베이스 | Supabase PostgreSQL | - |
 | ORM/클라이언트 | Supabase JS Client | 2.x |
 | 드래그앤드롭 | dnd-kit | 6.x |
-| 차트 | Recharts | 2.x |
+| 차트 | Recharts | 3.x |
 | 배포 | Vercel | - |
 
 ---
 
 ## 환경 변수
 
-`.env.local`은 프로젝트 최상위 폴더에 생성합니다. 이 위치는 `AGENTS.md`,
-`docs/`, `skills-lock.json`과 같은 층입니다.
+`.env.local`은 프로젝트 최상위 폴더에 둡니다. 현재 루트에는 앱 코드,
+문서, 배포 설정, 에이전트/스킬 메타데이터가 함께 있습니다.
 
-```
+```text
 sdr-team-manager/
-├── .env.local
-├── AGENTS.md
-├── docs/specs/
-└── skills-lock.json
+├── .env.local                 # 로컬 전용, Git 커밋 금지
+├── AGENTS.md                  # 레포 전체 작업 규칙
+├── docs/                      # 제품/배포/보안/DB 문서
+├── src/                       # Next.js 앱 소스
+├── package.json               # npm 스크립트와 의존성
+├── next.config.ts
+├── tailwind.config.ts
+├── skills-lock.json
+└── .agents/                   # 로컬 에이전트/스킬 메타데이터
 ```
 
-Supabase 연결에 필요한 값은 아래처럼 저장합니다.
+Supabase 연결에 필요한 브라우저 공개 값은 아래처럼 저장합니다.
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=Supabase 프로젝트 URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=Supabase anon public key
 ```
 
-`.env.local`은 개인 환경 설정 파일이므로 Git에 커밋하지 않습니다.
+Vercel에도 같은 이름의 환경 변수를 Production, Preview, Development에
+등록합니다. `NEXT_PUBLIC_` 값은 브라우저에 노출될 수 있으므로, 보안은
+Supabase RLS 정책으로 보장해야 합니다. Supabase service role key 같은
+관리자 키는 `.env.local`, Git, 브라우저 코드, Vercel public 변수에 넣지
+않습니다. 보안 운영 규칙은 `docs/security.md`를 기준으로 합니다.
 
 ---
 
@@ -348,79 +358,92 @@ INSERT INTO formations (name, is_default) VALUES ('3-5-2', true);
 
 ### 디렉토리 구조
 
-```
+```text
 src/
+├── proxy.ts                         # 현재는 로그인 강제 차단 없이 통과
 ├── app/
+│   ├── layout.tsx                   # 루트 HTML/메타데이터
+│   ├── globals.css                  # 전역 스타일
+│   ├── favicon.ico
 │   ├── (auth)/
 │   │   └── login/
-│   │       └── page.tsx
+│   │       └── page.tsx             # 운영자 로그인
 │   ├── (dashboard)/
-│   │   ├── layout.tsx              # 사이드바 포함 레이아웃
-│   │   ├── page.tsx                # 대시보드 (/)
+│   │   ├── layout.tsx               # 사이드바/모바일 네비게이션 레이아웃
+│   │   ├── page.tsx                 # 대시보드 (/)
+│   │   ├── ranking/
+│   │   │   └── page.tsx             # 공격포인트 랭킹
 │   │   ├── players/
-│   │   │   ├── page.tsx            # 선수 목록
+│   │   │   ├── page.tsx             # 선수 목록/등록/수정
 │   │   │   └── [id]/
-│   │   │       └── page.tsx        # 선수 상세/수정
 │   │   ├── seasons/
-│   │   │   ├── page.tsx            # 시즌 목록
+│   │   │   ├── page.tsx             # 시즌 목록/생성
 │   │   │   └── [id]/
-│   │   │       ├── page.tsx        # 시즌 상세 (스쿼드 관리)
+│   │   │       ├── page.tsx         # 시즌 상세/스쿼드 관리
 │   │   │       └── matches/
-│   │   │           ├── page.tsx    # 경기 목록
+│   │   │           ├── page.tsx     # 경기 목록/생성
 │   │   │           └── [matchId]/
-│   │   │               ├── page.tsx        # 경기 상세
+│   │   │               ├── page.tsx
 │   │   │               ├── lineup/
-│   │   │               │   └── page.tsx    # period별 라인업 배정
+│   │   │               │   └── page.tsx
 │   │   │               └── stats/
-│   │   │                   └── page.tsx    # 경기 후 선수 기록 입력
+│   │   │                   └── page.tsx
 │   │   └── formations/
-│   │       └── page.tsx            # 포메이션 관리
+│   │       └── page.tsx             # 포메이션 관리
 │   └── api/
-│       └── [...]/                  # 필요 시 Route Handlers
-├── components/
-│   ├── ui/                         # 공통 UI (Button, Input, Badge 등)
-│   ├── layout/
-│   │   ├── Sidebar.tsx
-│   │   └── MobileNav.tsx
-│   ├── players/
-│   │   ├── PlayerList.tsx
-│   │   └── PlayerForm.tsx
-│   ├── seasons/
-│   │   ├── SeasonList.tsx
-│   │   └── SquadManager.tsx
-│   ├── matches/
-│   │   ├── MatchList.tsx
-│   │   ├── MatchForm.tsx
-│   │   └── MatchCard.tsx
-│   ├── lineup/
-│   │   ├── LineupBoard.tsx         # dnd-kit 드래그앤드롭 보드 (CSC)
-│   │   ├── FormationSelector.tsx
-│   │   ├── PlayerDraggable.tsx     # 드래그 가능한 선수 카드
-│   │   └── PositionSlotDroppable.tsx # 드롭 가능한 포지션 슬롯
-│   ├── stats/
-│   │   ├── PlayerStatsForm.tsx     # 경기 후 선수 기록 입력 폼
-│   │   └── StatsTable.tsx
-│   └── dashboard/
-│       ├── SeasonSummaryCard.tsx   # 승/무/패, 득실 요약
-│       ├── TopScorersTable.tsx     # 득점 랭킹
-│       ├── PlayerStatsSection.tsx  # 선수별 성과
-│       ├── FormationStatsSection.tsx
-│       ├── MatchHistoryPanel.tsx   # 전체 경기 기록 패널
-│       └── SeasonFilter.tsx
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts               # 브라우저용 Supabase 클라이언트
-│   │   └── server.ts               # 서버용 Supabase 클라이언트
-│   └── utils.ts
-├── actions/                        # Server Actions
+├── actions/                         # Server Actions
+│   ├── auth.ts
+│   ├── formations.ts
+│   ├── lineups.ts
+│   ├── matches.ts
 │   ├── players.ts
 │   ├── seasons.ts
-│   ├── matches.ts
-│   ├── lineups.ts
 │   └── stats.ts
+├── components/
+│   ├── auth/
+│   │   └── LoginForm.tsx
+│   ├── dashboard/
+│   │   ├── MatchHistoryPanel.tsx
+│   │   ├── SeasonFilter.tsx
+│   │   ├── SeasonSummaryCard.tsx
+│   │   ├── StatCards.tsx
+│   │   └── TopScorersTable.tsx
+│   ├── layout/
+│   │   ├── MobileNav.tsx
+│   │   └── Sidebar.tsx
+│   ├── lineup/
+│   │   ├── LineupBoard.tsx
+│   │   ├── PlayerDraggable.tsx
+│   │   ├── PositionSlotDroppable.tsx
+│   │   └── SimpleLineupForm.tsx     # 이전 드롭다운 방식 보존
+│   ├── players/
+│   │   └── PlayerForm.tsx
+│   ├── stats/
+│   │   └── PlayerStatsForm.tsx
+│   └── ui/
+│       ├── Badge.tsx
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       ├── Input.tsx
+│       └── Select.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts                # 브라우저 Supabase 클라이언트
+│   │   └── server.ts                # 서버 Supabase 클라이언트
+│   ├── authz.ts                     # team_editors 기반 편집 권한 조회
+│   ├── dashboard.ts                 # 대시보드 집계 유틸
+│   ├── matches.ts                   # 경기 관련 유틸
+│   └── utils.ts
 └── types/
-    └── index.ts                    # 공통 TypeScript 타입 정의
+    └── index.ts
 ```
+
+현재 실제 코드에는 계획 단계의 `PlayerList.tsx`, `SeasonList.tsx`,
+`SquadManager.tsx`, `MatchList.tsx`, `MatchForm.tsx`,
+`FormationSelector.tsx`, `StatsTable.tsx`, `PlayerStatsSection.tsx`,
+`FormationStatsSection.tsx`가 별도 파일로 존재하지 않습니다. 해당 기능은
+페이지 컴포넌트 또는 현재 존재하는 폼/대시보드 컴포넌트 안에 포함되어
+있습니다.
 
 ---
 
@@ -431,10 +454,10 @@ src/
 ```
 [경기 상세 페이지]
   → period 탭 선택
-  → FormationSelector: 포메이션 선택
+  → LineupBoard 안의 포메이션 선택 컨트롤에서 포메이션 선택
   → LineupBoard (CSC, dnd-kit):
-      - 왼쪽: 스쿼드 선수 목록 (DraggablePlayerCard)
-      - 오른쪽: 포메이션 다이어그램 (DroppablePositionSlot × N)
+      - 왼쪽: 스쿼드 선수 목록 (PlayerDraggable)
+      - 오른쪽: 포메이션 다이어그램 (PositionSlotDroppable × N)
       - 선수를 포지션 슬롯으로 드래그앤드롭
   → "저장" 버튼 클릭
   → Server Action: saveLineup(periodId, formationId, entries[])
@@ -583,29 +606,17 @@ colors: {
 
 ## 인증 설계
 
-- Supabase Auth (이메일/패스워드 또는 Magic Link) 사용
-- 단일 Operator 역할: 인증된 사용자만 데이터 수정 가능
-- RLS 정책: 모든 테이블에 `auth.uid() IS NOT NULL` 조건 적용
-- 미인증 사용자: 대시보드 읽기 전용 접근 허용 (선택적)
-
-```sql
--- 예시 RLS 정책 (players 테이블)
-ALTER TABLE players ENABLE ROW LEVEL SECURITY;
-
--- 읽기 정책
-CREATE POLICY "authenticated users can read players"
-  ON players FOR SELECT USING (true);
-
--- 쓰기 정책 (INSERT/UPDATE/DELETE 분리)
-CREATE POLICY "authenticated users can insert players"
-  ON players FOR INSERT TO authenticated WITH CHECK (true);
-
-CREATE POLICY "authenticated users can update players"
-  ON players FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-
-CREATE POLICY "authenticated users can delete players"
-  ON players FOR DELETE TO authenticated USING (true);
-```
+- Security design is centralized in `docs/security.md`.
+- The current product mode is public read access with approved-editor write
+  access.
+- Supabase Auth identifies signed-in users.
+- Supabase RLS enforces write authorization at the database layer.
+- `public.team_editors` is the allowlist for users who can write.
+- UI gating hides create/update/delete/save controls from non-editors, but RLS is
+  the final enforcement layer.
+- `src/proxy.ts` intentionally does not redirect all logged-out visitors to
+  `/login` while public-read mode is the intended operating mode.
+- The executable RLS policy script is `docs/database/supabase-rls.sql`.
 
 ---
 

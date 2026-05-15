@@ -24,5 +24,8 @@ the same `player_id` data model as regular members.
 
 ## Deployment Note
 
-Run `docs/database/supabase-guest-players.sql` in the Supabase SQL Editor before deploying this
-feature to a database that already has the original `players` table.
+The live Supabase `players` table has been checked by the project owner and already includes
+`player_type` and `memo`.
+
+Keep `docs/database/supabase-guest-players.sql` as the reference migration for any other database
+that still has the original `players` table without guest-player columns.
