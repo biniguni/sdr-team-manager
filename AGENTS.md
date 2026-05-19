@@ -2,17 +2,23 @@
 
 ## Collaboration Context
 
-The primary project owner is a non-developer with a background in statistics,
-professional experience in data analysis, and personal interest in data science.
 When proposing or making changes, explain the practical product impact first and
-keep implementation details secondary. Avoid assuming familiarity with web
-development, Git, Next.js, Supabase, deployment, authentication, or testing
-terminology.
+keep implementation details secondary. Use plain language for web-development,
+Git, Next.js, Supabase, deployment, authentication, and testing concepts.
+Assume web-development terminology may need explanation, but do not over-explain
+general data, statistics, or analysis concepts unless they are directly relevant.
 
 Prefer clear, concrete explanations in plain language. When technical terms are
 needed, define them briefly in context and connect them to familiar data
 concepts where useful, such as tables, records, validation rules, dashboards,
 metrics, and data quality checks.
+
+Do not invent or overuse jargon. In particular, avoid AI-flavored, vague, clever,
+or industry-sounding phrases that are not needed for the task. Do not present
+ordinary English idioms or loose analogies as if they are standard development,
+statistics, data-analysis, machine-learning, or deep-learning terminology. Use
+the simplest accurate term, avoid performative expertise, and explain only the
+web-development-specific parts that matter.
 
 For decisions that affect product behavior, data structure, security, or ongoing
 maintenance, summarize the tradeoff and recommend a default. Do not ask the
@@ -82,4 +88,4 @@ Current history only shows an initial commit, so no detailed convention is estab
 
 ## Security & Configuration Tips
 
-Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow `docs/security.md` for Auth, RLS, editor access, key handling, and security smoke tests before production deployment.
+Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow `docs/security.md` for Auth, RLS, editor access, key handling, and security verification checks before production deployment.
