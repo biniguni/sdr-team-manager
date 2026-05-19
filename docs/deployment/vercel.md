@@ -20,8 +20,7 @@ Use the same values currently stored in the local `.env.local` file.
 - Public sign-up should be disabled in Supabase Auth. Editor accounts are
   created by the owner/admin.
 - Match result editing is restricted in app code to the owner or editors with
-  `can_manage_match_results = true`; the SQL still needs to be applied in
-  Supabase.
+  `can_manage_match_results = true`.
 
 ## Deployment checks
 
@@ -43,8 +42,8 @@ Use the same values currently stored in the local `.env.local` file.
 - Public access is for reading only.
 - Editing is reserved for authenticated users listed in `team_editors`.
 - Run `docs/database/supabase-rls.sql` in the Supabase SQL Editor before using the deployed app.
-- Run `docs/database/supabase-security-cleanup.sql` before relying on deployed
-  editor checks.
+- `docs/database/supabase-security-cleanup.sql` has been prepared for the
+  security cleanup and was reported applied by the owner.
 - Review `docs/security.md` before changing RLS, editor access, environment keys, or login behavior.
 - Before final basic verification, confirm the security cleanup status in
   `docs/security.md`.

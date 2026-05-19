@@ -13,75 +13,55 @@ This is the short status note for future sessions. Detailed history belongs in
 - Editors sign in at `/login`.
 - `team_editors` is the editor allowlist.
 - Vercel has been connected by the project owner.
-- Final production basic verification results are not recorded yet.
 
-## Current Security State
+## Security State
 
 Security source of truth: `docs/security.md`.
 
-Security cleanup is implemented in app code and SQL files. Supabase-side
-execution is still pending:
+The security cleanup is complete for the current owner workflow:
 
-- Public sign-up still needs to be disabled in Supabase Auth.
-- `team_editors.can_manage_match_results boolean not null default false` still
-  needs to be applied in Supabase.
-- Owner should be `role = 'owner'` and `can_manage_match_results = true`.
-- Normal editors should be `role = 'editor'` and
-  `can_manage_match_results = false`.
-- Approved editor checks are now present in write Server Actions.
-- Match-result authority checks are now present for score, completion, MOM, and
+- `docs/database/supabase-rls.sql` was run or confirmed by the owner.
+- `docs/database/supabase-security-cleanup.sql` was run by the owner.
+- Public sign-up was handled in Supabase Auth.
+- Owner has `can_manage_match_results = true`.
+- Approved editor checks are present in write Server Actions.
+- Match-result authority checks are present for score, completion, MOM, and
   player-stat writes.
 - Birth date, contact, player memo, guest memo, and player-stat memo
   inputs/displays/writes have been removed from app code.
-- Existing sensitive/free-text values still need to be cleared to `null` in
-  Supabase using `docs/database/supabase-security-cleanup.sql`.
-
-## Database State
-
-- Live Supabase `players` has `player_type` and `memo` according to owner
-  confirmation.
-- `docs/database/supabase-guest-players.sql` is only a historical reference
-  migration for databases missing guest-player columns.
-- `docs/database/supabase-rls.sql` is the current public-read and
-  approved-editor write policy script, but live application still needs
-  confirmation.
-- Existing sensitive/free-text columns may still contain values until cleanup:
-  `players.birth_date`, `players.contact`, `players.memo`, and
-  `player_match_stats.memo`.
+- Sensitive/free-text values were cleared to `null` through SQL cleanup.
+- Logged-out write blocking was verified by the owner.
+- Sensitive/memo fields disappearing from the deployed UI was verified by the
+  owner.
 
 ## Verification
 
 - `npm.cmd run lint` passed after the security cleanup code changes.
 - `npm.cmd run build` passed after the security cleanup code changes.
-- `requirements.md`, `design.md`, and `progress.md` were shortened to current
-  source-of-truth summaries. The duplicate guest-player support doc was removed.
+- `git diff --check` passed; only line-ending warnings were reported.
+- General editor behavior is not verified yet because real editor accounts will
+  be added later.
+- Mobile lineup dragging still needs real-phone verification.
 
 ## Next Actions
 
-1. Apply or confirm `docs/database/supabase-rls.sql` in Supabase.
-2. Apply `docs/database/supabase-security-cleanup.sql` in Supabase.
-3. Disable public sign-up in Supabase Auth.
-4. Create or confirm owner and editor accounts.
-5. Set owner to `can_manage_match_results = true` and normal editors to
-   `false`.
-6. Run basic verification as:
-   - logged-out visitor,
-   - signed-in unapproved user,
-   - normal editor,
-   - owner/result manager.
-7. Run basic verification for guest-player flow.
-8. Run basic verification for mobile lineup dragging on a real phone browser.
+1. Commit current changes.
+2. Start UI improvement planning in the next session.
+3. Work with the owner through questions and sketches before changing UI.
+4. Keep mobile login/logout/account-state improvements in the UI backlog.
+5. When normal editor accounts are added, verify:
+   - normal editor can manage general records and lineups,
+   - normal editor cannot write match results or player stats,
+   - owner/result manager can write match results and player stats.
+6. Verify mobile lineup dragging on a real phone browser.
 
 ## Remaining Risk
 
-- If RLS is not applied, write protection may not be enforced at the database
-  layer.
-- Until the new `team_editors.can_manage_match_results` column is applied in
-  Supabase, deployed pages that read editor status may fail.
-- Until SQL cleanup is applied, public-read access may expose historical
-  sensitive/free-text values if they exist in Supabase.
-- Guest-player and mobile lineup drag still need deployed-app basic
+- Normal-editor behavior still needs verification once editor accounts exist.
+- Mobile lineup drag has code-level support but still needs real-device
   verification.
+- Mobile logout/account UI is not polished yet; it is not a current security
+  blocker and should be handled during UI improvement work.
 
 ## References
 

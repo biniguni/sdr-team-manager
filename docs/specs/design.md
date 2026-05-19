@@ -95,7 +95,7 @@ Permission levels:
   and player match stats.
 
 `team_editors.can_manage_match_results` is implemented in app code and SQL
-files, but still needs to be applied in live Supabase.
+files, and the owner reported that the Supabase-side setup was applied.
 
 ## Current Data Model
 

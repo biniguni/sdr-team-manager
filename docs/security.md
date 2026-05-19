@@ -38,7 +38,7 @@ need an extra app-side permission check.
 ## Important Files
 
 - `docs/database/supabase-rls.sql`: current RLS and `team_editors` policy script.
-- `docs/database/supabase-security-cleanup.sql`: pending cleanup script for
+- `docs/database/supabase-security-cleanup.sql`: cleanup script for
   match-result permission setup and sensitive-value clearing.
 - `docs/database/supabase-schema.sql`: main database schema.
 - `docs/database/supabase-guest-players.sql`: historical reference migration
@@ -157,7 +157,7 @@ Use this checklist before changing data tables or permissions:
 10. If the change updates scores, MOM selections, completion status, or player
     match stats, does it require `can_manage_match_results = true`?
 
-## basic verification泥댄겕由ъ뒪??
+## Basic Verification Checklist
 After applying RLS or changing editor access:
 
 1. Logged out:
@@ -188,19 +188,24 @@ After applying RLS or changing editor access:
 
 ## Security Cleanup Status
 
-App code and SQL files have been prepared. Supabase-side execution is still
-pending before final production basic verification:
+App code and SQL files have been prepared and the owner reported that the
+Supabase-side steps were applied.
 
-1. Apply or confirm `docs/database/supabase-rls.sql`.
-2. Apply `docs/database/supabase-security-cleanup.sql` to add
-   `can_manage_match_results boolean not null default false`.
-3. Update the owner row to `can_manage_match_results = true`.
-4. Add normal editors with `can_manage_match_results = false`.
-5. Disable public sign-up in Supabase Auth.
-6. Confirm sensitive values were cleared to `null`.
-7. Keep RLS as public read and approved-editor write unless the product decision
-   changes to private access.
-8. Complete the basic verifications above.
+Current applied state:
+
+- `docs/database/supabase-rls.sql` was run or confirmed.
+- `docs/database/supabase-security-cleanup.sql` was run.
+- Owner row has `can_manage_match_results = true`.
+- Sensitive/free-text fields are removed from the UI and no longer written by
+  app code.
+- Logged-out write blocking was verified by the owner.
+
+Still useful later:
+
+- Add normal editors with `can_manage_match_results = false`.
+- Verify normal-editor behavior when those accounts exist.
+- Keep RLS as public read and approved-editor write unless the product decision
+  changes to private access.
 
 ## Route Protection Decision
 
