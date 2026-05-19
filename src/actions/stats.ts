@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireMatchResultManager } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/types";
 
@@ -16,16 +17,14 @@ function integer(formData: FormData, key: string) {
   return Number.isInteger(parsed) ? parsed : Number.NaN;
 }
 
-function optionalText(formData: FormData, key: string) {
-  const value = text(formData, key);
-  return value ? value : null;
-}
-
 function fail(message: string): ActionResult {
   return { ok: false, message };
 }
 
 export async function savePlayerMatchStats(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const resultManager = await requireMatchResultManager();
+  if (!resultManager.ok) return fail(resultManager.message);
+
   const matchId = text(formData, "match_id");
   const seasonId = text(formData, "season_id");
   const playerId = text(formData, "player_id");
@@ -62,7 +61,6 @@ export async function savePlayerMatchStats(_: ActionResult, formData: FormData):
       assists,
       yellow_cards: yellowCards,
       red_cards: redCards,
-      memo: optionalText(formData, "memo"),
     },
     { onConflict: "match_id,player_id" },
   );

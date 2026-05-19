@@ -25,16 +25,18 @@ function MomSelect({
   name,
   players,
   value,
+  disabled = false,
 }: {
   label: string;
   name: string;
   players: Player[];
   value: string | null;
+  disabled?: boolean;
 }) {
   return (
     <label className="grid gap-1 text-sm text-slate-300">
       {label}
-      <Select name={name} defaultValue={value ?? ""}>
+      <Select name={name} defaultValue={value ?? ""} disabled={disabled}>
         <option value="">Not selected</option>
         {players.map((player) => (
           <option key={player.id} value={player.id}>
@@ -53,7 +55,7 @@ export default async function MatchDetailPage({
 }) {
   const { id, matchId } = await params;
   const supabase = await createClient();
-  const { canEdit } = await getAuthStatus();
+  const { canEdit, canManageMatchResults } = await getAuthStatus();
   const [{ data: match }, { data: periods = [] }, { data: squad = [] }] = await Promise.all([
     supabase.from("matches").select("*").eq("id", matchId).single(),
     supabase.from("periods").select("*").eq("match_id", matchId).order("order_num"),
@@ -105,26 +107,45 @@ export default async function MatchDetailPage({
                   Home match
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  <Input name="our_score" type="number" min="0" placeholder="Sandro score" defaultValue={currentMatch.our_score ?? ""} />
-                  <Input name="opponent_score" type="number" min="0" placeholder="Opponent score" defaultValue={currentMatch.opponent_score ?? ""} />
+                  <Input
+                    name="our_score"
+                    type="number"
+                    min="0"
+                    placeholder="Sandro score"
+                    defaultValue={currentMatch.our_score ?? ""}
+                    disabled={!canManageMatchResults}
+                  />
+                  <Input
+                    name="opponent_score"
+                    type="number"
+                    min="0"
+                    placeholder="Opponent score"
+                    defaultValue={currentMatch.opponent_score ?? ""}
+                    disabled={!canManageMatchResults}
+                  />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <MomSelect label="Match MOM" name="match_mom_player_id" players={squadPlayers} value={currentMatch.match_mom_player_id} />
-                  <MomSelect label="Defense MOM" name="defense_mom_player_id" players={squadPlayers} value={currentMatch.defense_mom_player_id} />
-                  <MomSelect label="Midfield MOM" name="midfield_mom_player_id" players={squadPlayers} value={currentMatch.midfield_mom_player_id} />
-                  <MomSelect label="Attack MOM" name="attack_mom_player_id" players={squadPlayers} value={currentMatch.attack_mom_player_id} />
+                  <MomSelect label="Match MOM" name="match_mom_player_id" players={squadPlayers} value={currentMatch.match_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="Defense MOM" name="defense_mom_player_id" players={squadPlayers} value={currentMatch.defense_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="Midfield MOM" name="midfield_mom_player_id" players={squadPlayers} value={currentMatch.midfield_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="Attack MOM" name="attack_mom_player_id" players={squadPlayers} value={currentMatch.attack_mom_player_id} disabled={!canManageMatchResults} />
                 </div>
-                <Select name="status" defaultValue={currentMatch.status}>
+                <Select name="status" defaultValue={currentMatch.status} disabled={!canManageMatchResults}>
                   <option value="scheduled">Scheduled</option>
                   <option value="completed">Completed</option>
                 </Select>
+                {!canManageMatchResults ? (
+                  <p className="text-sm text-slate-400">Match result permission is required to edit score, status, or MOM.</p>
+                ) : null}
                 <Button type="submit">Save match</Button>
               </form>
-              <form action={completeMatchSubmit} className="mt-3">
-                <input type="hidden" name="id" value={matchId} />
-                <input type="hidden" name="season_id" value={id} />
-                <Button type="submit" variant="secondary">Complete with lineup check</Button>
-              </form>
+              {canManageMatchResults ? (
+                <form action={completeMatchSubmit} className="mt-3">
+                  <input type="hidden" name="id" value={matchId} />
+                  <input type="hidden" name="season_id" value={id} />
+                  <Button type="submit" variant="secondary">Complete with lineup check</Button>
+                </form>
+              ) : null}
             </>
           ) : (
             <div className="grid gap-2 text-sm text-slate-300">

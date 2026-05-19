@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireEditor } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/types";
 
@@ -45,6 +46,9 @@ function parseSlots(raw: string): SlotInput[] | string {
 }
 
 export async function createFormation(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const name = text(formData, "name");
   const slots = parseSlots(text(formData, "slots"));
 
@@ -82,6 +86,9 @@ export async function createFormationSubmit(formData: FormData): Promise<void> {
 }
 
 export async function deleteFormation(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const id = text(formData, "id");
   if (!id) return fail("Formation id is missing.");
 

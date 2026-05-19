@@ -68,10 +68,6 @@ export function PlayerStatsForm({
             <Input name="red_cards" type="number" min="0" defaultValue={stats?.red_cards ?? 0} />
           </label>
         </div>
-        <label className="grid gap-1 text-xs text-slate-400">
-          Memo
-          <Input name="memo" defaultValue={stats?.memo ?? ""} placeholder="Optional note" />
-        </label>
       </fieldset>
 
       {state.message ? <p className={`mt-3 text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
@@ -80,7 +76,7 @@ export function PlayerStatsForm({
           {pending ? "Saving..." : "Save stats"}
         </Button>
       ) : (
-        <p className="mt-3 text-sm text-slate-400">Sign in with an approved editor account to update stats.</p>
+        <p className="mt-3 text-sm text-slate-400">Match result permission is required to update stats.</p>
       )}
     </form>
   );

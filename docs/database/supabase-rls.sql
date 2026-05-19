@@ -1,8 +1,12 @@
 create table if not exists public.team_editors (
   user_id uuid primary key references auth.users(id) on delete cascade,
   role text not null default 'editor',
+  can_manage_match_results boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.team_editors
+  add column if not exists can_manage_match_results boolean not null default false;
 
 alter table public.team_editors enable row level security;
 alter table public.players enable row level security;

@@ -16,7 +16,7 @@ export default async function MatchStatsPage({
 }) {
   const { id, matchId } = await params;
   const supabase = await createClient();
-  const { canEdit } = await getAuthStatus();
+  const { canManageMatchResults } = await getAuthStatus();
 
   const [{ data: match }, { data: squad = [] }, { data: assigned = [] }, { data: stats = [] }] =
     await Promise.all([
@@ -69,7 +69,7 @@ export default async function MatchStatsPage({
               player={player}
               stats={statsByPlayerId.get(player.id) ?? null}
               isAssigned={assignedPlayerIds.has(player.id)}
-              canEdit={canEdit}
+              canEdit={canManageMatchResults}
             />
           ))}
           {squadPlayers.length === 0 ? <p className="text-sm text-slate-400">No squad players found for this season.</p> : null}

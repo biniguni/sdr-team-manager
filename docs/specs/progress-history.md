@@ -15,7 +15,7 @@ making `progress.md` long.
 - Removed stale component expectations from the main structure section and clarified that several planned list/selector/table components are currently folded into page or existing form/dashboard components.
 - Updated root `AGENTS.md` build-command guidance to remove the stale "no runnable application package" note and prefer `npm.cmd` on PowerShell.
 - Updated `requirements.md`, `design.md`, and `tasks.md` so security details point to `docs/security.md` as the source of truth instead of being duplicated across specs.
-- Added a `Security Hardening` task section for RLS application, `team_editors` setup, and logged-out/unapproved/approved user smoke tests.
+- Added a `Security Hardening` task section for RLS application, `team_editors` setup, and logged-out/unapproved/approved user basic verifications.
 
 ### Verified
 
@@ -49,12 +49,12 @@ making `progress.md` long.
 
 ### Next Steps
 
-- Continue with Phase 6 follow-through from RLS policy application and production smoke testing.
-- Smoke-test as an approved editor: open a match lineup, add a guest without a number, confirm a 9000-range number appears, drag the guest into a slot, save, and confirm the guest appears on the stats page.
+- Continue with Phase 6 follow-through from RLS policy application and production basic verification
+- basic verification as an approved editor: open a match lineup, add a guest without a number, confirm a 9000-range number appears, drag the guest into a slot, save, and confirm the guest appears on the stats page.
 
 ### Remaining Risk
 
-- Guest-player end-to-end behavior still needs a deployed-app smoke test after confirming the current RLS/editor setup.
+- Guest-player end-to-end behavior still needs a deployed-app basic verification after confirming the current RLS/editor setup.
 
 ## 2026-05-13 - Docs Knowledge Restructure
 
@@ -140,10 +140,10 @@ making `progress.md` long.
 
 - Added guest-player data fields: `players.player_type` (`member` / `guest`) and optional `players.memo`.
 - Added `docs/database/supabase-guest-players.sql` for applying the guest-player columns to an existing Supabase database.
-- Added `+ 용병 추가` on the lineup screen for approved editors.
+- Added `+ ??紐끒??怨뺣뼺?` on the lineup screen for approved editors.
 - Guest creation now inserts a `players` row with `player_type = 'guest'`, assigns a 9000-range number when needed, and immediately adds the player to the current season squad.
 - Kept lineup and stats storage on `player_id`, so guest players work with `period_lineups`, `player_match_stats`, MOM selections, dashboard, and rankings.
-- Added `용병` badges across player management, season squad, lineup, stats, MOM options, and ranking displays.
+- Added `??紐끒? badges across player management, season squad, lineup, stats, MOM options, and ranking displays.
 - Added `docs/specs/guest-player-support.md` and updated requirements/design notes with the guest-player decision.
 
 ### Verified
@@ -159,7 +159,7 @@ making `progress.md` long.
 ### Next Steps
 
 - Deploy the updated app to Vercel.
-- Smoke-test as an approved editor: open a match lineup, add a guest without a number, confirm a 9000-range number appears, drag the guest into a slot, save, and confirm the guest appears on the stats page.
+- basic verification as an approved editor: open a match lineup, add a guest without a number, confirm a 9000-range number appears, drag the guest into a slot, save, and confirm the guest appears on the stats page.
 
 ### Remaining Risk
 
@@ -180,7 +180,7 @@ making `progress.md` long.
 ### Current State
 
 - Mobile lineup drag-and-drop has code-level support for touch input.
-- The fix still needs a real phone browser smoke test on the deployed app after deployment updates.
+- The fix still needs a real phone browser basic verification on the deployed app after deployment updates.
 
 ### Next Steps
 
@@ -216,12 +216,12 @@ making `progress.md` long.
 
 - Confirm the deployed Vercel URL opens directly without login.
 - Confirm a non-editor can browse but cannot see edit/save controls.
-- Confirm an approved editor can sign in and perform a small edit/save smoke test.
+- Confirm an approved editor can sign in and perform a small edit/save basic verification
 - Keep `team_editors` updated as people are added or removed from edit access.
 
 ### Remaining Risk
 
-- The actual deployed URL and final production smoke-test result are not recorded in this file yet.
+- The actual deployed URL and final production basic verification result are not recorded in this file yet.
 - If `docs/database/supabase-rls.sql` has not been applied in Supabase, the intended public-read/approved-edit permission model may not be enforced at the database level.
 
 ## 2026-05-11 - Legacy Stats Import Helper
@@ -235,7 +235,7 @@ making `progress.md` long.
 
 ### Verified
 
-- Supabase read verification confirmed `26시즌` exists, the 16 legacy matches already exist, and all 235 legacy stat rows resolved to current `player_id` and `match_id` values.
+- Supabase read verification confirmed `26??戮겹궢` exists, the 16 legacy matches already exist, and all 235 legacy stat rows resolved to current `player_id` and `match_id` values.
 - `node scripts/import-legacy-26-season.mjs` dry-run reported 235 resolved stat rows, 31 squad additions, and no missing players or matches.
 - `node scripts/import-legacy-26-season.mjs --sql` generated the SQL import file successfully.
 - `npm.cmd run lint` passed after adding the migration helper files.
@@ -282,7 +282,7 @@ making `progress.md` long.
 ### Next Steps
 
 - Run `docs/database/supabase-schema.sql` in the Supabase SQL Editor before using the new screens with real data.
-- Manually smoke-test create/edit flows against Supabase once the schema is applied.
+- Manually basic verification create/edit flows against Supabase once the schema is applied.
 - Start Phase 2: simple period lineup saving using the squad, match period, and formation records now in place.
 
 ### Remaining Risk
@@ -298,14 +298,14 @@ making `progress.md` long.
 - Added `SimpleLineupForm` for choosing a period, choosing a formation, and assigning squad players to formation slots.
 - Replaced the lineup placeholder page with the actual lineup assignment page.
 - Added client-side and server-side duplicate-player prevention for the same period.
-- Marked Phase 2 complete in `docs/specs/tasks.md` after browser save/reload smoke testing was confirmed.
+- Marked Phase 2 complete in `docs/specs/tasks.md` after browser save/reload basic verification was confirmed.
 
 ### Verified
 
 - First verification: `npm.cmd run lint` passed and `npm.cmd run build` passed.
 - Second verification: `npm.cmd run lint` passed and `npm.cmd run build` passed.
-- The live local lineup page for the 26시즌 test match returned `200 OK` and rendered periods, default formations, and squad players from Supabase.
-- Browser smoke test confirmed lineup selections can be saved and reloaded.
+- The live local lineup page for the 26??戮겹궢 test match returned `200 OK` and rendered periods, default formations, and squad players from Supabase.
+- Browser basic verification confirmed lineup selections can be saved and reloaded.
 
 ### Current State
 
@@ -336,7 +336,7 @@ making `progress.md` long.
 
 - First verification: `npm.cmd run lint` passed, `npm.cmd run build` passed, and the live lineup page returned `200 OK`.
 - Second verification: `npm.cmd run lint` passed, `npm.cmd run build` passed, and the live lineup page returned `200 OK`.
-- Browser smoke test confirmed drag assignment, save, refresh, and persisted lineup display.
+- Browser basic verification confirmed drag assignment, save, refresh, and persisted lineup display.
 
 ### Current State
 
@@ -367,7 +367,7 @@ making `progress.md` long.
 
 - First verification: `npm.cmd run lint` passed, `npm.cmd run build` passed, and the live stats page returned `200 OK`.
 - Second verification: `npm.cmd run lint` passed, `npm.cmd run build` passed, and the live stats page returned `200 OK`.
-- Browser smoke test confirmed player stat values save and reload correctly.
+- Browser basic verification confirmed player stat values save and reload correctly.
 
 ### Current State
 
@@ -409,7 +409,7 @@ making `progress.md` long.
 
 ### Next Steps
 
-- Browser smoke-test the dashboard and ranking with the known 26시즌 sample data.
+- Browser basic verification the dashboard and ranking with the known 26??戮겹궢 sample data.
 - Start Phase 6 after dashboard/ranking behavior is confirmed: Auth, RLS, and deployment.
 
 ### Remaining Risk

@@ -8,7 +8,7 @@ import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
 import { PositionSlotDroppable } from "@/components/lineup/PositionSlotDroppable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Input";
+import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { ActionResult, Formation, Period, PeriodLineup, Player, PositionSlot } from "@/types";
 
@@ -169,30 +169,25 @@ export function LineupBoard({
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400">{unassignedPlayers.length} available</span>
                 {canEdit ? (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="min-h-8 px-3 py-1 text-xs"
-                    onClick={() => setGuestModalOpen(true)}
-                  >
-                    + 용병 추가
+                  <Button type="button" variant="secondary" className="min-h-8 px-3 py-1 text-xs" onClick={() => setGuestModalOpen(true)}>
+                    Add guest
                   </Button>
                 ) : null}
               </div>
             </div>
             <BenchDroppable>
-              {unassignedPlayers.map((player) => (
+              {unassignedPlayers.map((player) =>
                 canEdit ? (
                   <PlayerDraggable key={player.id} player={player} />
                 ) : (
                   <div key={player.id} className="rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300">
                     <span className="flex items-center gap-2">
                       #{player.number} {player.name}
-                      {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                      {player.player_type === "guest" ? <Badge tone="blue">Guest</Badge> : null}
                     </span>
                   </div>
-                )
-              ))}
+                ),
+              )}
               {unassignedPlayers.length === 0 ? <p className="text-sm text-slate-500">All selected players are on the board.</p> : null}
             </BenchDroppable>
           </section>
@@ -236,7 +231,7 @@ export function LineupBoard({
           <div className="rounded-md border border-accent-blue bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-100 shadow-xl">
             <span className="flex items-center gap-2">
               #{activePlayer.number} {activePlayer.name}
-              {activePlayer.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+              {activePlayer.player_type === "guest" ? <Badge tone="blue">Guest</Badge> : null}
             </span>
           </div>
         ) : null}
@@ -247,31 +242,27 @@ export function LineupBoard({
           <div className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-950 p-5 shadow-2xl">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">용병 추가</h2>
-                <p className="mt-1 text-sm text-slate-400">저장하면 현재 시즌 스쿼드에 바로 추가됩니다.</p>
+                <h2 className="text-lg font-semibold text-slate-100">Add guest</h2>
+                <p className="mt-1 text-sm text-slate-400">The guest will be added to this season squad.</p>
               </div>
               <button
                 type="button"
                 className="rounded-md border border-slate-700 px-2 py-1 text-sm text-slate-300 hover:bg-slate-900"
                 onClick={() => setGuestModalOpen(false)}
               >
-                닫기
+                Close
               </button>
             </div>
             <form action={guestFormAction} className="grid gap-3">
               <input type="hidden" name="season_id" value={seasonId} />
               <input type="hidden" name="match_id" value={matchId} />
               <label className="grid gap-1 text-sm text-slate-300">
-                이름
-                <Input name="name" required placeholder="용병 이름" />
+                Name
+                <Input name="name" required placeholder="Guest name" />
               </label>
               <label className="grid gap-1 text-sm text-slate-300">
-                등번호
-                <Input name="number" type="number" min="0" placeholder="비워두면 9000번대 자동 부여" />
-              </label>
-              <label className="grid gap-1 text-sm text-slate-300">
-                메모
-                <Textarea name="memo" placeholder="예: 골키퍼 용병, 지인 소개, 첫 참가일 등" />
+                Number
+                <Input name="number" type="number" min="0" placeholder="Leave blank for an automatic 9000-range number" />
               </label>
               {guestState.message ? (
                 <p className={`text-sm ${guestState.ok ? "text-accent-green" : "text-accent-red"}`}>{guestState.message}</p>

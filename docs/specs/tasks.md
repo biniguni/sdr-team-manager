@@ -14,6 +14,8 @@
 - **Phase 6**: Auth / RLS / 배포
 
 > **Auth/RLS 참고**: Phase 0~5 로컬 개발 중에는 Supabase RLS를 비활성화하거나 전체 허용 정책으로 단순화합니다. Phase 6에서 인증 및 보안 정책을 적용합니다.
+>
+> **현재 기준 참고**: 이 파일은 구현 체크리스트입니다. 현재 보안/권한/개인정보 기준은 `docs/security.md`, 현재 상태와 다음 작업은 `docs/specs/progress.md`를 우선합니다.
 
 ---
 
@@ -58,7 +60,8 @@
 
 - [ ] 1.1 핵심 테이블 생성
   - Supabase SQL Editor에서 실행
-  - `players`: id, name, number(UNIQUE), birth_date, contact, is_active, created_at, updated_at
+  - `players`: id, name, number(UNIQUE), player_type, is_active, created_at, updated_at
+  - 공개 조회 모드에서는 birth_date, contact, memo를 사용하지 않고 기존 값은 null 처리 예정
   - `seasons`: id, name, start_date, end_date, is_active, created_at, updated_at + CHECK(end_date >= start_date)
   - `squad_members`: id, season_id(FK), player_id(FK), created_at + UNIQUE(season_id, player_id)
   - 요구사항: 요구사항 1~3, 11
@@ -77,7 +80,8 @@
 
 - [ ] 1.4 라인업 및 기록 테이블 생성
   - `period_lineups`: id, period_id(FK CASCADE), formation_id(FK), position_slot_id(FK), player_id(FK) + UNIQUE(period_id, position_slot_id), UNIQUE(period_id, player_id)
-  - `player_match_stats`: id, match_id(FK CASCADE), player_id(FK), played, goals, assists, yellow_cards, red_cards, memo, minutes_played(nullable) + UNIQUE(match_id, player_id)
+  - `player_match_stats`: id, match_id(FK CASCADE), player_id(FK), played, goals, assists, yellow_cards, red_cards, minutes_played(nullable) + UNIQUE(match_id, player_id)
+  - 공개 조회 모드에서는 player_match_stats.memo를 사용하지 않고 기존 값은 null 처리 예정
   - `position_performance`: id, season_id(FK CASCADE), player_id(FK CASCADE), position_code, period_count, match_count, minutes_played(nullable), goals(nullable), assists(nullable) + UNIQUE(season_id, player_id, position_code)
   - 요구사항: 요구사항 7, 9
 
@@ -382,10 +386,10 @@
 
 - [ ] S1 `docs/database/supabase-rls.sql`을 Supabase SQL Editor에 적용 또는 적용 여부 확인
 - [ ] S2 Supabase Auth owner 계정 생성/확인
-- [ ] S3 owner user id를 `public.team_editors`에 `owner`로 등록
+- [ ] S3 owner user id를 `public.team_editors`에 `owner`로 등록하고 `can_manage_match_results = true` 설정
 - [ ] S4 로그아웃 방문자 스모크 테스트: 공개 페이지 조회 가능, 쓰기 컨트롤 없음
 - [ ] S5 미승인 로그인 사용자 스모크 테스트: 조회 가능, 쓰기 컨트롤 없음, 직접 쓰기 실패
-- [ ] S6 승인 편집자 스모크 테스트: 작은 생성/수정, 라인업 저장, 선수 기록 저장 가능
+- [ ] S6 승인 편집자 간단 확인 테스트: 일반 editor는 일반 수정/라인업 저장 가능, owner 또는 `can_manage_match_results = true` 사용자만 경기 결과/선수 기록 저장 가능
 - [ ] S7 새 테이블 또는 쓰기 기능을 추가할 때 `docs/security.md`의 Change Checklist로 RLS/권한 재검토
 
 ---
@@ -410,7 +414,7 @@ Phase 6  Auth / RLS / 배포
 ## Guest Player Support
 
 - [x] Add `players.player_type` with `member` and `guest` values, defaulting to `member`.
-- [x] Add optional `players.memo` for guest context and general player notes.
+- [ ] Remove/defer `players.memo` usage in public-read mode and clear existing memo values to null during security cleanup.
 - [x] Add a lineup-screen `+ 용병 추가` flow for approved editors.
 - [x] Auto-assign 9000-range temporary numbers when a guest number is not provided.
 - [x] Insert newly created guests into the current season squad immediately.

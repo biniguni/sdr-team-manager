@@ -40,11 +40,11 @@ documentation:
 - `specs/tasks.md`: phased implementation checklist
 - `specs/progress.md`: current state, next actions, and remaining risk
 - `specs/progress-history.md`: detailed historical progress log
-- `specs/guest-player-support.md`: guest player behavior notes
 - `security.md`: security model, RLS checklist, editor access rules, and key handling
 - `deployment/vercel.md`: Vercel deployment checklist
 - `database/supabase-schema.sql`: main Supabase schema
 - `database/supabase-rls.sql`: public-read and approved-editor write policies
+- `database/supabase-security-cleanup.sql`: match-result permission column and sensitive-value cleanup
 - `database/supabase-guest-players.sql`: guest player migration
 - `database/supabase-open-access.sql`: legacy fallback for future no-login mode
 - `handoff.md`: compact next-session brief, safe to fully replace

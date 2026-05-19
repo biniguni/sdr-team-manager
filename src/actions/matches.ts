@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireEditor, requireMatchResultManager } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/types";
 
@@ -36,6 +37,9 @@ function periodLabels(formData: FormData) {
 }
 
 export async function createMatch(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const seasonId = text(formData, "season_id");
   const opponent = text(formData, "opponent");
   const matchDate = text(formData, "match_date");
@@ -79,6 +83,9 @@ export async function createMatchSubmit(formData: FormData): Promise<void> {
 }
 
 export async function updateMatch(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const id = text(formData, "id");
   const seasonId = text(formData, "season_id");
   const opponent = text(formData, "opponent");
@@ -86,22 +93,41 @@ export async function updateMatch(formData: FormData): Promise<ActionResult> {
 
   if (!id || !seasonId || !opponent || !matchDate) return fail("Match id, opponent, and match date are required.");
 
+  const resultFieldsSubmitted =
+    formData.has("our_score") ||
+    formData.has("opponent_score") ||
+    formData.has("match_mom_player_id") ||
+    formData.has("defense_mom_player_id") ||
+    formData.has("midfield_mom_player_id") ||
+    formData.has("attack_mom_player_id") ||
+    formData.has("status");
+
+  if (resultFieldsSubmitted) {
+    const resultManager = await requireMatchResultManager();
+    if (!resultManager.ok) return fail(resultManager.message);
+  }
+
+  const updatePayload: Record<string, string | number | boolean | null> = {
+    opponent,
+    match_date: matchDate,
+    venue: optionalText(formData, "venue"),
+    is_home: formData.get("is_home") === "on",
+  };
+
+  if (resultFieldsSubmitted) {
+    updatePayload.our_score = integerOrNull(formData, "our_score");
+    updatePayload.opponent_score = integerOrNull(formData, "opponent_score");
+    updatePayload.match_mom_player_id = optionalText(formData, "match_mom_player_id");
+    updatePayload.defense_mom_player_id = optionalText(formData, "defense_mom_player_id");
+    updatePayload.midfield_mom_player_id = optionalText(formData, "midfield_mom_player_id");
+    updatePayload.attack_mom_player_id = optionalText(formData, "attack_mom_player_id");
+    updatePayload.status = text(formData, "status") === "completed" ? "completed" : "scheduled";
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("matches")
-    .update({
-      opponent,
-      match_date: matchDate,
-      venue: optionalText(formData, "venue"),
-      is_home: formData.get("is_home") === "on",
-      our_score: integerOrNull(formData, "our_score"),
-      opponent_score: integerOrNull(formData, "opponent_score"),
-      match_mom_player_id: optionalText(formData, "match_mom_player_id"),
-      defense_mom_player_id: optionalText(formData, "defense_mom_player_id"),
-      midfield_mom_player_id: optionalText(formData, "midfield_mom_player_id"),
-      attack_mom_player_id: optionalText(formData, "attack_mom_player_id"),
-      status: text(formData, "status") === "completed" ? "completed" : "scheduled",
-    })
+    .update(updatePayload)
     .eq("id", id);
 
   if (error) return fail(error.message);
@@ -115,6 +141,9 @@ export async function updateMatchSubmit(formData: FormData): Promise<void> {
 }
 
 export async function completeMatch(formData: FormData): Promise<ActionResult> {
+  const resultManager = await requireMatchResultManager();
+  if (!resultManager.ok) return fail(resultManager.message);
+
   const id = text(formData, "id");
   const seasonId = text(formData, "season_id");
   if (!id || !seasonId) return fail("Match id is missing.");

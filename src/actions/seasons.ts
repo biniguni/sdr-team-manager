@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireEditor } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/types";
 
@@ -15,6 +16,9 @@ function fail(message: string): ActionResult {
 }
 
 export async function createSeason(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const name = text(formData, "name");
   const start_date = text(formData, "start_date");
   const end_date = text(formData, "end_date");
@@ -36,6 +40,9 @@ export async function createSeasonSubmit(formData: FormData): Promise<void> {
 }
 
 export async function updateSeason(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const id = text(formData, "id");
   const name = text(formData, "name");
   const start_date = text(formData, "start_date");
@@ -63,6 +70,9 @@ export async function updateSeasonSubmit(formData: FormData): Promise<void> {
 }
 
 export async function addSquadMember(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const seasonId = text(formData, "season_id");
   const playerId = text(formData, "player_id");
 
@@ -89,6 +99,9 @@ export async function addSquadMemberSubmit(formData: FormData): Promise<void> {
 }
 
 export async function removeSquadMember(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const seasonId = text(formData, "season_id");
   const playerId = text(formData, "player_id");
   if (!seasonId || !playerId) return fail("Squad member is missing.");

@@ -6,9 +6,6 @@ export interface Player {
   name: string;
   number: number;
   player_type: PlayerType;
-  birth_date: string | null;
-  contact: string | null;
-  memo: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -100,7 +97,6 @@ export interface PlayerMatchStats {
   assists: number;
   yellow_cards: number;
   red_cards: number;
-  memo: string | null;
   minutes_played: number | null;
   created_at: string;
   updated_at: string;

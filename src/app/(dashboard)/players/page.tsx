@@ -76,9 +76,8 @@ export default async function PlayersPage({
                   </div>
                 ) : (
                   <dl className="mt-4 grid gap-2 text-sm text-slate-300">
-                    <div>Birth date: {player.birth_date ?? "-"}</div>
-                    <div>Contact: {player.contact ?? "-"}</div>
-                    <div>Memo: {player.memo ?? "-"}</div>
+                    <div>Type: {player.player_type === "guest" ? "Guest" : "Member"}</div>
+                    <div>Status: {player.is_active ? "Active" : "Inactive"}</div>
                   </dl>
                 )}
               </details>

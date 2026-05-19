@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireEditor } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/types";
 
@@ -19,6 +20,9 @@ function fail(message: string): ActionResult {
 }
 
 export async function saveLineup(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const periodId = text(formData, "period_id");
   const formationId = text(formData, "formation_id");
   const seasonId = text(formData, "season_id");
@@ -94,11 +98,13 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
 }
 
 export async function createGuestPlayerForLineup(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const seasonId = text(formData, "season_id");
   const matchId = text(formData, "match_id");
   const name = text(formData, "name");
   const numberText = text(formData, "number");
-  const memo = text(formData, "memo");
 
   if (!seasonId || !matchId) return fail("Match context is missing.");
   if (!name) return fail("Guest name is required.");
@@ -133,7 +139,6 @@ export async function createGuestPlayerForLineup(_: ActionResult, formData: Form
         name,
         number: candidateNumber,
         player_type: "guest",
-        memo: memo || null,
       })
       .select("id")
       .single();

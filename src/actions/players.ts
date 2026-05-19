@@ -2,17 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireEditor } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/types";
 
 function text(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
-}
-
-function optionalText(formData: FormData, key: string) {
-  const value = text(formData, key);
-  return value.length > 0 ? value : null;
 }
 
 function numberValue(formData: FormData, key: string) {
@@ -25,6 +21,9 @@ function fail(message: string): ActionResult {
 }
 
 export async function createPlayer(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const name = text(formData, "name");
   const number = numberValue(formData, "number");
 
@@ -36,9 +35,6 @@ export async function createPlayer(formData: FormData): Promise<ActionResult> {
     name,
     number,
     player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
-    birth_date: optionalText(formData, "birth_date"),
-    contact: optionalText(formData, "contact"),
-    memo: optionalText(formData, "memo"),
   });
 
   if (error) {
@@ -54,6 +50,9 @@ export async function createPlayerForm(_: ActionResult, formData: FormData): Pro
 }
 
 export async function updatePlayer(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const id = text(formData, "id");
   const name = text(formData, "name");
   const number = numberValue(formData, "number");
@@ -68,9 +67,6 @@ export async function updatePlayer(formData: FormData): Promise<ActionResult> {
     .update({
       name,
       number,
-      birth_date: optionalText(formData, "birth_date"),
-      contact: optionalText(formData, "contact"),
-      memo: optionalText(formData, "memo"),
       player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
       is_active: formData.get("is_active") === "on",
     })
@@ -89,6 +85,9 @@ export async function updatePlayerForm(_: ActionResult, formData: FormData): Pro
 }
 
 export async function deactivatePlayer(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
   const id = text(formData, "id");
   if (!id) return fail("Player id is missing.");
 

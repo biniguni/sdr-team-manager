@@ -1,635 +1,246 @@
-# 설계 문서
+# Technical Design
 
-## 개요
+This document summarizes the current architecture and data model. It is kept
+short on purpose so future agents do not treat old implementation notes as
+current requirements.
 
-아마추어 축구팀 관리 웹 애플리케이션의 기술 설계 문서입니다. Next.js + Supabase 기반의 풀스택 웹 앱으로, 선수 관리, 시즌/스쿼드 관리, 경기 관리, period별 포메이션 라인업 배정, 경기 후 선수 기록 입력, 대시보드 기능을 제공합니다.
+Security details are centralized in `docs/security.md`.
 
-대시보드 UI는 `reference/sandro_fc_dashboard.html`을 기준으로 하되, 정적 DATA 객체를 제거하고 Supabase PostgreSQL 기반 동적 데이터로 재설계합니다.
+## Stack
 
----
+- Next.js App Router 16.x.
+- React 19.x.
+- TypeScript 5.x.
+- Tailwind CSS 3.4.x.
+- Supabase PostgreSQL and Supabase Auth.
+- Supabase JS client 2.x.
+- dnd-kit for lineup drag and drop.
+- Recharts for dashboard charts.
+- Vercel for deployment.
 
-## 기술 스택
+Use `npm.cmd` in PowerShell for project scripts.
 
-| 영역 | 기술 | 버전 |
-|------|------|------|
-| 프레임워크 | Next.js (App Router) | 16.x |
-| UI 런타임 | React | 19.x |
-| 언어 | TypeScript | 5.x |
-| 스타일링 | Tailwind CSS | 3.4.x |
-| 데이터베이스 | Supabase PostgreSQL | - |
-| ORM/클라이언트 | Supabase JS Client | 2.x |
-| 드래그앤드롭 | dnd-kit | 6.x |
-| 차트 | Recharts | 3.x |
-| 배포 | Vercel | - |
+## Environment
 
----
-
-## 환경 변수
-
-`.env.local`은 프로젝트 최상위 폴더에 둡니다. 현재 루트에는 앱 코드,
-문서, 배포 설정, 에이전트/스킬 메타데이터가 함께 있습니다.
-
-```text
-sdr-team-manager/
-├── .env.local                 # 로컬 전용, Git 커밋 금지
-├── AGENTS.md                  # 레포 전체 작업 규칙
-├── docs/                      # 제품/배포/보안/DB 문서
-├── src/                       # Next.js 앱 소스
-├── package.json               # npm 스크립트와 의존성
-├── next.config.ts
-├── tailwind.config.ts
-├── skills-lock.json
-└── .agents/                   # 로컬 에이전트/스킬 메타데이터
-```
-
-Supabase 연결에 필요한 브라우저 공개 값은 아래처럼 저장합니다.
+Local and Vercel environments need:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=Supabase 프로젝트 URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=Supabase anon public key
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-Vercel에도 같은 이름의 환경 변수를 Production, Preview, Development에
-등록합니다. `NEXT_PUBLIC_` 값은 브라우저에 노출될 수 있으므로, 보안은
-Supabase RLS 정책으로 보장해야 합니다. Supabase service role key 같은
-관리자 키는 `.env.local`, Git, 브라우저 코드, Vercel public 변수에 넣지
-않습니다. 보안 운영 규칙은 `docs/security.md`를 기준으로 합니다.
+These values are browser-public. Database protection must come from RLS and
+Server Action permission checks. Do not commit or expose service role keys.
 
----
-
-## 시스템 아키텍처
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    Vercel (CDN)                      │
-│  ┌─────────────────────────────────────────────┐    │
-│  │           Next.js App (App Router)           │    │
-│  │                                              │    │
-│  │  ┌──────────────┐  ┌──────────────────────┐ │    │
-│  │  │  Page Layer  │  │   Server Actions /   │ │    │
-│  │  │  (RSC + CSC) │  │   Route Handlers     │ │    │
-│  │  └──────┬───────┘  └──────────┬───────────┘ │    │
-│  │         │                     │              │    │
-│  │  ┌──────▼─────────────────────▼───────────┐ │    │
-│  │  │         Supabase JS Client             │ │    │
-│  │  └──────────────────┬─────────────────────┘ │    │
-│  └─────────────────────│─────────────────────── ┘    │
-└────────────────────────│────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────┐
-│                  Supabase                            │
-│  ┌──────────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │  PostgreSQL  │  │   Auth   │  │  Row Level    │  │
-│  │  (Tables +  │  │ (Email/  │  │  Security     │  │
-│  │   Views)    │  │  Magic)  │  │  (RLS)        │  │
-│  └──────────────┘  └──────────┘  └───────────────┘  │
-└─────────────────────────────────────────────────────┘
-```
-
-### 렌더링 전략
-
-- **Server Components (RSC)**: 초기 데이터 로딩이 필요한 페이지 (경기 목록, 선수 목록, 대시보드)
-- **Client Components (CSC)**: 인터랙션이 필요한 컴포넌트 (드래그앤드롭 라인업 보드, 폼, 필터)
-- **Server Actions**: 데이터 변경 작업 (선수 등록, 경기 생성, 기록 저장)
-
----
-
-## 데이터베이스 스키마
-
-### ERD 관계 요약
-
-```
-players
-  └── squad_members (N:M) ── seasons
-        └── matches ── periods ── period_lineups ── position_slots
-                   └── player_match_stats
-                   └── position_performance (저장 테이블, period_lineups 기반 갱신)
-
-formations ── position_slots
-
--- MVP 제외 (Phase 2)
--- match_events: 경기 중 이벤트 타임라인 ("1쿼터 12분 고건 골" 등)
-```
-
-### 테이블 정의
-
-#### players
-```sql
-CREATE TABLE players (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          TEXT NOT NULL,
-  number        INTEGER NOT NULL UNIQUE,
-  player_type   TEXT NOT NULL DEFAULT 'member'
-                CHECK (player_type IN ('member', 'guest')),
-  birth_date    DATE,
-  contact       TEXT,
-  memo          TEXT,
-  is_active     BOOLEAN NOT NULL DEFAULT true,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-`player_type` separates regular members from guest players. Guest players still
-live in `players` so lineups, match stats, MOM selections, and rankings keep the
-same `player_id`-based data model. Guest records can use optional `memo` for
-operational context, and when no number is supplied the app assigns a temporary
-9000-range number.
-
-#### seasons
-```sql
-CREATE TABLE seasons (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          TEXT NOT NULL,
-  start_date    DATE NOT NULL,
-  end_date      DATE NOT NULL,
-  is_active     BOOLEAN NOT NULL DEFAULT true,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT chk_season_dates CHECK (end_date >= start_date)
-);
-```
-
-#### squad_members
-```sql
-CREATE TABLE squad_members (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  season_id     UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
-  player_id     UUID NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (season_id, player_id)
-);
-```
-
-#### matches
-```sql
-CREATE TABLE matches (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  season_id       UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
-  opponent        TEXT NOT NULL,
-  match_date      TIMESTAMPTZ NOT NULL,
-  venue           TEXT,
-  is_home         BOOLEAN NOT NULL DEFAULT true,
-  our_score       INTEGER,
-  opponent_score  INTEGER,
-  match_mom_player_id     UUID REFERENCES players(id) ON DELETE SET NULL,
-  defense_mom_player_id   UUID REFERENCES players(id) ON DELETE SET NULL,
-  midfield_mom_player_id  UUID REFERENCES players(id) ON DELETE SET NULL,
-  attack_mom_player_id    UUID REFERENCES players(id) ON DELETE SET NULL,
-  status          TEXT NOT NULL DEFAULT 'scheduled'
-                  CHECK (status IN ('scheduled', 'completed')),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-Match result is not stored as a separate column. The application derives it from
-`our_score` and `opponent_score` so score and result cannot conflict:
-`Win` when `our_score > opponent_score`, `Draw` when equal, `Loss` when lower,
-and `Pending` when either score is missing.
-
-The four MOM fields preserve the prior spreadsheet workflow:
-overall match MOM, defense MOM, midfield MOM, and attack MOM. Each points to a
-player record and is nullable because older or incomplete match records may not
-have MOM selections yet.
-
-#### periods
-```sql
-CREATE TABLE periods (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  match_id      UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
-  label         TEXT NOT NULL,           -- '전반', '후반', '1쿼터' 등
-  order_num     INTEGER NOT NULL,        -- 1부터 시작
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (match_id, label),
-  UNIQUE (match_id, order_num)
-);
-```
-
-#### formations
-```sql
-CREATE TABLE formations (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          TEXT NOT NULL UNIQUE,    -- '4-3-3', '4-4-2' 등
-  is_default    BOOLEAN NOT NULL DEFAULT false,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-#### position_slots
-```sql
-CREATE TABLE position_slots (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  formation_id    UUID NOT NULL REFERENCES formations(id) ON DELETE CASCADE,
-  position_code   TEXT NOT NULL,         -- 'GK', 'CB', 'LW' 등
-  x               NUMERIC(5,2) NOT NULL, -- 0~100 (%) 좌우 좌표
-  y               NUMERIC(5,2) NOT NULL, -- 0~100 (%) 상하 좌표
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (formation_id, position_code)
-  -- 포메이션당 최대 11개 슬롯 제한은 Server Action에서 검증
-);
-```
-
-#### period_lineups
-```sql
-CREATE TABLE period_lineups (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  period_id         UUID NOT NULL REFERENCES periods(id) ON DELETE CASCADE,
-  formation_id      UUID NOT NULL REFERENCES formations(id) ON DELETE RESTRICT,
-  position_slot_id  UUID NOT NULL REFERENCES position_slots(id) ON DELETE RESTRICT,
-  player_id         UUID NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (period_id, position_slot_id),
-  UNIQUE (period_id, player_id)           -- 동일 period 내 선수 중복 배정 방지
-);
-```
-
-#### match_events (MVP 제외 — Phase 2)
-경기 중 발생한 이벤트 타임라인 ("1쿼터 12분 고건 골" 등). MVP에서는 구현하지 않으며, Phase 2에서 포지션별 골/도움 귀속 분석과 함께 도입합니다.
-
-```sql
--- Phase 2에서 생성 예정
--- CREATE TABLE match_events (
---   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---   match_id      UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
---   period_id     UUID NOT NULL REFERENCES periods(id) ON DELETE CASCADE,
---   player_id     UUID REFERENCES players(id) ON DELETE RESTRICT,
---   event_type    TEXT NOT NULL CHECK (event_type IN ('goal', 'assist', 'yellow_card', 'red_card')),
---   minute        INTEGER NOT NULL CHECK (minute >= 0),
---   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
--- );
-```
-
-#### player_match_stats
-경기 종료 후 선수별 총합 기록. 골/도움/카드는 경기 단위 총합이며 특정 period나 position_code에 귀속하지 않습니다. `minutes_played`는 MVP에서 핵심 지표가 아니므로 nullable 확장 컬럼으로만 예약합니다.
-
-```sql
-CREATE TABLE player_match_stats (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  match_id        UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
-  player_id       UUID NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
-  played          BOOLEAN NOT NULL DEFAULT false,
-  goals           INTEGER NOT NULL DEFAULT 0 CHECK (goals >= 0),
-  assists         INTEGER NOT NULL DEFAULT 0 CHECK (assists >= 0),
-  yellow_cards    INTEGER NOT NULL DEFAULT 0 CHECK (yellow_cards >= 0),
-  red_cards       INTEGER NOT NULL DEFAULT 0 CHECK (red_cards >= 0),
-  memo            TEXT,
-  -- MVP 제외: nullable 확장 컬럼으로만 예약
-  minutes_played  INTEGER CHECK (minutes_played IS NULL OR minutes_played >= 0),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (match_id, player_id)
-);
-```
-
-### 저장 테이블: position_performance
-
-선수별·시즌별·포지션별 출전 통계를 저장하는 물리 테이블입니다. `period_lineups` 저장 시 애플리케이션 레이어에서 UPSERT로 갱신합니다.
-
-MVP에서는 `period_count`, `match_count`만 집계합니다. `minutes_played`는 MVP 핵심 지표가 아니므로 nullable 확장 컬럼으로만 예약합니다. 골/도움은 포지션 귀속이 없으므로 MVP에서 제외하고, Phase 2 확장을 위해 nullable 컬럼으로만 예약합니다.
-
-```sql
-CREATE TABLE position_performance (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  season_id       UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
-  player_id       UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
-  position_code   TEXT NOT NULL,           -- 'GK', 'CB', 'LW' 등
-  period_count    INTEGER NOT NULL DEFAULT 0 CHECK (period_count >= 0),
-                                           -- 해당 포지션으로 출전한 period 수
-  match_count     INTEGER NOT NULL DEFAULT 0 CHECK (match_count >= 0),
-                                           -- 해당 포지션으로 출전한 경기 수
-  -- MVP 제외: nullable 확장 컬럼으로만 예약
-  minutes_played  INTEGER CHECK (minutes_played IS NULL OR minutes_played >= 0),
-  -- Phase 2 확장용 nullable 컬럼 (포지션별 골/도움 귀속 — match_events 도입 후)
-  goals           INTEGER,
-  assists         INTEGER,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (season_id, player_id, position_code)
-);
-```
-
-#### 갱신 시점
-
-`period_lineups` 저장(라인업 배정) 시, 애플리케이션 레이어에서 아래 로직으로 UPSERT합니다.
-
-```
-라인업 저장 시:
-  1. 해당 period의 (season_id, player_id, position_code) 조합 추출
-  2. position_performance UPSERT:
-     - period_count = 해당 시즌 내 해당 포지션 출전 period 수 재집계
-     - match_count  = 해당 시즌 내 해당 포지션 출전 경기 수 재집계
-
-라인업 수정/삭제 시:
-  1. 변경 전 라인업 데이터 기준으로 영향받는 (season_id, player_id, position_code) 조합 추출
-  2. 해당 시즌 전체 period_lineups를 재집계하여 position_performance 갱신
-  3. 더 이상 출전 기록이 없는 포지션은 period_count=0, match_count=0으로 갱신 또는 레코드 삭제
-```
-
-### 기본 데이터 시드 (Seed)
-
-시스템 초기화 시 아래 포메이션을 자동 생성합니다.
-
-```sql
--- 4-4-2
-INSERT INTO formations (name, is_default) VALUES ('4-4-2', true);
--- position_slots: GK(50,90), LB(15,70), CB1(35,70), CB2(65,70), RB(85,70),
---                 LM(15,50), CM1(35,50), CM2(65,50), RM(85,50),
---                 ST1(35,15), ST2(65,15)
-
--- 4-3-3
-INSERT INTO formations (name, is_default) VALUES ('4-3-3', true);
--- position_slots: GK(50,90), LB(15,70), CB1(35,70), CB2(65,70), RB(85,70),
---                 CM1(25,50), CM2(50,50), CM3(75,50),
---                 LW(15,20), ST(50,10), RW(85,20)
-
--- 3-5-2
-INSERT INTO formations (name, is_default) VALUES ('3-5-2', true);
--- position_slots: GK(50,90), CB1(25,72), CB2(50,72), CB3(75,72),
---                 LWB(10,52), CM1(30,50), CM2(50,50), CM3(70,50), RWB(90,52),
---                 ST1(35,15), ST2(65,15)
-```
-
----
-
-## 페이지 및 컴포넌트 구조
-
-### 디렉토리 구조
+## App Structure
 
 ```text
 src/
-├── proxy.ts                         # 현재는 로그인 강제 차단 없이 통과
-├── app/
-│   ├── layout.tsx                   # 루트 HTML/메타데이터
-│   ├── globals.css                  # 전역 스타일
-│   ├── favicon.ico
-│   ├── (auth)/
-│   │   └── login/
-│   │       └── page.tsx             # 운영자 로그인
-│   ├── (dashboard)/
-│   │   ├── layout.tsx               # 사이드바/모바일 네비게이션 레이아웃
-│   │   ├── page.tsx                 # 대시보드 (/)
-│   │   ├── ranking/
-│   │   │   └── page.tsx             # 공격포인트 랭킹
-│   │   ├── players/
-│   │   │   ├── page.tsx             # 선수 목록/등록/수정
-│   │   │   └── [id]/
-│   │   ├── seasons/
-│   │   │   ├── page.tsx             # 시즌 목록/생성
-│   │   │   └── [id]/
-│   │   │       ├── page.tsx         # 시즌 상세/스쿼드 관리
-│   │   │       └── matches/
-│   │   │           ├── page.tsx     # 경기 목록/생성
-│   │   │           └── [matchId]/
-│   │   │               ├── page.tsx
-│   │   │               ├── lineup/
-│   │   │               │   └── page.tsx
-│   │   │               └── stats/
-│   │   │                   └── page.tsx
-│   │   └── formations/
-│   │       └── page.tsx             # 포메이션 관리
-│   └── api/
-├── actions/                         # Server Actions
-│   ├── auth.ts
-│   ├── formations.ts
-│   ├── lineups.ts
-│   ├── matches.ts
-│   ├── players.ts
-│   ├── seasons.ts
-│   └── stats.ts
-├── components/
-│   ├── auth/
-│   │   └── LoginForm.tsx
-│   ├── dashboard/
-│   │   ├── MatchHistoryPanel.tsx
-│   │   ├── SeasonFilter.tsx
-│   │   ├── SeasonSummaryCard.tsx
-│   │   ├── StatCards.tsx
-│   │   └── TopScorersTable.tsx
-│   ├── layout/
-│   │   ├── MobileNav.tsx
-│   │   └── Sidebar.tsx
-│   ├── lineup/
-│   │   ├── LineupBoard.tsx
-│   │   ├── PlayerDraggable.tsx
-│   │   ├── PositionSlotDroppable.tsx
-│   │   └── SimpleLineupForm.tsx     # 이전 드롭다운 방식 보존
-│   ├── players/
-│   │   └── PlayerForm.tsx
-│   ├── stats/
-│   │   └── PlayerStatsForm.tsx
-│   └── ui/
-│       ├── Badge.tsx
-│       ├── Button.tsx
-│       ├── Card.tsx
-│       ├── Input.tsx
-│       └── Select.tsx
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts                # 브라우저 Supabase 클라이언트
-│   │   └── server.ts                # 서버 Supabase 클라이언트
-│   ├── authz.ts                     # team_editors 기반 편집 권한 조회
-│   ├── dashboard.ts                 # 대시보드 집계 유틸
-│   ├── matches.ts                   # 경기 관련 유틸
-│   └── utils.ts
-└── types/
-    └── index.ts
+  proxy.ts
+  app/
+    (auth)/login/page.tsx
+    (dashboard)/layout.tsx
+    (dashboard)/page.tsx
+    (dashboard)/ranking/page.tsx
+    (dashboard)/players/page.tsx
+    (dashboard)/formations/page.tsx
+    (dashboard)/seasons/page.tsx
+    (dashboard)/seasons/[id]/page.tsx
+    (dashboard)/seasons/[id]/matches/page.tsx
+    (dashboard)/seasons/[id]/matches/[matchId]/page.tsx
+    (dashboard)/seasons/[id]/matches/[matchId]/lineup/page.tsx
+    (dashboard)/seasons/[id]/matches/[matchId]/stats/page.tsx
+  actions/
+    auth.ts
+    formations.ts
+    lineups.ts
+    matches.ts
+    players.ts
+    seasons.ts
+    stats.ts
+  components/
+    auth/
+    dashboard/
+    layout/
+    lineup/
+    players/
+    stats/
+    ui/
+  lib/
+    authz.ts
+    dashboard.ts
+    matches.ts
+    supabase/
+  types/
+    index.ts
 ```
 
-현재 실제 코드에는 계획 단계의 `PlayerList.tsx`, `SeasonList.tsx`,
-`SquadManager.tsx`, `MatchList.tsx`, `MatchForm.tsx`,
-`FormationSelector.tsx`, `StatsTable.tsx`, `PlayerStatsSection.tsx`,
-`FormationStatsSection.tsx`가 별도 파일로 존재하지 않습니다. 해당 기능은
-페이지 컴포넌트 또는 현재 존재하는 폼/대시보드 컴포넌트 안에 포함되어
-있습니다.
+## Access Architecture
 
----
+- `src/proxy.ts` intentionally does not force login while public-read mode is
+  active.
+- `src/lib/authz.ts` checks whether the signed-in user exists in
+  `team_editors`.
+- UI controls should be hidden or disabled for users without the required
+  permission.
+- Server Actions must enforce permissions before writing.
+- Supabase RLS remains the database-level backstop.
 
-## 주요 데이터 흐름
+Permission levels:
 
-### 1. Period별 라인업 배정 흐름
+- Public visitor: read only.
+- Signed-in unapproved user: read only.
+- Normal editor: general team management and lineup operations.
+- Match result manager: normal editor permissions plus scores, completion, MOM,
+  and player match stats.
 
-```
-[경기 상세 페이지]
-  → period 탭 선택
-  → LineupBoard 안의 포메이션 선택 컨트롤에서 포메이션 선택
-  → LineupBoard (CSC, dnd-kit):
-      - 왼쪽: 스쿼드 선수 목록 (PlayerDraggable)
-      - 오른쪽: 포메이션 다이어그램 (PositionSlotDroppable × N)
-      - 선수를 포지션 슬롯으로 드래그앤드롭
-  → "저장" 버튼 클릭
-  → Server Action: saveLineup(periodId, formationId, entries[])
-      - 기존 period_lineups 삭제 (해당 period)
-      - 새 Lineup_Entry 일괄 INSERT
-      - UNIQUE 제약으로 중복 배정 방지
-  → 저장 완료 → UI 갱신
-```
+`team_editors.can_manage_match_results` is implemented in app code and SQL
+files, but still needs to be applied in live Supabase.
 
-### 2. 경기 후 선수 기록 입력 흐름
+## Current Data Model
 
-```
-[경기 상세 > 선수 기록 탭]
-  → 해당 경기 시즌 스쿼드 선수 목록 표시
-  → period_lineups에 배정된 선수: 기록 입력 가능
-  → player_match_stats 없는 선수: "미입력" 배지 표시
-  → PlayerStatsForm: played, goals, assists, yellow_cards, red_cards, memo 입력
-      (minutes_played는 MVP에서 표시하지 않음)
-  → Server Action: savePlayerMatchStats(matchId, playerId, data)
-      - UPSERT (match_id, player_id) UNIQUE 제약 활용
-      - 유효성 검증: 숫자 필드 >= 0
-      - 저장 후 position_performance UPSERT 트리거
-  → 저장 완료 → 대시보드 데이터 자동 반영
-```
+Main tables:
 
-### 3. 대시보드 데이터 조회 흐름
+- `players`
+- `seasons`
+- `squad_members`
+- `matches`
+- `periods`
+- `formations`
+- `position_slots`
+- `period_lineups`
+- `player_match_stats`
+- `position_performance`
+- `team_editors`
 
-```
-[대시보드 페이지 (RSC)]
-  → SeasonFilter: 시즌 선택 (기본값: 최근 활성 시즌)
-  → 병렬 데이터 조회 (Promise.all):
-      1. 시즌 요약: matches WHERE season_id → 승/무/패 집계
-      2. 득점 랭킹: player_match_stats JOIN players → goals 합산 TOP 5
-      3. 선수별 성과: player_match_stats GROUP BY player_id
-      4. 포메이션별 성과: period_lineups JOIN formations → 사용 횟수
-      5. 전체 경기 기록: matches WHERE season_id ORDER BY match_date DESC
-  → 각 컴포넌트에 props로 전달
-  → Recharts: 차트 렌더링 (CSC)
+Core relationships:
+
+```text
+players < squad_members > seasons < matches < periods < period_lineups
+                                            \         /
+                                             formations < position_slots
+
+matches < player_match_stats > players
+seasons < position_performance > players
 ```
 
----
+## Table Notes
 
-## 라인업 보드 컴포넌트 설계 (dnd-kit)
+### players
 
-```tsx
-// LineupBoard.tsx (Client Component)
-// dnd-kit DndContext 사용
+Public-safe player identity and status.
 
-interface LineupBoardProps {
-  periodId: string
-  formation: Formation
-  squadPlayers: Player[]
-  existingLineup: LineupEntry[]
-}
+Current app behavior should use:
 
-// 상태 구조
-type LineupState = {
-  // 포지션 슬롯 ID → 배정된 선수 (null이면 미배정)
-  slots: Record<string, Player | null>
-  // 아직 배정되지 않은 선수 목록
-  unassigned: Player[]
-}
+- `id`
+- `name`
+- `number`
+- `player_type`
+- `is_active`
+- timestamps
 
-// 드래그 이벤트
-// - onDragEnd: 선수를 슬롯에 드롭 → slots 상태 업데이트
-// - 슬롯 간 이동, 슬롯 → 미배정 목록 이동 지원
-// - 동일 period 내 중복 배정 클라이언트 측 방지
+Historical columns `birth_date`, `contact`, and `memo` may still exist in the
+database, but the next security cleanup should stop using them and clear
+existing values to `null`.
 
-// 저장
-// - "저장" 버튼 → Server Action 호출
-// - 낙관적 업데이트(optimistic update) 적용
-```
+### team_editors
 
----
+Allowlist for write access.
 
-## 대시보드 설계
+Current columns:
 
-레퍼런스(`reference/sandro_fc_dashboard.html`)의 레이아웃과 디자인 시스템을 기반으로 Supabase 동적 데이터로 재설계합니다.
+- `user_id`
+- `role`
+- `created_at`
 
-### 레이아웃 구조
+Required column:
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Sidebar (240px 고정)                                │
-│  - SANDRO FC 로고                                    │
-│  - 네비게이션: 대시보드, 공격포인트, 선수관리, 경기관리 │
-│  - 시즌 선택 필터                                     │
-└─────────────────────────────────────────────────────┘
+- `can_manage_match_results boolean not null default false`
 
-대시보드 페이지 (2단 레이아웃):
-┌──────────────────┬──────────────────────────────────┐
-│  Left Column     │  Right Panel                     │
-│                  │                                  │
-│  SeasonSummary   │  MatchHistoryPanel               │
-│  (승/무/패,      │  (전체 경기 기록 스크롤)           │
-│   득실, 최근전적) │                                  │
-│                  │                                  │
-│  StatCards 2×2   │                                  │
-│  (득점왕, 도움왕, │                                  │
-│   공격P 1위,     │                                  │
-│   최다출전)      │                                  │
-└──────────────────┴──────────────────────────────────┘
+Initial values:
 
-공격포인트 페이지:
-┌─────────────────────────────────────────────────────┐
-│  TopScorersTable                                    │
-│  (순위, 선수, 등번호, 경기수, 득점, 도움, 공격P)      │
-│  - 컬럼 클릭으로 정렬                                │
-└─────────────────────────────────────────────────────┘
-```
+- Owner: `role = 'owner'`, `can_manage_match_results = true`.
+- Normal editors: `role = 'editor'`, `can_manage_match_results = false`.
 
-### 데이터 소스 매핑
+### matches
 
-| 레퍼런스 DATA 필드 | Supabase 쿼리 |
-|-------------------|---------------|
-| `summary.wins/draws/losses` | `matches` WHERE `season_id` GROUP BY `our_score vs opponent_score` |
-| `summary.goals_for/against` | `matches` WHERE `season_id` SUM `our_score`, `opponent_score` |
-| `players[].total_goals` | `player_match_stats` GROUP BY `player_id` SUM `goals` |
-| `players[].total_assists` | `player_match_stats` GROUP BY `player_id` SUM `assists` |
-| `players[].match_count` | `player_match_stats` WHERE `played = true` COUNT |
-| `matches[].result` | `matches.our_score vs opponent_score` 비교 |
-| `matches[].match_mom_player_id` | `matches` FK to `players.id` |
-| `matches[].defense_mom_player_id` | `matches` FK to `players.id` |
-| `matches[].midfield_mom_player_id` | `matches` FK to `players.id` |
-| `matches[].attack_mom_player_id` | `matches` FK to `players.id` |
+Stores both match metadata and result fields:
 
-### 디자인 토큰 (Tailwind 커스텀)
+- General fields: season, opponent, date, venue, home/away.
+- Result fields: our score, opponent score, status, MOM selections.
 
-레퍼런스의 CSS 변수를 Tailwind 설정으로 이식합니다.
+Because general fields and result fields share one table, result-specific
+permission checks should be enforced in Server Actions.
 
-```js
-// tailwind.config.ts
-colors: {
-  'bg-primary': '#0b1120',
-  'bg-secondary': '#111827',
-  'accent-blue': '#38bdf8',
-  'accent-purple': '#a78bfa',
-  'accent-green': '#34d399',
-  'accent-yellow': '#fbbf24',
-  'accent-red': '#f87171',
-  'accent-orange': '#fb923c',
-}
-```
+### player_match_stats
 
----
+Stores per-player match totals:
 
-## 인증 설계
+- played
+- goals
+- assists
+- yellow cards
+- red cards
 
-- Security design is centralized in `docs/security.md`.
-- The current product mode is public read access with approved-editor write
-  access.
-- Supabase Auth identifies signed-in users.
-- Supabase RLS enforces write authorization at the database layer.
-- `public.team_editors` is the allowlist for users who can write.
-- UI gating hides create/update/delete/save controls from non-editors, but RLS is
-  the final enforcement layer.
-- `src/proxy.ts` intentionally does not redirect all logged-out visitors to
-  `/login` while public-read mode is the intended operating mode.
-- The executable RLS policy script is `docs/database/supabase-rls.sql`.
+Historical `memo` may still exist in the live database. App code no longer uses
+it, and `docs/database/supabase-security-cleanup.sql` clears existing values to
+`null`.
 
----
+### position_performance
 
-## 향후 확장 방향
+Derived table refreshed from lineup data. It tracks season/player/position
+appearance counts.
 
-### Phase 2: 경기 이벤트 타임라인 및 포지션별 골/도움 분석
-- `match_events` 테이블 생성 ("1쿼터 12분 고건 골" 등 이벤트 타임라인)
-- `period_lineups`와 조인하여 포지션 귀속 자동화
-- `position_performance`의 `goals`, `assists` nullable 컬럼 활성화
-- 대시보드에 포지션별 성과 히트맵 추가
+## Key Workflows
 
-### Phase 4: 추가 기능
-- 선수 사진 업로드 (Supabase Storage)
-- 경기 리포트 PDF 내보내기
-- 모바일 앱 (React Native + Supabase)
-- 팀 간 대결 통계 비교
+### Lineup Save
+
+1. Editor selects match period and formation.
+2. Editor drags squad players onto formation slots.
+3. Server Action validates period, formation slots, squad membership, and
+   duplicate assignment rules.
+4. Existing period lineup rows are replaced.
+5. `position_performance` is refreshed for the season.
+
+Normal editors may save lineups.
+
+### Guest Player Add
+
+1. Editor adds a guest from the lineup screen.
+2. App creates a `players` row with `player_type = 'guest'`.
+3. If no number is provided, app assigns a 9000-range temporary number.
+4. App adds the guest to the current season squad.
+5. Guest can be used in lineups and stats like a normal player.
+
+No guest memo should be collected in public-read mode.
+
+### Match Result Save
+
+Result-changing actions require match-result authority:
+
+- Score update.
+- Match completion.
+- MOM selection.
+- Player match stats save.
+
+Server Actions now check this permission before result-changing writes.
+
+## Public Data Policy
+
+Public pages must not expose:
+
+- Player birth date.
+- Player contact details.
+- Player or guest memo.
+- Player match stat memo.
+
+Inputs/displays/writes have been removed from app code. Apply
+`docs/database/supabase-security-cleanup.sql` to clear existing values to `null`.
+
+## Deployment Notes
+
+- Vercel is connected.
+- Public read mode is intended.
+- Public sign-up should be disabled in Supabase Auth.
+- Run and verify the RLS/security SQL before production basic verification
+- See `docs/deployment/vercel.md` for deployment checks.
