@@ -45,15 +45,15 @@ The security cleanup is complete for the current owner workflow:
 
 ## Next Actions
 
-1. Commit current changes.
-2. Start UI improvement planning in the next session.
-3. Work with the owner through questions and sketches before changing UI.
-4. Keep mobile login/logout/account-state improvements in the UI backlog.
-5. When normal editor accounts are added, verify:
+1. Start UI improvement planning in `docs/specs/ui/`.
+2. Work with the owner through one-question-at-a-time planning and sketches
+   before changing UI.
+3. Keep mobile login/logout/account-state improvements in the UI backlog.
+4. When normal editor accounts are added, verify:
    - normal editor can manage general records and lineups,
    - normal editor cannot write match results or player stats,
    - owner/result manager can write match results and player stats.
-6. Verify mobile lineup dragging on a real phone browser.
+5. Verify mobile lineup dragging on a real phone browser.
 
 ## Remaining Risk
 
@@ -66,6 +66,8 @@ The security cleanup is complete for the current owner workflow:
 ## References
 
 - Security model: `docs/security.md`.
+- Database SQL guide: `docs/database/README.md`.
+- UI planning: `docs/specs/ui/`.
 - Deployment checklist: `docs/deployment/vercel.md`.
 - Full history: `docs/specs/progress-history.md`.
 - Next-session handoff: `docs/handoff.md`.

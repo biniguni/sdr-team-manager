@@ -5,6 +5,12 @@ This document preserves detailed historical progress entries. Use
 risk. Add to this file when older implementation detail should be kept without
 making `progress.md` long.
 
+## 2026-05-20 - Legacy Design Note
+
+- Replaced the old Kiro design reference with the current `docs/specs/design.md`
+  as the maintained design source of truth; `docs/specs/kiro-design.md` is safe
+  to delete if no longer needed.
+
 ## 2026-05-15 - Design Document Structure Refresh
 
 ### Completed

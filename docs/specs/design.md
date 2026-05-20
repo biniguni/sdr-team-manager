@@ -1,22 +1,76 @@
 # Technical Design
 
-This document summarizes the current architecture and data model. It is kept
-short on purpose so future agents do not treat old implementation notes as
-current requirements.
+SDR Team Manager is a public-read football team management app for a small club.
+This document explains how the current app is organized, what each major data
+table means, and which parts to check before changing behavior.
 
-Security details are centralized in `docs/security.md`.
+> Current source of truth:
+> `docs/specs/design.md`, `docs/specs/requirements.md`, and
+> `docs/security.md`.
+>
+> Legacy reference:
+> `docs/specs/kiro-design.md` may contain older design notes, but do not treat
+> it as current unless a decision has been copied into the current docs.
 
-## Stack
+## Quick Summary
 
-- Next.js App Router 16.x.
-- React 19.x.
-- TypeScript 5.x.
-- Tailwind CSS 3.4.x.
-- Supabase PostgreSQL and Supabase Auth.
-- Supabase JS client 2.x.
-- dnd-kit for lineup drag and drop.
-- Recharts for dashboard charts.
-- Vercel for deployment.
+| Area | Current decision | Why it matters |
+| --- | --- | --- |
+| Access model | Public read, approved-editor write | Visitors can view data without login, but edits are restricted. |
+| Editor control | `team_editors` allowlist | Signing in is not enough; the user must be approved. |
+| Result control | Extra `can_manage_match_results` flag | Scores and stats are protected more tightly than lineup work. |
+| Private data | Do not expose birth dates, contact details, or memos | Public pages must stay safe to share. |
+| Data storage | Supabase PostgreSQL | Tables are the product record source. |
+| App framework | Next.js App Router | Pages load data on the server; forms write through Server Actions. |
+| Deployment | Vercel plus Supabase | Vercel hosts the app, Supabase stores data and handles Auth. |
+
+## Table Of Contents
+
+- [Product Map](#product-map)
+- [Technology Stack](#technology-stack)
+- [App Structure](#app-structure)
+- [Pages](#pages)
+- [Access And Permissions](#access-and-permissions)
+- [Data Model](#data-model)
+- [Table Guide](#table-guide)
+- [Write Operations](#write-operations)
+- [Main Workflows](#main-workflows)
+- [Public Data Policy](#public-data-policy)
+- [Database Scripts](#database-scripts)
+- [Deployment Notes](#deployment-notes)
+- [Maintenance Rules](#maintenance-rules)
+
+## Product Map
+
+The app supports these product areas:
+
+| Product area | What users do | Main data involved |
+| --- | --- | --- |
+| Players | Add, edit, deactivate, and view players | `players` |
+| Seasons | Create seasons and manage active/inactive state | `seasons` |
+| Squads | Add players to a season squad | `squad_members` |
+| Matches | Create match schedules and later record results | `matches`, `periods` |
+| Formations | Manage position templates such as `4-4-2` | `formations`, `position_slots` |
+| Lineups | Assign squad players to positions by period | `period_lineups` |
+| Guest players | Add temporary guests during lineup work | `players`, `squad_members` |
+| Match stats | Record played, goals, assists, and cards | `player_match_stats` |
+| Dashboard | Summarize season record and player output | `matches`, `player_match_stats` |
+| Rankings | Rank players from match stats | `player_match_stats`, `players` |
+
+## Technology Stack
+
+| Layer | Tool | Role |
+| --- | --- | --- |
+| Web app | Next.js App Router 16.x | Routes, layouts, server-loaded pages, Server Actions |
+| UI | React 19.x | Interactive components |
+| Language | TypeScript 5.x | Shared types and safer app code |
+| Styling | Tailwind CSS 3.4.x | Utility-based styling |
+| Database | Supabase PostgreSQL | Persistent records |
+| Auth | Supabase Auth | Editor sign-in |
+| Database client | Supabase JS client 2.x | App-to-Supabase queries |
+| Drag and drop | dnd-kit | Lineup board interaction |
+| Charts | Recharts | Dashboard charts |
+| Hosting | Vercel | App deployment |
 
 Use `npm.cmd` in PowerShell for project scripts.
 
@@ -29,8 +83,11 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-These values are browser-public. Database protection must come from RLS and
-Server Action permission checks. Do not commit or expose service role keys.
+These values are browser-public. They are expected to be visible in the app, so
+they are not the security boundary. Database protection must come from Supabase
+RLS and Server Action permission checks.
+
+Do not commit `.env.local` or any Supabase service role key.
 
 ## App Structure
 
@@ -75,45 +132,71 @@ src/
     index.ts
 ```
 
-## Access Architecture
+| Folder | Meaning |
+| --- | --- |
+| `src/app/` | Pages and layouts users visit. |
+| `src/components/` | Visible UI pieces. |
+| `src/actions/` | Write operations, validation, permission checks. |
+| `src/lib/` | Shared auth, dashboard, match, and Supabase helpers. |
+| `src/types/` | Shared TypeScript data shapes. |
 
-- `src/proxy.ts` intentionally does not force login while public-read mode is
-  active.
-- `src/lib/authz.ts` checks whether the signed-in user exists in
-  `team_editors`.
-- UI controls should be hidden or disabled for users without the required
-  permission.
-- Server Actions must enforce permissions before writing.
-- Supabase RLS remains the database-level backstop.
+## Pages
 
-Permission levels:
+| Page | User-facing purpose | Notes |
+| --- | --- | --- |
+| `/` | Dashboard for the selected season | Public-readable. |
+| `/ranking` | Player ranking table | Built from player match stats. |
+| `/players` | Player list and player editing | Editor controls hidden for non-editors. |
+| `/formations` | Formation management | Used by lineup board. |
+| `/seasons` | Season list | Entry point for season work. |
+| `/seasons/[id]` | Season detail and squad management | Controls which players can appear in lineups. |
+| `/seasons/[id]/matches` | Match list and match creation | Creates match and period records. |
+| `/seasons/[id]/matches/[matchId]` | Match detail | Score, MOM, period links. |
+| `/seasons/[id]/matches/[matchId]/lineup` | Period lineup assignment | Uses drag and drop. |
+| `/seasons/[id]/matches/[matchId]/stats` | Player match stat entry | Requires result-manager authority. |
+| `/login` | Editor login | Public visitors do not need this to view data. |
 
-- Public visitor: read only.
-- Signed-in unapproved user: read only.
-- Normal editor: general team management and lineup operations.
-- Match result manager: normal editor permissions plus scores, completion, MOM,
-  and player match stats.
+Page implementation pattern:
 
-`team_editors.can_manage_match_results` is implemented in app code and SQL
-files, and the owner reported that the Supabase-side setup was applied.
+| Concept | Plain meaning | Current use |
+| --- | --- | --- |
+| Server Component | Page loads data before sending UI to the browser | Most pages. |
+| Client Component | Browser-side interactive UI | Forms, filters, sorting, drag and drop. |
+| Server Action | Secure write function called by a form | Create/update/save operations. |
 
-## Current Data Model
+## Access And Permissions
 
-Main tables:
+The current product mode is public read access.
 
-- `players`
-- `seasons`
-- `squad_members`
-- `matches`
-- `periods`
-- `formations`
-- `position_slots`
-- `period_lineups`
-- `player_match_stats`
-- `position_performance`
-- `team_editors`
+| User type | View public data | Manage general records | Save lineups | Edit scores/stats |
+| --- | --- | --- | --- | --- |
+| Public visitor | Yes | No | No | No |
+| Signed-in unapproved user | Yes | No | No | No |
+| Normal editor | Yes | Yes | Yes | No |
+| Match result manager | Yes | Yes | Yes | Yes |
 
-Core relationships:
+Important files:
+
+| File | Responsibility |
+| --- | --- |
+| `src/proxy.ts` | Allows public page access while public-read mode is active. |
+| `src/lib/authz.ts` | Checks editor and result-manager permission. |
+| `docs/security.md` | Security model, RLS checklist, editor setup. |
+| `docs/database/supabase-rls.sql` | Database-level read/write policies. |
+
+Permission helpers:
+
+| Helper | Allows | Use for |
+| --- | --- | --- |
+| `requireEditor()` | Approved editors | General records, squads, formations, lineups, guest players. |
+| `requireMatchResultManager()` | Editors with result authority | Scores, completion, MOM, player match stats. |
+
+Design rule: hiding buttons in the UI improves clarity, but it is not security.
+Server Actions and Supabase RLS must still reject unauthorized writes.
+
+## Data Model
+
+Core relationship map:
 
 ```text
 players < squad_members > seasons < matches < periods < period_lineups
@@ -124,123 +207,212 @@ matches < player_match_stats > players
 seasons < position_performance > players
 ```
 
-## Table Notes
+Plain-language version:
 
-### players
+| Relationship | Meaning |
+| --- | --- |
+| `players` to `squad_members` to `seasons` | A player joins a specific season squad. |
+| `seasons` to `matches` | A match belongs to one season. |
+| `matches` to `periods` | A match is split into periods. |
+| `formations` to `position_slots` | A formation defines board positions. |
+| `periods` to `period_lineups` | A period has player-position assignments. |
+| `matches` to `player_match_stats` | Player stats are recorded per match. |
+| `seasons` to `position_performance` | Position summaries are stored by season. |
 
-Public-safe player identity and status.
+## Table Guide
 
-Current app behavior should use:
+| Table | Stores | Product rule |
+| --- | --- | --- |
+| `players` | Public-safe player identity and status | Use name, number, player type, active status. Do not use private fields in public-read mode. |
+| `seasons` | Season name, dates, active status | End date cannot be before start date. |
+| `squad_members` | Player-season membership | A player can appear once per season squad. |
+| `matches` | Match details and result fields | Result fields need stronger permission checks. |
+| `periods` | Match parts | Labels and order numbers are unique within a match. |
+| `formations` | Formation names | Built-in formations are seeded by SQL. |
+| `position_slots` | Positions inside formations | Coordinates stay between 0 and 100. |
+| `period_lineups` | Player assignment to period positions | No duplicate player or slot in the same period. |
+| `player_match_stats` | Per-player match totals | Numeric stats must be zero or greater. |
+| `position_performance` | Derived position summary | Refreshed from lineup data after lineup saves. |
+| `team_editors` | Approved editor list | Controls write access. |
 
-- `id`
-- `name`
-- `number`
-- `player_type`
-- `is_active`
-- timestamps
+### Key Table Details
 
-Historical columns `birth_date`, `contact`, and `memo` may still exist in the
-database, but the next security cleanup should stop using them and clear
-existing values to `null`.
+| Table | Important fields |
+| --- | --- |
+| `players` | `name`, `number`, `player_type`, `is_active` |
+| `seasons` | `name`, `start_date`, `end_date`, `is_active` |
+| `matches` | `opponent`, `match_date`, `venue`, `is_home`, scores, status, MOM fields |
+| `position_slots` | `formation_id`, `position_code`, `x`, `y` |
+| `period_lineups` | `period_id`, `formation_id`, `position_slot_id`, `player_id` |
+| `player_match_stats` | `played`, `goals`, `assists`, `yellow_cards`, `red_cards` |
+| `position_performance` | `season_id`, `player_id`, `position_code`, `period_count`, `match_count` |
+| `team_editors` | `user_id`, `role`, `can_manage_match_results` |
 
-### team_editors
+Historical columns such as `players.birth_date`, `players.contact`,
+`players.memo`, and `player_match_stats.memo` may still exist in some live
+databases. App code should not use them in public-read mode.
 
-Allowlist for write access.
+## Write Operations
 
-Current columns:
+Every write should follow this order:
 
-- `user_id`
-- `role`
-- `created_at`
+1. Check permission.
+2. Validate submitted data.
+3. Write to Supabase.
+4. Revalidate affected pages.
+5. Return a clear message.
 
-Required column:
+| Server Action file | Main responsibility | Permission level |
+| --- | --- | --- |
+| `src/actions/players.ts` | Create, update, deactivate players | Editor |
+| `src/actions/seasons.ts` | Create/update seasons and manage squads | Editor |
+| `src/actions/matches.ts` | Create/update matches and result fields | Editor or result manager, depending on field |
+| `src/actions/formations.ts` | Manage formations and slots | Editor |
+| `src/actions/lineups.ts` | Save lineups and create guest players | Editor |
+| `src/actions/stats.ts` | Save player match stats | Result manager |
+| `src/actions/auth.ts` | Login/logout | Signed-in user flow |
 
-- `can_manage_match_results boolean not null default false`
+## Main Workflows
 
-Initial values:
+### Player Management
 
-- Owner: `role = 'owner'`, `can_manage_match_results = true`.
-- Normal editors: `role = 'editor'`, `can_manage_match_results = false`.
+| Step | What happens |
+| --- | --- |
+| 1 | Editor creates or updates a player. |
+| 2 | App validates name and player number. |
+| 3 | Player number must be unique. |
+| 4 | Inactive players are hidden from new selection flows. |
 
-### matches
+Product impact: historical records stay intact even when a player is no longer
+active.
 
-Stores both match metadata and result fields:
+### Season And Squad Management
 
-- General fields: season, opponent, date, venue, home/away.
-- Result fields: our score, opponent score, status, MOM selections.
+| Step | What happens |
+| --- | --- |
+| 1 | Editor creates a season with valid dates. |
+| 2 | Editor adds active players to the season squad. |
+| 3 | Squad membership controls who can appear in that season's lineups. |
+| 4 | A player cannot be added twice to the same squad. |
 
-Because general fields and result fields share one table, result-specific
-permission checks should be enforced in Server Actions.
+Product impact: each season can have a different squad while old season data
+stays separate.
 
-### player_match_stats
+### Match Creation
 
-Stores per-player match totals:
+| Step | What happens |
+| --- | --- |
+| 1 | Editor creates a match inside a season. |
+| 2 | App stores opponent, date, venue, home/away, and period setup. |
+| 3 | Result fields can stay empty until the match is completed. |
 
-- played
-- goals
-- assists
-- yellow cards
-- red cards
-
-Historical `memo` may still exist in the live database. App code no longer uses
-it, and `docs/database/supabase-security-cleanup.sql` clears existing values to
-`null`.
-
-### position_performance
-
-Derived table refreshed from lineup data. It tracks season/player/position
-appearance counts.
-
-## Key Workflows
+Product impact: scheduling and result entry can happen at different times.
 
 ### Lineup Save
 
-1. Editor selects match period and formation.
-2. Editor drags squad players onto formation slots.
-3. Server Action validates period, formation slots, squad membership, and
-   duplicate assignment rules.
-4. Existing period lineup rows are replaced.
-5. `position_performance` is refreshed for the season.
+| Step | What happens |
+| --- | --- |
+| 1 | Editor selects match period and formation. |
+| 2 | Editor drags squad players onto formation slots. |
+| 3 | Server Action validates period, slots, squad membership, and duplicates. |
+| 4 | Existing period lineup rows are replaced. |
+| 5 | `position_performance` is refreshed for the season. |
 
-Normal editors may save lineups.
+Product impact: trusted editors can manage operational lineup work without also
+receiving score/stat authority.
 
 ### Guest Player Add
 
-1. Editor adds a guest from the lineup screen.
-2. App creates a `players` row with `player_type = 'guest'`.
-3. If no number is provided, app assigns a 9000-range temporary number.
-4. App adds the guest to the current season squad.
-5. Guest can be used in lineups and stats like a normal player.
+| Step | What happens |
+| --- | --- |
+| 1 | Editor adds a guest from the lineup screen. |
+| 2 | App creates a `players` row with `player_type = 'guest'`. |
+| 3 | If no number is provided, app assigns a 9000-range temporary number. |
+| 4 | App adds the guest to the current season squad. |
+| 5 | Guest can be used in lineups, stats, MOM selections, and rankings. |
 
-No guest memo should be collected in public-read mode.
+Product impact: guest participation stays structured and reportable instead of
+becoming untracked free text.
 
 ### Match Result Save
 
-Result-changing actions require match-result authority:
+| Result action | Required permission |
+| --- | --- |
+| Score update | Match result manager |
+| Match completion | Match result manager |
+| MOM selection | Match result manager |
+| Player match stats save | Match result manager |
 
-- Score update.
-- Match completion.
-- MOM selection.
-- Player match stats save.
+Product impact: normal editors can help run the team data without being able to
+change official match results.
 
-Server Actions now check this permission before result-changing writes.
+### Dashboard And Rankings
+
+| View | Data source | Notes |
+| --- | --- | --- |
+| Dashboard summary | `matches` | Record and score totals by selected season. |
+| Dashboard stat cards | `player_match_stats` | Goals, assists, appearances, top output. |
+| Match history | `matches` | Recent or selected-season match list. |
+| Rankings | `player_match_stats` plus `players` | Public-safe player fields only. |
+
+Design rule: derive dashboard and ranking data from stored records. Avoid
+manually maintained summary fields unless there is a clear performance or
+product reason.
 
 ## Public Data Policy
 
 Public pages must not expose:
 
-- Player birth date.
-- Player contact details.
-- Player or guest memo.
-- Player match stat memo.
+| Do not expose | Reason |
+| --- | --- |
+| Player birth date | Personal data. |
+| Player contact details | Personal data. |
+| Player or guest memo | Free text may contain private notes. |
+| Player match stat memo | Free text may contain private notes. |
 
-Inputs/displays/writes have been removed from app code. Apply
-`docs/database/supabase-security-cleanup.sql` to clear existing values to `null`.
+Inputs, displays, and writes for those fields have been removed from app code.
+Apply `docs/database/supabase-security-cleanup.sql` to clear existing values to
+`null`.
+
+Future default: if the club later needs private contact details or notes, build
+that as a separate editor-only feature with its own table, RLS policy, UI, and
+verification checklist.
+
+## Database Scripts
+
+| File | Purpose | Current use |
+| --- | --- | --- |
+| `docs/database/supabase-schema.sql` | Main schema, triggers, formation seed data | Current reference. |
+| `docs/database/supabase-rls.sql` | Public-read and approved-editor write policies | Current reference. |
+| `docs/database/supabase-security-cleanup.sql` | Result permission setup and sensitive-value cleanup | Current reference. |
+| `docs/database/supabase-guest-players.sql` | Guest-player migration reference | Historical support. |
+| `docs/database/supabase-open-access.sql` | Open-access helper | Historical; not production policy. |
+
+Before changing tables, RLS, Auth, editor access, environment keys, or
+deployment security, review `docs/security.md`.
 
 ## Deployment Notes
 
-- Vercel is connected.
-- Public read mode is intended.
-- Public sign-up should be disabled in Supabase Auth.
-- Run and verify the RLS/security SQL before production basic verification
-- See `docs/deployment/vercel.md` for deployment checks.
+| Area | Current note |
+| --- | --- |
+| Hosting | Vercel is connected. |
+| Read access | Public read mode is intended. |
+| Auth setup | Public sign-up should be disabled in Supabase Auth. |
+| Security setup | RLS and security cleanup SQL should be applied and verified. |
+| Checklist | See `docs/deployment/vercel.md`. |
+
+## Maintenance Rules
+
+When behavior changes, update the matching document:
+
+| Change type | Update |
+| --- | --- |
+| Expected user behavior changes | `docs/specs/requirements.md` |
+| Architecture, data flow, table responsibility, permission design changes | `docs/specs/design.md` |
+| Access, RLS, Auth, private fields, deployment security changes | `docs/security.md` |
+| Current status or next work changes | `docs/specs/progress.md` |
+| Historical implementation detail grows | `docs/specs/progress-history.md` |
+
+Recommended default for future work: keep public read access, approved-editor
+write access, and separate match-result authority unless the product owner makes
+an explicit product decision to change that model.
