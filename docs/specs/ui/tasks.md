@@ -16,12 +16,15 @@ work items here.
       dashboard refinement, and undecided player-specific records.
 - [x] Record desktop layout direction: left navigation, central work area, and
       optional right-side panel.
+- [x] Record owner-provided lineup reference:
+      `reference/left_menu_and_lineup_sample.png`.
 - [x] Record mobile player-selection reference: dense tap-friendly row list.
 - [x] Record that web and mobile should share the same visual theme; only layout
       should adapt.
 - [x] Record visual direction: keep current dark theme and improve football
       pitch treatment in tactics/lineup screens.
 - [x] Confirm first implementation scope.
+- [x] Record that Figma/MCP is deferred because the owner is on Figma Starter.
 - [ ] Review current app screens before implementation.
 - [ ] Record any implementation discoveries back into `requirements.md` or
       `design.md` if they affect product behavior.
@@ -37,9 +40,16 @@ First pass scope:
 
 ### 1-A. Layout
 
-- [ ] Keep desktop left navigation expanded with visible text.
-- [ ] Use side-menu-based mobile navigation instead of bottom tabs.
-- [ ] Move mobile login/logout/account-state display to the bottom of the side
+- [x] Keep desktop left navigation expanded with visible text.
+- [x] Reorder desktop navigation to `Dashboard`, `라인업`, `Seasons`,
+      `Players`, `Formations`, `Ranking`.
+- [ ] Use the owner-provided lineup sample as the desktop structure reference:
+      left menu, central pitch board, and dense supporting player controls.
+- [x] Add `라인업` as a top-level left-menu item.
+- [x] Keep `Formations` as a top-level menu for the first UI pass.
+- [x] Use side-menu-based mobile navigation instead of bottom tabs.
+- [x] Reorder mobile side-menu navigation to match desktop.
+- [x] Move mobile login/logout/account-state display to the bottom of the side
       menu.
 - [ ] Preserve the current dark theme across web and mobile.
 
@@ -55,6 +65,19 @@ First pass scope:
 
 ### 1-C. Mobile Lineup
 
+- [x] Create a top-level `라인업` route for active-season lineup planning.
+- [x] Show only active-season matches on the top-level lineup route.
+- [x] Keep past-season lineup access through season/match detail routes.
+- [x] Show top match selection as compact horizontally scrollable match cards.
+- [x] Default selected match to the nearest upcoming scheduled match, falling
+      back to the most recent completed match.
+- [x] Add empty states for no active season and active season with no matches.
+- [x] Change new-match period defaults to `1Q`, `2Q`, `3Q`, `4Q`.
+- [x] Add match period mode selection for `4쿼터` or `전후반`.
+- [ ] Block period mode changes after any lineup exists for that match.
+- [x] Update match-detail `Lineup` links to open `/lineup?matchId=...`.
+- [x] Keep the old deep lineup route only as compatibility or redirect if
+      needed.
 - [ ] Keep desktop lineup assignment drag-and-drop only.
 - [ ] Design position-tap player selection: default tactics board, tap a
       position, then show player list in a bottom sheet.
@@ -68,11 +91,26 @@ First pass scope:
 - [ ] Order mobile bottom-sheet players by unassigned first, then number/name.
 - [ ] Clearly mark players already assigned in the current period.
 - [ ] Keep mobile lineup changes pending until the user taps save.
-- [ ] Show unsaved-changes state and provide discard/revert behavior.
-- [ ] Put period selection near the top as visible button-like controls.
+- [x] Show unsaved-changes state and provide discard/revert behavior.
+- [x] Place unsaved status, revert, and save controls on the right side of the
+      selected match/period control area.
+- [x] Confirm before switching match or period when unsaved changes exist.
+- [x] Add secondary selected-match links for match detail, result entry, and
+      player match stats without making them the main focus.
+- [x] Put period selection near the top as visible button-like controls.
 - [ ] Keep tab/button switching as a fallback if position-tap selection is not
       usable.
 - [ ] Improve lineup save, validation, and error feedback where needed.
+- [x] Add a desktop right-side lineup panel ordered by formation/position, with
+      unassigned players below assigned positions.
+- [x] Allow editing from the right-side lineup panel as well as the pitch board.
+- [x] Move the previous player to unassigned when replacing an occupied
+      position.
+- [x] Keep one-player-per-period-position rules clear in the UI.
+- [x] On formation change, keep matching position-code assignments and move
+      unmatched players to unassigned after confirmation.
+- [x] Defer quarter-copy.
+- [x] Defer per-period position fine-tuning.
 
 ### 1-D. Mobile Dashboard
 
@@ -128,8 +166,8 @@ First pass scope:
 
 ## Verification
 
-- [ ] Run `npm.cmd run lint` after implementation changes.
-- [ ] Run `npm.cmd run build` after implementation changes.
+- [x] Run `npm.cmd run lint` after implementation changes.
+- [x] Run `npm.cmd run build` after implementation changes.
 - [ ] Check mobile viewport behavior after layout changes.
 - [ ] Check logged-out public view after account UI changes.
 - [ ] Check approved-editor and result-manager workflows when test accounts are

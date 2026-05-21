@@ -4,8 +4,9 @@ import { getAuthStatus } from "@/lib/authz";
 
 const links = [
   { href: "/", label: "Dashboard" },
-  { href: "/players", label: "Players" },
+  { href: "/lineup", label: "라인업" },
   { href: "/seasons", label: "Seasons" },
+  { href: "/players", label: "Players" },
   { href: "/formations", label: "Formations" },
   { href: "/ranking", label: "Ranking" },
 ];

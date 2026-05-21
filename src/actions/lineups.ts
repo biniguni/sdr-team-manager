@@ -92,6 +92,7 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   const performanceError = await refreshPositionPerformance(seasonId);
   if (performanceError) return fail(performanceError);
 
+  revalidatePath("/lineup");
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
   return { ok: true, message: "Lineup saved." };
@@ -156,6 +157,7 @@ export async function createGuestPlayerForLineup(_: ActionResult, formData: Form
     if (squadError) return fail(squadError.message);
 
     revalidatePath(`/seasons/${seasonId}`);
+    revalidatePath("/lineup");
     revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
     revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
     revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);

@@ -80,7 +80,7 @@ export default async function MatchDetailPage({
         <PageHeader title={currentMatch.opponent} description="Update match details, score, result, and MOM records." />
         <div className="flex gap-3 text-sm font-semibold text-accent-blue">
           <Link href={`/seasons/${id}/matches`}>Back</Link>
-          <Link href={`/seasons/${id}/matches/${matchId}/lineup`}>Lineup</Link>
+          <Link href={`/lineup?matchId=${matchId}`}>Lineup</Link>
           <Link href={`/seasons/${id}/matches/${matchId}/stats`}>Stats</Link>
         </div>
       </div>

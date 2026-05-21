@@ -100,7 +100,7 @@
 
 - [ ] 1.7 사이드바 레이아웃 구현
   - `src/components/layout/Sidebar.tsx`: 로고, 네비게이션 메뉴
-  - `src/components/layout/MobileNav.tsx`: 모바일 하단 네비게이션
+  - `src/components/layout/MobileNav.tsx`: 현재 하단 네비게이션이며, UI Phase 1에서 좌상단 햄버거 기반 사이드 메뉴로 교체 예정
   - `src/app/(dashboard)/layout.tsx`: 사이드바 + 메인 콘텐츠 영역
   - 요구사항: 요구사항 10
 
@@ -369,7 +369,7 @@
   - 요구사항: 11
 
 - [ ] 6.4 반응형 레이아웃 최종 검증
-  - 모바일: 사이드바 접힘, 하단 네비게이션 표시
+  - 모바일: 좌상단 햄버거 버튼으로 사이드 메뉴 표시, 하단 탭 네비게이션은 사용하지 않음
   - 데스크톱: 사이드바 고정 표시
   - 요구사항: 10
 

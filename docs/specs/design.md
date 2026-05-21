@@ -51,7 +51,7 @@ The app supports these product areas:
 | Squads | Add players to a season squad | `squad_members` |
 | Matches | Create match schedules and later record results | `matches`, `periods` |
 | Formations | Manage position templates such as `4-4-2` | `formations`, `position_slots` |
-| Lineups | Assign squad players to positions by period | `period_lineups` |
+| Lineups | Prepare active-season match lineups by period before match day | `period_lineups` |
 | Guest players | Add temporary guests during lineup work | `players`, `squad_members` |
 | Match stats | Record played, goals, assists, and cards | `player_match_stats` |
 | Dashboard | Summarize season record and player output | `matches`, `player_match_stats` |
@@ -98,6 +98,7 @@ src/
     (auth)/login/page.tsx
     (dashboard)/layout.tsx
     (dashboard)/page.tsx
+    (dashboard)/lineup/page.tsx             # planned central lineup workflow
     (dashboard)/ranking/page.tsx
     (dashboard)/players/page.tsx
     (dashboard)/formations/page.tsx
@@ -145,14 +146,15 @@ src/
 | Page | User-facing purpose | Notes |
 | --- | --- | --- |
 | `/` | Dashboard for the selected season | Public-readable. |
+| `/lineup` | Active-season lineup planning | Planned central route; can accept `?matchId=...`. |
 | `/ranking` | Player ranking table | Built from player match stats. |
 | `/players` | Player list and player editing | Editor controls hidden for non-editors. |
 | `/formations` | Formation management | Used by lineup board. |
 | `/seasons` | Season list | Entry point for season work. |
 | `/seasons/[id]` | Season detail and squad management | Controls which players can appear in lineups. |
 | `/seasons/[id]/matches` | Match list and match creation | Creates match and period records. |
-| `/seasons/[id]/matches/[matchId]` | Match detail | Score, MOM, period links. |
-| `/seasons/[id]/matches/[matchId]/lineup` | Period lineup assignment | Uses drag and drop. |
+| `/seasons/[id]/matches/[matchId]` | Match detail | Score, MOM, links to central lineup and stats. |
+| `/seasons/[id]/matches/[matchId]/lineup` | Legacy/deep lineup route | Keep only as compatibility or redirect after `/lineup` exists. |
 | `/seasons/[id]/matches/[matchId]/stats` | Player match stat entry | Requires result-manager authority. |
 | `/login` | Editor login | Public visitors do not need this to view data. |
 
@@ -304,7 +306,9 @@ stays separate.
 | --- | --- |
 | 1 | Editor creates a match inside a season. |
 | 2 | App stores opponent, date, venue, home/away, and period setup. |
-| 3 | Result fields can stay empty until the match is completed. |
+| 3 | New matches default to `1Q`, `2Q`, `3Q`, `4Q`, with an option for `전반`, `후반`. |
+| 4 | Period mode can change only before any lineup exists for that match. |
+| 5 | Result fields can stay empty until the match is completed. |
 
 Product impact: scheduling and result entry can happen at different times.
 
@@ -312,14 +316,30 @@ Product impact: scheduling and result entry can happen at different times.
 
 | Step | What happens |
 | --- | --- |
-| 1 | Editor selects match period and formation. |
-| 2 | Editor drags squad players onto formation slots. |
-| 3 | Server Action validates period, slots, squad membership, and duplicates. |
-| 4 | Existing period lineup rows are replaced. |
-| 5 | `position_performance` is refreshed for the season. |
+| 1 | Editor opens `라인업`, which shows active-season matches. |
+| 2 | App defaults to the nearest upcoming scheduled match, or the most recent completed match if no upcoming match exists. |
+| 3 | Editor selects a period and formation. |
+| 4 | Editor changes the lineup on the pitch board or in the position-ordered side panel. |
+| 5 | Changes remain draft-only until the editor saves. |
+| 6 | Server Action validates period, slots, squad membership, and duplicates. |
+| 7 | Existing period lineup rows are replaced. |
+| 8 | `position_performance` is refreshed for the season. |
 
 Product impact: trusted editors can manage operational lineup work without also
 receiving score/stat authority.
+
+Lineup planning UI rules:
+
+| Rule | Product reason |
+| --- | --- |
+| Show only active-season matches in `/lineup` | Keeps the pre-match workflow focused. |
+| Keep past-season lineups reachable through season/match detail | Avoids mixing old and current planning work. |
+| Use compact horizontal match cards | Lets users switch matches without shrinking the pitch board. |
+| Save controls live near selected match and period controls | Makes draft status and save action predictable. |
+| Confirm before switching match or period with unsaved changes | Prevents accidental loss of lineup planning. |
+| Right panel follows formation/position order, with unassigned below | Matches the tactical structure instead of simple player-list sorting. |
+| Quarter-copy is deferred | Keeps the first pass focused. |
+| Per-period position fine-tuning is deferred | Needs schema support such as lineup-level custom coordinates. |
 
 ### Guest Player Add
 

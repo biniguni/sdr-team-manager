@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Input, Textarea } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { calculateMatchResult, resultTone } from "@/lib/matches";
 import type { Match, Season } from "@/types";
 
@@ -40,7 +41,14 @@ export default async function SeasonMatchesPage({ params }: { params: Promise<{ 
               <input name="is_home" type="checkbox" defaultChecked />
               Home match
             </label>
-            <Textarea name="periods" defaultValue={"First half\nSecond half"} />
+            <label className="grid gap-1 text-sm text-slate-300">
+              Period mode
+              <Select name="period_mode" defaultValue="quarters">
+                <option value="quarters">4쿼터: 1Q / 2Q / 3Q / 4Q</option>
+                <option value="halves">전후반: 전반 / 후반</option>
+              </Select>
+            </label>
+            <Textarea name="periods" placeholder="Optional custom periods, one per line" />
             <Button type="submit">Create match</Button>
           </form>
         </Card>

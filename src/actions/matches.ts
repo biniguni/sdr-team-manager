@@ -33,7 +33,8 @@ function periodLabels(formData: FormData) {
     .map((label) => label.trim())
     .filter(Boolean);
 
-  return labels.length > 0 ? labels.slice(0, 4) : ["First half", "Second half"];
+  if (labels.length > 0) return labels.slice(0, 4);
+  return text(formData, "period_mode") === "halves" ? ["전반", "후반"] : ["1Q", "2Q", "3Q", "4Q"];
 }
 
 export async function createMatch(formData: FormData): Promise<ActionResult> {

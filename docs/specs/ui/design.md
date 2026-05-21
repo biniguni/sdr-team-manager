@@ -1,6 +1,6 @@
 # UI Design
 
-This document records screen structure, design direction, Figma references, and
+This document records screen structure, design direction, references, and
 decisions made during UI planning.
 
 ## Design Principles
@@ -20,21 +20,21 @@ decisions made during UI planning.
   usability is uncertain.
 - Keep public-read and approved-editor behavior visible but unobtrusive.
 
-## Figma Usage
+## Design Review Workflow
 
-Figma can be used as a sketching and review tool, not as a source of automatic
-production-ready code.
+Figma is deferred for now because the owner is on Figma Starter and the MCP
+workflow does not provide enough practical value for the current implementation
+pass.
 
-Use Figma for:
+Current review workflow:
 
-- Rough screen layout sketches.
-- Mobile ordering of information.
-- Button placement and navigation ideas.
-- Comparing alternative layouts before implementation.
-- Linking final decisions to specific screens.
-
-Do not require pixel-perfect Figma designs before useful implementation work can
-begin.
+- Use `reference/left_menu_and_lineup_sample.png` as the concrete desktop lineup
+  structure reference.
+- Review implemented screens directly in the local browser.
+- Check desktop and mobile viewport sizes before treating UI work as complete.
+- Record product decisions in this document and concrete implementation work in
+  `docs/specs/ui/tasks.md`.
+- Do not block useful implementation work on pixel-perfect Figma designs.
 
 ## Reference Direction
 
@@ -42,6 +42,9 @@ begin.
   workflows, information hierarchy, and navigation ideas.
 - Do not copy Football Manager's exact visual design. Use it only to understand
   useful patterns for squad, tactics, match, and stats screens.
+- `reference/left_menu_and_lineup_sample.png` is the current concrete layout
+  reference for desktop: left-side menu, central lineup/tactics pitch, and a
+  dense supporting player/selection panel.
 
 ## Primary Layout Targets
 
@@ -77,11 +80,18 @@ begin.
 
 - Use a left primary navigation area and a central work area.
 - Keep the desktop left navigation expanded with visible text.
+- Desktop navigation order:
+  `Dashboard`, `라인업`, `Seasons`, `Players`, `Formations`, `Ranking`.
+- Keep `Formations` as a top-level item for the first UI pass because lineup
+  work still depends on formation management and there is no settings area yet.
 - Keep the central work area dominant, especially for tactics and lineup
   screens.
 - Treat a right-side panel as optional. Use it for player lists, selection
   details, recent context, or secondary information only when it improves the
   workflow.
+- For lineup/tactics, use the reference image as a structural guide: persistent
+  left menu, large central pitch board, compact top context/actions, and a dense
+  player/slot panel beside the pitch when there is enough space.
 - Football Manager's tactics screen is a useful reference for structure: left
   navigation, clear top context, central tactics board, and dense supporting
   data where needed.
@@ -92,6 +102,8 @@ begin.
 - Top: current screen context.
 - Center: main work area.
 - Primary navigation should use a side menu rather than bottom tabs.
+- Mobile side-menu order should match desktop:
+  `Dashboard`, `라인업`, `Seasons`, `Players`, `Formations`, `Ranking`.
 - Screen-specific primary actions should be visible in the work area as large
   tap targets.
 - Account/login/logout state should live at the bottom of the side menu rather
@@ -123,7 +135,7 @@ begin.
   schedule-style summaries inspired by sports apps, while keeping the app's dark
   theme and side-menu navigation.
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
   - Dashboard should focus on current information cleanup and quick movement
     into match workflows.
@@ -146,7 +158,7 @@ begin.
 - Mobile considerations: Use a tap-friendly row-list layout rather than a dense
   desktop table.
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
   - Player list first pass is management-focused: add, edit, deactivate, and
     check core player identity.
@@ -161,7 +173,7 @@ begin.
 - Desired direction:
 - Mobile considerations:
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
 
 ### Matches
@@ -172,7 +184,7 @@ begin.
   should show opponent, date/time, status or score, and quick movement into
   match detail or related work where appropriate.
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
   - Mobile match list first pass should use small match cards.
   - Sports live-score style references are acceptable for card structure only;
@@ -190,7 +202,7 @@ begin.
 - Permission/account considerations: Do not hide the workflow completely from
   public viewers. Allow read-only views where useful, and show clear
   permission-needed states for actions that require editing.
-- Figma link:
+- Review reference:
 - Decisions:
   - Primary workflow button order should be: lineup assignment, match result
     entry, then player match stats entry.
@@ -203,14 +215,58 @@ begin.
 
 - Current problem: The lineup page is part of the uncomfortable match workflow,
   and mobile drag usability still needs verification.
-- Desired direction: Treat tactics and lineup as a primary UI planning target,
-  with Football Manager as a structural reference where useful.
+- Desired direction: Treat lineup as the main pre-match planning workflow, not
+  only as a secondary link from match detail. A top-level `라인업` menu should
+  open the active season's lineup planning screen.
+- Desktop direction: follow the provided lineup sample structure at a product
+  level: keep navigation on the left, make the pitch the main working area, and
+  place player selection/status controls in a dense supporting panel.
+- Active-season route behavior:
+  - Show only active-season matches in the top-level `라인업` screen.
+  - Past-season lineups remain available through season detail, match detail,
+    then lineup.
+  - Match detail should link to the central lineup screen with the selected
+    match, for example `/lineup?matchId=...`, so lineup editing has one primary
+    UI.
+  - At the top of the lineup screen, show compact horizontally scrollable match
+    cards. Scheduled matches appear first; completed matches follow.
+  - Default to the nearest upcoming scheduled match. If there is no upcoming
+    match, default to the most recent completed match.
+  - If there is no active season, show an empty state that sends the user to the
+    season screen. If the active season has no matches, show an empty state that
+    sends the user to that season's match creation screen.
+- Period behavior:
+  - Default new matches to `1Q`, `2Q`, `3Q`, `4Q`.
+  - Allow a `전반`, `후반` mode when creating a match.
+  - Allow changing between 4-quarter and half modes only before any lineup is
+    saved for that match.
+  - Show the selected match's periods as visible button-like controls.
+- Editing behavior:
+  - Lineup changes are draft-only until the user clicks save.
+  - Show an unsaved-changes state and provide a revert/discard action.
+  - Place unsaved status, revert, and save controls on the right side of the
+    selected match/period control area.
+  - If the user tries to switch match or period with unsaved changes, show a
+    confirmation that lets them continue editing or move without saving.
+  - Include secondary links in the selected-match summary for match detail,
+    result entry, and player match stats. These links should not compete with
+    the lineup editing controls.
+  - The right-side panel should show assigned positions in formation order, with
+    unassigned players below.
+  - Editing should work from both the central pitch board and the right-side
+    position/player panel.
+  - Assigning a player to an occupied position moves the previous player to
+    unassigned.
+  - Assigning a player who is already used elsewhere clears that previous
+    position, so one player appears only once per period.
+  - When the formation changes, keep assignments with matching position codes
+    and move unmatched assignments to unassigned after confirmation.
 - Mobile considerations: Dragging must be verified on a real phone; if it is not
   comfortable, design a fallback selection flow. Player selection should use a
   row-list pattern with clear player identity, core details, and right-aligned
   summary values.
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
   - Mobile lineup should preserve the same visual theme as desktop.
   - Mobile lineup defaults to the tactics board.
@@ -241,6 +297,9 @@ begin.
     hidden in a dropdown.
   - A tab or button switch between tactics board and player list remains a
     fallback option only if the position-driven bottom-sheet flow is not usable.
+  - Quarter-copy is deferred.
+  - Per-period position fine-tuning is deferred because it needs schema support,
+    such as lineup-level custom coordinates.
 
 ### Player Match Stats
 
@@ -250,7 +309,7 @@ begin.
   lineup or match completion.
 - Mobile considerations: Buttons and form controls must be easy to tap and scan.
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
 
 ### Ranking
@@ -259,7 +318,7 @@ begin.
 - Desired direction:
 - Mobile considerations:
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
   - Use `순위` as the current menu/screen label.
   - Reconsider integration into a later `통계` area only after that area is
@@ -273,7 +332,7 @@ begin.
   mobile top bar. Place login/logout/account state at the bottom of the side
   menu to preserve working space.
 - Permission/account considerations:
-- Figma link:
+- Review reference:
 - Decisions:
   - Mobile account state belongs at the bottom of the side menu.
   - Because account state is not always visible, edit-only controls need clear

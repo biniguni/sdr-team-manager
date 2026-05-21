@@ -13,6 +13,10 @@ summaries.
 The app is currently intended to be publicly readable, while all data-changing
 actions require an approved editor account.
 
+Current UI planning treats lineup planning as the main pre-match workflow.
+Approved editors should be able to open a top-level `라인업` area, select an
+active-season match, and prepare period-by-period lineups before match day.
+
 ## Access Rules
 
 - Logged-out visitors can view public team data.
@@ -90,6 +94,9 @@ feature with explicit RLS protection.
 - Matches belong to seasons.
 - Match creation requires season, opponent, match date, and home/away setting.
 - Venue is optional.
+- New matches should default to four periods: `1Q`, `2Q`, `3Q`, and `4Q`.
+- Match creation should also allow a half-based mode: `전반`, `후반`.
+- The match period mode may be changed only while the match has no saved lineup.
 - Result is calculated from `our_score` and `opponent_score`; no separate result
   column should be stored.
 - MOM fields are optional and reference players.
@@ -106,6 +113,21 @@ feature with explicit RLS protection.
 - The same player may play different positions in different periods.
 - Lineup saving is available to normal approved editors because it is an
   operational workflow.
+- Lineup planning should be available as a top-level `라인업` workflow for the
+  active season.
+- The top-level lineup workflow should show only active-season matches. Past
+  season lineups remain available through season and match detail routes.
+- The default lineup selection should be the nearest upcoming scheduled match;
+  if there is no upcoming scheduled match, use the most recent completed match.
+- Lineup changes should remain draft changes until the editor explicitly saves.
+- If an editor tries to switch match or period with unsaved lineup changes, the
+  app should ask for confirmation.
+- The lineup UI should allow editing from both the pitch board and a
+  position-ordered side panel.
+- Replacing an occupied position should move the previous player to unassigned.
+- Formation changes should keep matching position-code assignments and move
+  unmatched players to unassigned after confirmation.
+- Quarter-copy and per-period position fine-tuning are deferred.
 
 ## Formations
 
