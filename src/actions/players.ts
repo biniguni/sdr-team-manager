@@ -16,6 +16,11 @@ function numberValue(formData: FormData, key: string) {
   return Number.isInteger(value) ? value : null;
 }
 
+function footScore(formData: FormData, key: string) {
+  const value = numberValue(formData, key);
+  return value !== null && value >= 1 && value <= 5 ? value : null;
+}
+
 function fail(message: string): ActionResult {
   return { ok: false, message };
 }
@@ -26,14 +31,19 @@ export async function createPlayer(formData: FormData): Promise<ActionResult> {
 
   const name = text(formData, "name");
   const number = numberValue(formData, "number");
+  const leftFootScore = footScore(formData, "left_foot_score");
+  const rightFootScore = footScore(formData, "right_foot_score");
 
   if (!name) return fail("Player name is required.");
   if (number === null) return fail("Player number is required.");
+  if (leftFootScore === null || rightFootScore === null) return fail("Foot scores must be between 1 and 5.");
 
   const supabase = await createClient();
   const { error } = await supabase.from("players").insert({
     name,
     number,
+    left_foot_score: leftFootScore,
+    right_foot_score: rightFootScore,
     player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
   });
 
@@ -56,10 +66,13 @@ export async function updatePlayer(formData: FormData): Promise<ActionResult> {
   const id = text(formData, "id");
   const name = text(formData, "name");
   const number = numberValue(formData, "number");
+  const leftFootScore = footScore(formData, "left_foot_score");
+  const rightFootScore = footScore(formData, "right_foot_score");
 
   if (!id) return fail("Player id is missing.");
   if (!name) return fail("Player name is required.");
   if (number === null) return fail("Player number is required.");
+  if (leftFootScore === null || rightFootScore === null) return fail("Foot scores must be between 1 and 5.");
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -67,6 +80,8 @@ export async function updatePlayer(formData: FormData): Promise<ActionResult> {
     .update({
       name,
       number,
+      left_foot_score: leftFootScore,
+      right_foot_score: rightFootScore,
       player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
       is_active: formData.get("is_active") === "on",
     })

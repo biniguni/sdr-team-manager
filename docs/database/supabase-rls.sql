@@ -14,6 +14,7 @@ alter table public.seasons enable row level security;
 alter table public.squad_members enable row level security;
 alter table public.matches enable row level security;
 alter table public.periods enable row level security;
+alter table public.match_roster enable row level security;
 alter table public.formations enable row level security;
 alter table public.position_slots enable row level security;
 alter table public.period_lineups enable row level security;
@@ -64,6 +65,13 @@ drop policy if exists "authenticated write periods" on public.periods;
 drop policy if exists "editors write periods" on public.periods;
 create policy "public read periods" on public.periods for select using (true);
 create policy "editors write periods" on public.periods for all to authenticated
+  using (exists (select 1 from public.team_editors editor where editor.user_id = auth.uid()))
+  with check (exists (select 1 from public.team_editors editor where editor.user_id = auth.uid()));
+
+drop policy if exists "public read match_roster" on public.match_roster;
+drop policy if exists "editors write match_roster" on public.match_roster;
+create policy "public read match_roster" on public.match_roster for select using (true);
+create policy "editors write match_roster" on public.match_roster for all to authenticated
   using (exists (select 1 from public.team_editors editor where editor.user_id = auth.uid()))
   with check (exists (select 1 from public.team_editors editor where editor.user_id = auth.uid()));
 

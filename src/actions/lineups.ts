@@ -50,23 +50,23 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
 
   const supabase = await createClient();
 
-  const [{ data: slots, error: slotsError }, { data: squad, error: squadError }] = await Promise.all([
+  const [{ data: slots, error: slotsError }, { data: roster, error: rosterError }] = await Promise.all([
     supabase.from("position_slots").select("id").eq("formation_id", formationId),
-    supabase.from("squad_members").select("player_id").eq("season_id", seasonId),
+    supabase.from("match_roster").select("player_id").eq("match_id", matchId),
   ]);
 
   if (slotsError) return fail(slotsError.message);
-  if (squadError) return fail(squadError.message);
+  if (rosterError) return fail(rosterError.message);
 
   const slotIds = new Set((slots ?? []).map((slot) => slot.id));
-  const squadPlayerIds = new Set((squad ?? []).map((member) => member.player_id));
+  const matchRosterPlayerIds = new Set((roster ?? []).map((member) => member.player_id));
 
   if (entries.some((entry) => !slotIds.has(entry.position_slot_id))) {
     return fail("One or more selected positions do not belong to the chosen formation.");
   }
 
-  if (entries.some((entry) => !squadPlayerIds.has(entry.player_id))) {
-    return fail("Only players in this season squad can be assigned.");
+  if (entries.some((entry) => !matchRosterPlayerIds.has(entry.player_id))) {
+    return fail("Only players added to this match roster can be assigned.");
   }
 
   const { error: deleteError } = await supabase.from("period_lineups").delete().eq("period_id", periodId);
@@ -96,6 +96,74 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
   return { ok: true, message: "Lineup saved." };
+}
+
+export async function addMatchRosterPlayer(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
+  const seasonId = text(formData, "season_id");
+  const matchId = text(formData, "match_id");
+  const playerId = text(formData, "player_id");
+
+  if (!seasonId || !matchId || !playerId) return fail("Choose a player to add to this match.");
+
+  const supabase = await createClient();
+  const { data: squadMember, error: squadError } = await supabase
+    .from("squad_members")
+    .select("id")
+    .eq("season_id", seasonId)
+    .eq("player_id", playerId)
+    .maybeSingle();
+
+  if (squadError) return fail(squadError.message);
+  if (!squadMember) return fail("Only players in this season squad can be added to the match roster.");
+
+  const { error } = await supabase.from("match_roster").upsert(
+    { match_id: matchId, player_id: playerId },
+    { onConflict: "match_id,player_id" },
+  );
+
+  if (error) return fail(error.message);
+
+  revalidatePath("/lineup");
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
+  return { ok: true, message: "Player added to this match." };
+}
+
+export async function removeMatchRosterPlayer(formData: FormData): Promise<ActionResult> {
+  const editor = await requireEditor();
+  if (!editor.ok) return fail(editor.message);
+
+  const seasonId = text(formData, "season_id");
+  const matchId = text(formData, "match_id");
+  const playerId = text(formData, "player_id");
+
+  if (!seasonId || !matchId || !playerId) return fail("Match roster context is missing.");
+
+  const supabase = await createClient();
+  const { data: existingLineup, error: lineupError } = await supabase
+    .from("period_lineups")
+    .select("id, periods!inner(match_id)")
+    .eq("player_id", playerId)
+    .eq("periods.match_id", matchId)
+    .limit(1);
+
+  if (lineupError) return fail(lineupError.message);
+  if (existingLineup && existingLineup.length > 0) {
+    return fail("Remove this player from the period lineup before removing them from the match roster.");
+  }
+
+  const { error } = await supabase.from("match_roster").delete().eq("match_id", matchId).eq("player_id", playerId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/lineup");
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
+  return { ok: true, message: "Player removed from this match." };
 }
 
 export async function createGuestPlayerForLineup(_: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -155,6 +223,13 @@ export async function createGuestPlayerForLineup(_: ActionResult, formData: Form
     );
 
     if (squadError) return fail(squadError.message);
+
+    const { error: rosterError } = await supabase.from("match_roster").upsert(
+      { match_id: matchId, player_id: player.id },
+      { onConflict: "match_id,player_id" },
+    );
+
+    if (rosterError) return fail(rosterError.message);
 
     revalidatePath(`/seasons/${seasonId}`);
     revalidatePath("/lineup");

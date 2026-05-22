@@ -79,6 +79,7 @@
   - 요구사항: 요구사항 6
 
 - [ ] 1.4 라인업 및 기록 테이블 생성
+  - `match_roster`: id, match_id(FK CASCADE), player_id(FK), created_at + UNIQUE(match_id, player_id)
   - `period_lineups`: id, period_id(FK CASCADE), formation_id(FK), position_slot_id(FK), player_id(FK) + UNIQUE(period_id, position_slot_id), UNIQUE(period_id, player_id)
   - `player_match_stats`: id, match_id(FK CASCADE), player_id(FK), played, goals, assists, yellow_cards, red_cards, minutes_played(nullable) + UNIQUE(match_id, player_id)
   - 공개 조회 모드에서는 player_match_stats.memo를 사용하지 않고 기존 값은 null 처리 예정
@@ -89,6 +90,7 @@
   - `4-4-2`: GK(50,90), LB(15,70), CB1(35,70), CB2(65,70), RB(85,70), LM(15,50), CM1(35,50), CM2(65,50), RM(85,50), ST1(35,15), ST2(65,15)
   - `4-3-3`: GK(50,90), LB(15,70), CB1(35,70), CB2(65,70), RB(85,70), CM1(25,50), CM2(50,50), CM3(75,50), LW(15,20), ST(50,10), RW(85,20)
   - `3-5-2`: GK(50,90), CB1(25,72), CB2(50,72), CB3(75,72), LWB(10,52), CM1(30,50), CM2(50,50), CM3(70,50), RWB(90,52), ST1(35,15), ST2(65,15)
+  - `4-2-3-1`: GK(50,90), LB(15,70), CB1(35,70), CB2(65,70), RB(85,70), DM1(35,52), DM2(65,52), LAM(25,32), CAM(50,28), RAM(75,32), ST(50,12)
   - 요구사항: 요구사항 6
 
 ### 1-B. 레이아웃 및 공통 컴포넌트
@@ -190,6 +192,7 @@
 - [x] 2.1 라인업 Server Actions 구현
   - `src/actions/lineups.ts`
   - `saveLineup(periodId, formationId, entries[])`:
+    - match_roster에 추가된 선수만 라인업 배정 허용
     - 기존 `period_lineups` 삭제 후 일괄 INSERT
     - UNIQUE 제약으로 중복 배정 방지
   - `getLineup(periodId)`: 현재 라인업 조회

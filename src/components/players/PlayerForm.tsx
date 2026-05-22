@@ -24,6 +24,28 @@ export function PlayerForm({
       {player ? <input type="hidden" name="id" value={player.id} /> : null}
       <Input name="name" placeholder="Player name" defaultValue={player?.name ?? ""} required />
       <Input name="number" type="number" min="0" placeholder="Number" defaultValue={player?.number ?? ""} required />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm text-slate-300">
+          Left foot
+          <Select name="left_foot_score" defaultValue={String(player?.left_foot_score ?? 3)}>
+            {[1, 2, 3, 4, 5].map((score) => (
+              <option key={score} value={score}>
+                {score}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <label className="grid gap-1 text-sm text-slate-300">
+          Right foot
+          <Select name="right_foot_score" defaultValue={String(player?.right_foot_score ?? 3)}>
+            {[1, 2, 3, 4, 5].map((score) => (
+              <option key={score} value={score}>
+                {score}
+              </option>
+            ))}
+          </Select>
+        </label>
+      </div>
       <Select name="player_type" defaultValue={player?.player_type ?? "member"}>
         <option value="member">Member</option>
         <option value="guest">Guest</option>

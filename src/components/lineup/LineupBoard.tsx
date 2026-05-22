@@ -2,8 +2,8 @@
 
 import { DndContext, DragEndEvent, DragOverlay, PointerSensor, TouchSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useMemo, useState } from "react";
-import { createGuestPlayerForLineup, saveLineup } from "@/actions/lineups";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
+import { addMatchRosterPlayer, createGuestPlayerForLineup, removeMatchRosterPlayer, saveLineup } from "@/actions/lineups";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
 import { PositionSlotDroppable } from "@/components/lineup/PositionSlotDroppable";
 import { Badge } from "@/components/ui/Badge";
@@ -45,6 +45,7 @@ export function LineupBoard({
   periods,
   formations,
   squadPlayers,
+  matchRosterPlayers,
   existingLineups,
   canEdit,
 }: {
@@ -53,6 +54,7 @@ export function LineupBoard({
   periods: Period[];
   formations: FormationWithSlots[];
   squadPlayers: Player[];
+  matchRosterPlayers: Player[];
   existingLineups: ExistingLineup[];
   canEdit: boolean;
 }) {
@@ -75,6 +77,10 @@ export function LineupBoard({
   );
   const [activePlayer, setActivePlayer] = useState<Player | null>(null);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [playerPickerSlotId, setPlayerPickerSlotId] = useState<string | null>(null);
+  const [selectedRosterPlayerId, setSelectedRosterPlayerId] = useState("");
+  const [rosterState, setRosterState] = useState<ActionResult>(initialState);
+  const [rosterPending, startRosterTransition] = useTransition();
   const [isDirty, setIsDirty] = useState(false);
   const [state, formAction, pending] = useActionState(saveLineup, initialState);
   const [guestState, guestFormAction, guestPending] = useActionState(createGuestPlayerForLineup, initialState);
@@ -99,10 +105,14 @@ export function LineupBoard({
   const selectedFormation = formations.find((formation) => formation.id === selectedFormationId);
   const slots = useMemo(() => selectedFormation?.position_slots ?? [], [selectedFormation]);
   const orderedSlots = useMemo(() => [...slots].sort((a, b) => b.y - a.y || a.x - b.x), [slots]);
-  const playersById = useMemo(() => new Map(squadPlayers.map((player) => [player.id, player])), [squadPlayers]);
+  const playersById = useMemo(() => new Map(matchRosterPlayers.map((player) => [player.id, player])), [matchRosterPlayers]);
+  const matchRosterPlayerIds = useMemo(() => new Set(matchRosterPlayers.map((player) => player.id)), [matchRosterPlayers]);
+  const rosterCandidatePlayers = squadPlayers.filter((player) => !matchRosterPlayerIds.has(player.id));
   const assignedPlayerIds = new Set(Object.values(assignments).filter(Boolean));
-  const unassignedPlayers = squadPlayers.filter((player) => !assignedPlayerIds.has(player.id));
+  const unassignedPlayers = matchRosterPlayers.filter((player) => !assignedPlayerIds.has(player.id));
   const selectedPeriod = periods.find((period) => period.id === selectedPeriodId);
+  const playerPickerSlot = playerPickerSlotId ? slots.find((slot) => slot.id === playerPickerSlotId) ?? null : null;
+  const playerPickerCurrentPlayer = playerPickerSlotId ? playersById.get(assignments[playerPickerSlotId] ?? "") ?? null : null;
 
   function lineupForPeriod(periodId: string) {
     return existingLineups.filter((entry) => entry.period_id === periodId);
@@ -175,6 +185,11 @@ export function LineupBoard({
     setIsDirty(true);
   }
 
+  function choosePlayer(slotId: string, playerId: string) {
+    assignPlayer(slotId, playerId);
+    setPlayerPickerSlotId(null);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     if (!canEdit) return;
 
@@ -194,6 +209,39 @@ export function LineupBoard({
       return { ...withoutPlayer, [slotId]: player.id };
     });
     setIsDirty(true);
+  }
+
+  function addSelectedRosterPlayer() {
+    if (!selectedRosterPlayerId) return;
+
+    const formData = new FormData();
+    formData.set("season_id", seasonId);
+    formData.set("match_id", matchId);
+    formData.set("player_id", selectedRosterPlayerId);
+
+    startRosterTransition(() => {
+      void addMatchRosterPlayer(formData).then((result) => {
+        setRosterState(result);
+        if (result.ok) {
+          setSelectedRosterPlayerId("");
+          router.refresh();
+        }
+      });
+    });
+  }
+
+  function removeRosterPlayer(playerId: string) {
+    const formData = new FormData();
+    formData.set("season_id", seasonId);
+    formData.set("match_id", matchId);
+    formData.set("player_id", playerId);
+
+    startRosterTransition(() => {
+      void removeMatchRosterPlayer(formData).then((result) => {
+        setRosterState(result);
+        if (result.ok) router.refresh();
+      });
+    });
   }
 
   const assignedCount = Object.values(assignments).filter(Boolean).length;
@@ -263,7 +311,7 @@ export function LineupBoard({
           </div>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+        <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
           <section>
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-100">Pitch</h2>
@@ -295,28 +343,97 @@ export function LineupBoard({
                 ) : null}
               </div>
             </div>
+            <div className="mb-4 grid gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-100">Match roster</h3>
+                  <p className="mt-1 text-xs text-slate-400">Only these players can be assigned to this match lineup.</p>
+                </div>
+                <span className="text-xs text-slate-400">{matchRosterPlayers.length} players</span>
+              </div>
+              {canEdit ? (
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                  <Select
+                    value={selectedRosterPlayerId}
+                    onChange={(event) => setSelectedRosterPlayerId(event.target.value)}
+                    disabled={rosterPending || rosterCandidatePlayers.length === 0}
+                    className="min-h-9 py-1.5"
+                  >
+                    <option value="">Add player to match</option>
+                    {rosterCandidatePlayers.map((player) => (
+                      <option key={player.id} value={player.id}>
+                        #{player.number} {player.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="min-h-9 px-3 py-1.5"
+                    disabled={!selectedRosterPlayerId || rosterPending}
+                    onClick={addSelectedRosterPlayer}
+                  >
+                    Add
+                  </Button>
+                </div>
+              ) : null}
+              <div className="grid max-h-44 gap-1 overflow-auto pr-1">
+                {matchRosterPlayers.map((player) => (
+                  <div key={player.id} className="grid min-h-8 grid-cols-[1fr_auto] items-center gap-2 rounded-md border border-slate-800 bg-slate-900 px-2 py-1 text-xs">
+                    <span className="truncate font-semibold text-slate-200">
+                      #{player.number} {player.name}
+                      {player.player_type === "guest" ? <span className="ml-1 text-accent-blue">Guest</span> : null}
+                    </span>
+                    {canEdit ? (
+                      <button
+                        type="button"
+                        className="rounded border border-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-300 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={rosterPending || assignedPlayerIds.has(player.id)}
+                        onClick={() => removeRosterPlayer(player.id)}
+                      >
+                        Remove
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+                {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">Add players before assigning positions.</p> : null}
+              </div>
+              {rosterState.message ? <p className={`text-sm ${rosterState.ok ? "text-accent-green" : "text-accent-red"}`}>{rosterState.message}</p> : null}
+            </div>
             <div className="grid gap-2 rounded-lg border border-slate-800 bg-slate-950 p-3">
               {orderedSlots.map((slot) => {
                 const playerId = assignments[slot.id];
                 const player = playerId ? playersById.get(playerId) : null;
                 return (
-                  <div key={slot.id} className="grid gap-2 rounded-md border border-slate-800 bg-slate-900 p-2">
-                    <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
-                      <span className="font-bold text-accent-green">{slot.position_code}</span>
-                      {player ? <span>#{player.number} {player.name}</span> : <span>Empty</span>}
-                    </div>
-                    {canEdit ? (
-                      <Select value={playerId ?? EMPTY_PLAYER_VALUE} onChange={(event) => assignPlayer(slot.id, event.target.value)}>
-                        <option value={EMPTY_PLAYER_VALUE}>비워두기</option>
-                        {squadPlayers.map((squadPlayer) => (
-                          <option key={squadPlayer.id} value={squadPlayer.id}>
-                            #{squadPlayer.number} {squadPlayer.name}
-                            {assignments[slot.id] !== squadPlayer.id && assignedPlayerIds.has(squadPlayer.id) ? " (배정됨)" : ""}
-                          </option>
-                        ))}
-                      </Select>
-                    ) : null}
-                  </div>
+                  <button
+                    key={slot.id}
+                    type="button"
+                    className="grid gap-1 rounded-md border border-slate-800 bg-slate-900 px-2 py-1.5 text-left transition hover:border-accent-blue hover:bg-slate-800 disabled:cursor-default disabled:hover:border-slate-800 disabled:hover:bg-slate-900"
+                    disabled={!canEdit}
+                    onClick={() => setPlayerPickerSlotId(slot.id)}
+                  >
+                    <span className="flex min-h-7 min-w-0 items-center gap-2 text-xs">
+                      <span className="w-12 shrink-0 font-bold text-accent-green">{slot.position_code}</span>
+                      <span className={`min-w-0 flex-1 truncate font-semibold ${player ? "text-slate-100" : "text-slate-500"}`}>
+                        {player ? player.name : "Empty"}
+                      </span>
+                      {player ? (
+                        <span className="flex shrink-0 items-center gap-1">
+                          <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
+                            L{player.left_foot_score}
+                          </span>
+                          <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
+                            R{player.right_foot_score}
+                          </span>
+                        </span>
+                      ) : null}
+                      {player ? (
+                        <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
+                          #{player.number}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
                 );
               })}
             </div>
@@ -345,6 +462,7 @@ export function LineupBoard({
         {periods.length === 0 ? <p className="text-sm text-accent-red">Create match periods before saving a lineup.</p> : null}
         {formations.length === 0 ? <p className="text-sm text-accent-red">Create at least one formation before saving a lineup.</p> : null}
         {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">Add players to this season squad before saving a lineup.</p> : null}
+        {matchRosterPlayers.length === 0 ? <p className="text-sm text-accent-red">Add players to this match roster before saving a lineup.</p> : null}
         {state.message ? <p className={`text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
 
         {!canEdit ? (
@@ -397,6 +515,60 @@ export function LineupBoard({
                 {guestPending ? "Adding..." : "Add guest"}
               </Button>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {playerPickerSlot ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 px-4">
+          <div className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-950 p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-100">{playerPickerSlot.position_code}</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  {playerPickerCurrentPlayer ? `${playerPickerCurrentPlayer.name} #${playerPickerCurrentPlayer.number}` : "No player assigned"}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-md border border-slate-700 px-2 py-1 text-sm text-slate-300 hover:bg-slate-900"
+                onClick={() => setPlayerPickerSlotId(null)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="grid max-h-96 gap-2 overflow-auto pr-1">
+              <button
+                type="button"
+                className="flex min-h-10 items-center justify-between rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-left text-sm font-semibold text-slate-300 transition hover:border-accent-blue"
+                onClick={() => choosePlayer(playerPickerSlot.id, EMPTY_PLAYER_VALUE)}
+              >
+                <span>Clear position</span>
+              </button>
+              {matchRosterPlayers.map((player) => {
+                const isCurrent = assignments[playerPickerSlot.id] === player.id;
+                const isAssignedElsewhere = !isCurrent && assignedPlayerIds.has(player.id);
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    className={`flex min-h-10 items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm transition ${
+                      isCurrent
+                        ? "border-accent-blue bg-sky-950/50 text-white"
+                        : "border-slate-800 bg-slate-900 text-slate-200 hover:border-accent-blue"
+                    }`}
+                    onClick={() => choosePlayer(playerPickerSlot.id, player.id)}
+                  >
+                    <span className="min-w-0 truncate font-semibold">{player.name}</span>
+                    <span className="shrink-0 rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-400">
+                      #{player.number}
+                      {isAssignedElsewhere ? " assigned" : ""}
+                    </span>
+                  </button>
+                );
+              })}
+              {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">Add players to the match roster first.</p> : null}
+            </div>
           </div>
         </div>
       ) : null}

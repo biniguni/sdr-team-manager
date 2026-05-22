@@ -59,6 +59,7 @@ feature with explicit RLS protection.
 - Players have a name, unique number, active/inactive status, and player type.
 - `player_type` is either `member` or `guest`.
 - New players default to `member` unless created as guests.
+- Player profiles include editable left-foot and right-foot scores from 1 to 5.
 - Player numbers remain public because they are used for identification,
   lineups, rankings, and match records.
 - Inactive players are excluded from new squad and lineup selection, but their
@@ -108,6 +109,10 @@ feature with explicit RLS protection.
 - Matches are divided into periods.
 - Each period can have one formation and one lineup.
 - A lineup entry links period, formation slot, and player.
+- Each match has a match roster selected from the season squad before period
+  lineups are assigned.
+- Only players added to the match roster can be assigned to that match's period
+  lineups.
 - A player cannot be assigned twice in the same period.
 - A position slot cannot be assigned twice in the same period.
 - The same player may play different positions in different periods.
@@ -132,7 +137,7 @@ feature with explicit RLS protection.
 ## Formations
 
 - Formations define named position slots with board coordinates.
-- Built-in formations include 4-4-2, 4-3-3, and 3-5-2.
+- Built-in formations include 4-4-2, 4-3-3, 3-5-2, and 4-2-3-1.
 - Custom formations may be added by approved editors.
 - Formations used by existing lineups should not be deleted.
 

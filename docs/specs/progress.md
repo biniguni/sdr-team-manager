@@ -16,6 +16,16 @@ This is the short status note for future sessions. Detailed history belongs in
 - UI Phase 1 navigation and top-level lineup workflow are implemented in code:
   desktop/menu order includes `라인업`, mobile uses a hamburger side menu, and
   `/lineup` shows active-season match cards with period lineup editing.
+- `/lineup` now supports match rosters: editors add players from the season
+  squad to a specific match first, then assign only those match-roster players
+  to period lineups.
+- The right-side lineup panel has been compacted so each position row reads as
+  position, player name, and number on one line.
+- The lineup right panel is widened to 380px and shows left-foot/right-foot
+  scores inline with player identity.
+- Player management now supports editable left-foot and right-foot scores from
+  1 to 5 for approved editors.
+- Default formation seed data now includes `4-2-3-1`.
 - Figma is deferred because the owner is on Figma Starter and MCP is not useful
   enough for the current UI pass.
 
@@ -43,6 +53,9 @@ The security cleanup is complete for the current owner workflow:
 
 - `npm.cmd run lint` passed after the security cleanup code changes.
 - `npm.cmd run build` passed after the security cleanup code changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the match-roster and
+  `4-2-3-1` lineup changes.
+- A temporary local dev server returned `200 OK` for `/lineup`.
 - `git diff --check` passed; only line-ending warnings were reported.
 - General editor behavior is not verified yet because real editor accounts will
   be added later.
@@ -56,16 +69,18 @@ The security cleanup is complete for the current owner workflow:
    - improve mobile position-tap and bottom-sheet selection,
    - polish the desktop pitch/right-panel interaction after visual review,
    - polish Korean labels and permission-needed wording.
-3. Use `reference/left_menu_and_lineup_sample.png` as the current structure
+3. Apply the updated Supabase SQL before deployment review if the target
+   database does not already have `match_roster` and the `4-2-3-1` seed.
+4. Use `reference/left_menu_and_lineup_sample.png` as the current structure
    reference for desktop navigation and lineup/tactics layout.
-4. Work with the owner through one-question-at-a-time planning, local browser
+5. Work with the owner through one-question-at-a-time planning, local browser
    review, and small code iterations.
-5. Keep mobile login/logout/account-state improvements in the UI backlog.
-6. When normal editor accounts are added, verify:
+6. Keep mobile login/logout/account-state improvements in the UI backlog.
+7. When normal editor accounts are added, verify:
    - normal editor can manage general records and lineups,
    - normal editor cannot write match results or player stats,
    - owner/result manager can write match results and player stats.
-7. Verify mobile lineup dragging and the mobile side-menu flow on a real phone
+8. Verify mobile lineup dragging and the mobile side-menu flow on a real phone
    browser.
 
 ## Remaining Risk

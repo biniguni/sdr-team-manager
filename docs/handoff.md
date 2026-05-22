@@ -56,6 +56,8 @@ This is the next-session brief. Historical detail belongs in
   - default `1Q`, `2Q`, `3Q`, `4Q`,
   - optional `전반`, `후반`.
 - Extended `LineupBoard`:
+  - match roster add/remove controls from the season squad,
+  - lineup assignment now uses match-roster players only,
   - visible period buttons near the top,
   - formation selector,
   - unsaved status, revert, and save controls near the period controls,
@@ -63,6 +65,8 @@ This is the next-session brief. Historical detail belongs in
   - right-side position-ordered player panel,
   - unassigned players below assigned positions,
   - right-panel player selection/replacement,
+  - compact right-panel rows showing position, player name, and number on one
+    line,
   - replacement moves previous player to unassigned,
   - formation change keeps matching position codes and moves unmatched players
     to unassigned after confirmation,
@@ -75,11 +79,16 @@ This is the next-session brief. Historical detail belongs in
   - `docs/specs/ui/requirements.md`
   - `docs/specs/ui/design.md`
   - `docs/specs/ui/tasks.md`
+- Added `match_roster` SQL/RLS documentation and seeded default `4-2-3-1`
+  formation in `docs/database/supabase-schema.sql`.
+- Added editable player left-foot/right-foot scores and
+  `docs/database/supabase-player-foot-scores.sql`.
 
 ## Verification Completed
 
 - `npm.cmd run lint` passed.
 - `npm.cmd run build` passed.
+- Temporary local dev server returned `200 OK` for `/lineup`.
 - `git diff --check` passed with only line-ending warnings.
 - Foreground `npm.cmd run dev` starts successfully and reports
   `http://localhost:3000`.
@@ -94,6 +103,11 @@ This is the next-session brief. Historical detail belongs in
   - `docs/specs/ui/requirements.md`
   - `docs/specs/ui/design.md`
   - `docs/specs/ui/tasks.md`
+  - `docs/database/supabase-schema.sql`
+  - `docs/database/supabase-rls.sql`
+  - `docs/database/supabase-open-access.sql`
+  - `docs/database/supabase-match-roster.sql`
+  - `docs/database/supabase-player-foot-scores.sql`
   - `docs/handoff.md`
 - Expected modified code:
   - `src/actions/lineups.ts`
@@ -107,6 +121,7 @@ This is the next-session brief. Historical detail belongs in
   - `src/components/layout/Sidebar.tsx`
   - `src/components/lineup/LineupBoard.tsx`
   - `src/components/lineup/LineupMatchCards.tsx`
+  - `src/types/index.ts`
 - `reference/left_menu_and_lineup_sample.png` is an intentional untracked
   reference image from the owner.
 - `src/components/lineup/PlayerDraggable.tsx` and
@@ -125,16 +140,22 @@ npm.cmd run dev
 2. Review desktop `/lineup` in the browser against
    `reference/left_menu_and_lineup_sample.png`.
 
-3. Review mobile:
+3. Before deployment or shared DB review, apply the updated database SQL if the
+   database does not already include:
+   - `match_roster`
+   - RLS policies for `match_roster`
+   - seeded `4-2-3-1` formation and slots
+
+4. Review mobile:
    - first try the dev server network URL shown by Next.js, for example
      `http://<PC-LAN-IP>:3000`,
    - PC and phone must be on the same Wi-Fi,
    - Windows firewall may need to allow Node/port 3000.
 
-4. If local mobile access is inconvenient, push to GitHub and use Vercel Preview
+5. If local mobile access is inconvenient, push to GitHub and use Vercel Preview
    for real-phone review.
 
-5. Polish based on review:
+6. Polish based on review:
    - desktop pitch/right-panel density,
    - Korean labels and permission wording,
    - mobile side menu behavior,

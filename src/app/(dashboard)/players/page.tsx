@@ -58,7 +58,12 @@ export default async function PlayersPage({
             {(players as Player[]).map((player) => (
               <details key={player.id} className="rounded-lg border border-slate-800 bg-slate-950 p-4">
                 <summary className="flex cursor-pointer items-center justify-between gap-3">
-                  <span className="font-medium">{player.name} <span className="text-slate-500">#{player.number}</span></span>
+                  <span className="flex min-w-0 flex-wrap items-center gap-2 font-medium">
+                    <span>{player.name}</span>
+                    <span className="rounded bg-slate-900 px-1.5 py-0.5 text-xs font-semibold text-slate-400">L{player.left_foot_score}</span>
+                    <span className="rounded bg-slate-900 px-1.5 py-0.5 text-xs font-semibold text-slate-400">R{player.right_foot_score}</span>
+                    <span className="text-slate-500">#{player.number}</span>
+                  </span>
                   <span className="flex gap-2">
                     {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                     <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "Active" : "Inactive"}</Badge>

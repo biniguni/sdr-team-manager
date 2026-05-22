@@ -51,7 +51,7 @@ The app supports these product areas:
 | Squads | Add players to a season squad | `squad_members` |
 | Matches | Create match schedules and later record results | `matches`, `periods` |
 | Formations | Manage position templates such as `4-4-2` | `formations`, `position_slots` |
-| Lineups | Prepare active-season match lineups by period before match day | `period_lineups` |
+| Lineups | Prepare active-season match rosters and period lineups before match day | `match_roster`, `period_lineups` |
 | Guest players | Add temporary guests during lineup work | `players`, `squad_members` |
 | Match stats | Record played, goals, assists, and cards | `player_match_stats` |
 | Dashboard | Summarize season record and player output | `matches`, `player_match_stats` |
@@ -201,7 +201,8 @@ Server Actions and Supabase RLS must still reject unauthorized writes.
 Core relationship map:
 
 ```text
-players < squad_members > seasons < matches < periods < period_lineups
+players < squad_members > seasons < matches < match_roster
+                                      < periods < period_lineups
                                             \         /
                                              formations < position_slots
 
@@ -215,6 +216,7 @@ Plain-language version:
 | --- | --- |
 | `players` to `squad_members` to `seasons` | A player joins a specific season squad. |
 | `seasons` to `matches` | A match belongs to one season. |
+| `matches` to `match_roster` | A match has its own available player list. |
 | `matches` to `periods` | A match is split into periods. |
 | `formations` to `position_slots` | A formation defines board positions. |
 | `periods` to `period_lineups` | A period has player-position assignments. |
@@ -225,10 +227,11 @@ Plain-language version:
 
 | Table | Stores | Product rule |
 | --- | --- | --- |
-| `players` | Public-safe player identity and status | Use name, number, player type, active status. Do not use private fields in public-read mode. |
+| `players` | Public-safe player identity, foot scores, and status | Use name, number, left/right foot scores, player type, active status. Do not use private fields in public-read mode. |
 | `seasons` | Season name, dates, active status | End date cannot be before start date. |
 | `squad_members` | Player-season membership | A player can appear once per season squad. |
 | `matches` | Match details and result fields | Result fields need stronger permission checks. |
+| `match_roster` | Player-match availability | A player can appear once per match roster. |
 | `periods` | Match parts | Labels and order numbers are unique within a match. |
 | `formations` | Formation names | Built-in formations are seeded by SQL. |
 | `position_slots` | Positions inside formations | Coordinates stay between 0 and 100. |
@@ -241,9 +244,10 @@ Plain-language version:
 
 | Table | Important fields |
 | --- | --- |
-| `players` | `name`, `number`, `player_type`, `is_active` |
+| `players` | `name`, `number`, `left_foot_score`, `right_foot_score`, `player_type`, `is_active` |
 | `seasons` | `name`, `start_date`, `end_date`, `is_active` |
 | `matches` | `opponent`, `match_date`, `venue`, `is_home`, scores, status, MOM fields |
+| `match_roster` | `match_id`, `player_id` |
 | `position_slots` | `formation_id`, `position_code`, `x`, `y` |
 | `period_lineups` | `period_id`, `formation_id`, `position_slot_id`, `player_id` |
 | `player_match_stats` | `played`, `goals`, `assists`, `yellow_cards`, `red_cards` |
@@ -294,7 +298,7 @@ active.
 | --- | --- |
 | 1 | Editor creates a season with valid dates. |
 | 2 | Editor adds active players to the season squad. |
-| 3 | Squad membership controls who can appear in that season's lineups. |
+| 3 | Squad membership controls who can be added to match rosters in that season. |
 | 4 | A player cannot be added twice to the same squad. |
 
 Product impact: each season can have a different squad while old season data
@@ -319,10 +323,11 @@ Product impact: scheduling and result entry can happen at different times.
 | 1 | Editor opens `라인업`, which shows active-season matches. |
 | 2 | App defaults to the nearest upcoming scheduled match, or the most recent completed match if no upcoming match exists. |
 | 3 | Editor selects a period and formation. |
-| 4 | Editor changes the lineup on the pitch board or in the position-ordered side panel. |
-| 5 | Changes remain draft-only until the editor saves. |
-| 6 | Server Action validates period, slots, squad membership, and duplicates. |
-| 7 | Existing period lineup rows are replaced. |
+| 4 | Editor adds available players from the season squad to the match roster. |
+| 5 | Editor changes the lineup on the pitch board or in the position-ordered side panel, using only match-roster players. |
+| 6 | Changes remain draft-only until the editor saves. |
+| 7 | Server Action validates period, slots, match roster membership, and duplicates. |
+| 8 | Existing period lineup rows are replaced. |
 | 8 | `position_performance` is refreshed for the season. |
 
 Product impact: trusted editors can manage operational lineup work without also

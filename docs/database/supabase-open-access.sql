@@ -7,6 +7,7 @@ alter table seasons disable row level security;
 alter table squad_members disable row level security;
 alter table matches disable row level security;
 alter table periods disable row level security;
+alter table match_roster disable row level security;
 alter table formations disable row level security;
 alter table position_slots disable row level security;
 alter table period_lineups disable row level security;

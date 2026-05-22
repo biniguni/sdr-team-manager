@@ -5,6 +5,8 @@ export interface Player {
   id: UUID;
   name: string;
   number: number;
+  left_foot_score: number;
+  right_foot_score: number;
   player_type: PlayerType;
   is_active: boolean;
   created_at: string;
@@ -24,6 +26,13 @@ export interface Season {
 export interface SquadMember {
   id: UUID;
   season_id: UUID;
+  player_id: UUID;
+  created_at: string;
+}
+
+export interface MatchRoster {
+  id: UUID;
+  match_id: UUID;
   player_id: UUID;
   created_at: string;
 }

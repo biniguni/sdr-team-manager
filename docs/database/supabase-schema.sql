@@ -12,6 +12,8 @@ create table if not exists players (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   number integer not null unique,
+  left_foot_score integer not null default 3 check (left_foot_score between 1 and 5),
+  right_foot_score integer not null default 3 check (right_foot_score between 1 and 5),
   player_type text not null default 'member' check (player_type in ('member', 'guest')),
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
@@ -19,15 +21,33 @@ create table if not exists players (
 );
 
 alter table players add column if not exists player_type text not null default 'member';
+alter table players add column if not exists left_foot_score integer not null default 3;
+alter table players add column if not exists right_foot_score integer not null default 3;
 alter table players alter column player_type set default 'member';
+alter table players alter column left_foot_score set default 3;
+alter table players alter column right_foot_score set default 3;
 update players set player_type = 'member' where player_type is null;
+update players set left_foot_score = 3 where left_foot_score is null;
+update players set right_foot_score = 3 where right_foot_score is null;
 alter table players alter column player_type set not null;
+alter table players alter column left_foot_score set not null;
+alter table players alter column right_foot_score set not null;
 
 do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'players_player_type_check') then
     alter table players add constraint players_player_type_check
       check (player_type in ('member', 'guest'));
+  end if;
+
+  if not exists (select 1 from pg_constraint where conname = 'players_left_foot_score_check') then
+    alter table players add constraint players_left_foot_score_check
+      check (left_foot_score between 1 and 5);
+  end if;
+
+  if not exists (select 1 from pg_constraint where conname = 'players_right_foot_score_check') then
+    alter table players add constraint players_right_foot_score_check
+      check (right_foot_score between 1 and 5);
   end if;
 end $$;
 
@@ -104,6 +124,14 @@ create table if not exists periods (
   created_at timestamptz not null default now(),
   unique (match_id, label),
   unique (match_id, order_num)
+);
+
+create table if not exists match_roster (
+  id uuid primary key default gen_random_uuid(),
+  match_id uuid not null references matches(id) on delete cascade,
+  player_id uuid not null references players(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  unique (match_id, player_id)
 );
 
 create table if not exists formations (
@@ -195,7 +223,7 @@ create trigger trg_position_performance_updated_at before update on position_per
 for each row execute function set_updated_at();
 
 insert into formations (name, is_default)
-values ('4-4-2', true), ('4-3-3', true), ('3-5-2', true)
+values ('4-4-2', true), ('4-3-3', true), ('3-5-2', true), ('4-2-3-1', true)
 on conflict (name) do update set is_default = excluded.is_default;
 
 with formation as (select id from formations where name = '4-4-2')
@@ -228,5 +256,16 @@ cross join (values
   ('GK', 50, 90), ('CB1', 25, 72), ('CB2', 50, 72), ('CB3', 75, 72),
   ('LWB', 10, 52), ('CM1', 30, 50), ('CM2', 50, 50), ('CM3', 70, 50),
   ('RWB', 90, 52), ('ST1', 35, 15), ('ST2', 65, 15)
+) as slot(position_code, x, y)
+on conflict (formation_id, position_code) do update set x = excluded.x, y = excluded.y;
+
+with formation as (select id from formations where name = '4-2-3-1')
+insert into position_slots (formation_id, position_code, x, y)
+select formation.id, slot.position_code, slot.x, slot.y
+from formation
+cross join (values
+  ('GK', 50, 90), ('LB', 15, 70), ('CB1', 35, 70), ('CB2', 65, 70),
+  ('RB', 85, 70), ('DM1', 35, 52), ('DM2', 65, 52), ('LAM', 25, 32),
+  ('CAM', 50, 28), ('RAM', 75, 32), ('ST', 50, 12)
 ) as slot(position_code, x, y)
 on conflict (formation_id, position_code) do update set x = excluded.x, y = excluded.y;

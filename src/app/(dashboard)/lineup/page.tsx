@@ -17,6 +17,10 @@ type SquadRow = {
   players: Player;
 };
 
+type MatchRosterRow = {
+  players: Player;
+};
+
 type FormationRow = Formation & {
   position_slots: PositionSlot[];
 };
@@ -116,9 +120,10 @@ export default async function LineupPage({
     );
   }
 
-  const [{ data: periods = [] }, { data: squad = [] }, { data: formations = [] }, { data: lineups = [] }] = await Promise.all([
+  const [{ data: periods = [] }, { data: squad = [] }, { data: matchRoster = [] }, { data: formations = [] }, { data: lineups = [] }] = await Promise.all([
     supabase.from("periods").select("*").eq("match_id", selectedMatch.id).order("order_num"),
     supabase.from("squad_members").select("players(*)").eq("season_id", season.id),
+    supabase.from("match_roster").select("players(*)").eq("match_id", selectedMatch.id),
     supabase.from("formations").select("*, position_slots(*)").order("is_default", { ascending: false }).order("name"),
     supabase
       .from("period_lineups")
@@ -126,7 +131,11 @@ export default async function LineupPage({
       .eq("periods.match_id", selectedMatch.id),
   ]);
 
-  const squadPlayers = (squad as unknown as SquadRow[])
+  const squadPlayers = ((squad ?? []) as unknown as SquadRow[])
+    .map((row) => row.players)
+    .filter(Boolean)
+    .sort((a, b) => a.number - b.number);
+  const matchRosterPlayers = ((matchRoster ?? []) as unknown as MatchRosterRow[])
     .map((row) => row.players)
     .filter(Boolean)
     .sort((a, b) => a.number - b.number);
@@ -180,6 +189,7 @@ export default async function LineupPage({
         periods={periods as Period[]}
         formations={formations as unknown as FormationRow[]}
         squadPlayers={squadPlayers}
+        matchRosterPlayers={matchRosterPlayers}
         existingLineups={lineups as unknown as ExistingLineupRow[]}
         canEdit={canEdit}
       />
