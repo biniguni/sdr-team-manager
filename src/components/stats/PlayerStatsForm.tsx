@@ -38,33 +38,33 @@ export function PlayerStatsForm({
           <h3 className="font-semibold text-slate-100">#{player.number} {player.name}</h3>
           <div className="mt-1 flex gap-2">
             {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
-            <Badge tone={isAssigned ? "green" : "default"}>{isAssigned ? "Lineup assigned" : "Not in lineup"}</Badge>
-            {isAssigned && !stats ? <Badge tone="red">Not entered</Badge> : null}
-            {stats ? <Badge tone="blue">Entered</Badge> : null}
+            <Badge tone={isAssigned ? "green" : "default"}>{isAssigned ? "라인업 배정" : "라인업 미배정"}</Badge>
+            {isAssigned && !stats ? <Badge tone="red">미입력</Badge> : null}
+            {stats ? <Badge tone="blue">입력 완료</Badge> : null}
           </div>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-300">
           <input name="played" type="checkbox" defaultChecked={stats?.played ?? isAssigned} disabled={disabled} />
-          Played
+          출전
         </label>
       </div>
 
       <fieldset disabled={disabled} className="grid gap-3">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <label className="grid gap-1 text-xs text-slate-400">
-            Goals
+            득점
             <Input name="goals" type="number" min="0" defaultValue={stats?.goals ?? 0} />
           </label>
           <label className="grid gap-1 text-xs text-slate-400">
-            Assists
+            도움
             <Input name="assists" type="number" min="0" defaultValue={stats?.assists ?? 0} />
           </label>
           <label className="grid gap-1 text-xs text-slate-400">
-            Yellow
+            경고
             <Input name="yellow_cards" type="number" min="0" defaultValue={stats?.yellow_cards ?? 0} />
           </label>
           <label className="grid gap-1 text-xs text-slate-400">
-            Red
+            퇴장
             <Input name="red_cards" type="number" min="0" defaultValue={stats?.red_cards ?? 0} />
           </label>
         </div>
@@ -73,10 +73,10 @@ export function PlayerStatsForm({
       {state.message ? <p className={`mt-3 text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
       {canEdit ? (
         <Button type="submit" disabled={disabled} className="mt-4">
-          {pending ? "Saving..." : "Save stats"}
+          {pending ? "저장 중..." : "선수 기록 저장"}
         </Button>
       ) : (
-        <p className="mt-3 text-sm text-slate-400">Match result permission is required to update stats.</p>
+        <p className="mt-3 text-sm text-slate-400">선수 기록을 수정하려면 경기 결과 관리 권한이 필요합니다.</p>
       )}
     </form>
   );

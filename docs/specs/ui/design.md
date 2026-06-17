@@ -22,10 +22,6 @@ decisions made during UI planning.
 
 ## Design Review Workflow
 
-Figma is deferred for now because the owner is on Figma Starter and the MCP
-workflow does not provide enough practical value for the current implementation
-pass.
-
 Current review workflow:
 
 - Use `reference/left_menu_and_lineup_sample.png` as the concrete desktop lineup
@@ -34,7 +30,6 @@ Current review workflow:
 - Check desktop and mobile viewport sizes before treating UI work as complete.
 - Record product decisions in this document and concrete implementation work in
   `docs/specs/ui/tasks.md`.
-- Do not block useful implementation work on pixel-perfect Figma designs.
 
 ## Reference Direction
 
@@ -66,6 +61,11 @@ Current review workflow:
 
 - Use Korean-first labels for user-facing navigation, buttons, forms, empty
   states, and validation messages.
+- Replace remaining English UI copy with natural Korean across page titles,
+  subtitles, helper text, empty states, validation messages, permission notices,
+  buttons, and navigation.
+- Treat longer English descriptions as product copy to rewrite, not as literal
+  strings to translate word by word.
 - Keep natural football terms where they are clearer than forced translation,
   such as `라인업`, `MOM`, and `스쿼드`.
 - Use `기록` for entered match/player data, such as goals, assists, cards, and
@@ -75,13 +75,19 @@ Current review workflow:
   `통계` area is added later, reconsider whether `순위` should become part of it.
 - Avoid mixed-language labels unless the mixed term is already natural for the
   target users.
+- Recommended navigation labels for the current first pass:
+  `대시보드`, `라인업`, `시즌`, `선수`, `포메이션`, `순위`.
+- Recommended workflow wording:
+  use `경기 결과` for score/result entry, `선수 기록` for per-match player stat
+  entry, and `권한 필요` or a similarly direct phrase when a public viewer or
+  unapproved user cannot edit.
 
 ### Desktop
 
 - Use a left primary navigation area and a central work area.
 - Keep the desktop left navigation expanded with visible text.
 - Desktop navigation order:
-  `Dashboard`, `라인업`, `Seasons`, `Players`, `Formations`, `Ranking`.
+  `대시보드`, `라인업`, `시즌`, `선수`, `포메이션`, `순위`.
 - Keep `Formations` as a top-level item for the first UI pass because lineup
   work still depends on formation management and there is no settings area yet.
 - Keep the central work area dominant, especially for tactics and lineup
@@ -103,7 +109,7 @@ Current review workflow:
 - Center: main work area.
 - Primary navigation should use a side menu rather than bottom tabs.
 - Mobile side-menu order should match desktop:
-  `Dashboard`, `라인업`, `Seasons`, `Players`, `Formations`, `Ranking`.
+  `대시보드`, `라인업`, `시즌`, `선수`, `포메이션`, `순위`.
 - Screen-specific primary actions should be visible in the work area as large
   tap targets.
 - Account/login/logout state should live at the bottom of the side menu rather

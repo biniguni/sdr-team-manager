@@ -3,12 +3,12 @@ import { logout } from "@/actions/auth";
 import { getAuthStatus } from "@/lib/authz";
 
 const links = [
-  { href: "/", label: "Dashboard" },
+  { href: "/", label: "대시보드" },
   { href: "/lineup", label: "라인업" },
-  { href: "/seasons", label: "Seasons" },
-  { href: "/players", label: "Players" },
-  { href: "/formations", label: "Formations" },
-  { href: "/ranking", label: "Ranking" },
+  { href: "/seasons", label: "시즌" },
+  { href: "/players", label: "선수" },
+  { href: "/formations", label: "포메이션" },
+  { href: "/ranking", label: "순위" },
 ];
 
 export async function MobileNav() {
@@ -19,7 +19,7 @@ export async function MobileNav() {
       <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-slate-100 marker:hidden">
         <span>SDR Team</span>
         <span className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 group-open:border-accent-blue">
-          Menu
+          메뉴
         </span>
       </summary>
       <div className="grid max-h-[calc(100vh-3.5rem)] gap-6 overflow-y-auto border-t border-slate-800 px-4 py-5">
@@ -37,14 +37,14 @@ export async function MobileNav() {
         <div className="border-t border-slate-800 pt-4 text-sm text-slate-400">
           {user ? (
             <form action={logout} className="grid gap-2">
-              <span>{canEdit ? "Editor mode" : "Signed in"}</span>
+              <span>{canEdit ? "편집자 모드" : "로그인됨"}</span>
               <button type="submit" className="text-left font-semibold text-accent-blue">
-                Sign out
+                로그아웃
               </button>
             </form>
           ) : (
             <Link href="/login" className="font-semibold text-accent-blue">
-              Editor login
+              편집자 로그인
             </Link>
           )}
         </div>

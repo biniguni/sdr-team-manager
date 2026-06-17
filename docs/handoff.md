@@ -13,10 +13,15 @@ This is the next-session brief. Historical detail belongs in
 - Global login blocking is intentionally disabled. Do not turn `src/proxy.ts`
   into a logged-out redirect unless the product decision changes to private
   access.
-- Figma is deferred because the owner is on Figma Starter and MCP is not useful
-  enough for this UI pass. Do not block UI work on Figma setup.
 - Current review path is local browser/mobile review plus direct code
   iteration.
+- Current UI copy direction: convert remaining user-facing English to natural
+  Korean across menus, titles, subtitles, helper text, empty states, validation
+  messages, and permission notices. Treat longer English text as product copy to
+  rewrite, not literal word replacement.
+- Temporary copy review file:
+  `docs/specs/ui/copy-review.md`. The owner should fill the `Owner change`
+  column; apply that wording to code after review.
 
 ## Current App And Database State
 
@@ -35,7 +40,6 @@ This is the next-session brief. Historical detail belongs in
 
 - Added `reference/left_menu_and_lineup_sample.png` as the concrete desktop
   lineup structure reference.
-- Documented Figma as deferred across current UI docs.
 - Added top-level `라인업` navigation decision to docs and code.
 - Reordered desktop and mobile menu:
   `Dashboard`, `라인업`, `Seasons`, `Players`, `Formations`, `Ranking`.
@@ -83,6 +87,12 @@ This is the next-session brief. Historical detail belongs in
   formation in `docs/database/supabase-schema.sql`.
 - Added editable player left-foot/right-foot scores and
   `docs/database/supabase-player-foot-scores.sql`.
+- Added `docs/specs/ui/copy-review.md` as a temporary working table for Korean
+  UI copy review. It includes current/original wording, suggested drafts,
+  remaining English copy, and an `Owner change` column for final wording.
+- Some UI copy was changed in code as an early draft before the owner clarified
+  the desired review flow. Treat those code edits as draft, not final, and
+  reconcile them against `docs/specs/ui/copy-review.md`.
 
 ## Verification Completed
 
@@ -157,7 +167,9 @@ npm.cmd run dev
 
 6. Polish based on review:
    - desktop pitch/right-panel density,
-   - Korean labels and permission wording,
+   - full Korean UI copy cleanup, including longer subtitles and helper text,
+   - apply owner-approved wording from `docs/specs/ui/copy-review.md`,
+   - permission wording,
    - mobile side menu behavior,
    - mobile `/lineup` layout.
 
@@ -174,6 +186,10 @@ npm.cmd run dev
   - owner/result manager can write match results and player stats.
 - Mobile logout/account UI exists in the side menu but still needs visual
   polish.
+- Remaining English UI copy may exist outside menus. Do a screen-by-screen copy
+  pass rather than only replacing individual English words.
+- Before finalizing Korean UI copy, review `docs/specs/ui/copy-review.md` and
+  use the `Owner change` column as the final wording source.
 
 ## Cautions
 
@@ -195,6 +211,7 @@ Get-Content -Raw -Encoding UTF8 docs/handoff.md
 - UI requirements: `docs/specs/ui/requirements.md`
 - UI design: `docs/specs/ui/design.md`
 - UI tasks: `docs/specs/ui/tasks.md`
+- UI copy review: `docs/specs/ui/copy-review.md`
 - Security model: `docs/security.md`
 - Database SQL guide: `docs/database/README.md`
 - Deployment checklist: `docs/deployment/vercel.md`

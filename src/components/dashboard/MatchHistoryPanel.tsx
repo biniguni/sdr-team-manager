@@ -5,7 +5,7 @@ import type { Match, Player } from "@/types";
 export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; playersById: Map<string, Player> }) {
   return (
     <section className="rounded-lg border border-slate-800 bg-bg-secondary/80">
-      <div className="border-b border-slate-800 px-5 py-4 text-sm font-bold">Match History</div>
+      <div className="border-b border-slate-800 px-5 py-4 text-sm font-bold">경기 기록</div>
       <div className="grid max-h-[560px] gap-3 overflow-y-auto p-3">
         {matches.map((match) => {
           const result = calculateMatchResult(match.our_score, match.opponent_score);
@@ -21,7 +21,7 @@ export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; 
               <div className="mt-3 flex items-center justify-center gap-4">
                 <div className="flex-1 text-right text-sm font-bold">
                   SANDRO
-                  <span className="block text-[10px] font-medium text-slate-500">{match.is_home ? "HOME" : "AWAY"}</span>
+                  <span className="block text-[10px] font-medium text-slate-500">{match.is_home ? "홈" : "원정"}</span>
                 </div>
                 <div className="min-w-24 rounded-md border border-slate-800 bg-bg-primary px-3 py-1 text-center text-2xl font-black">
                   {match.our_score ?? "-"} - {match.opponent_score ?? "-"}
@@ -37,7 +37,7 @@ export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; 
             </article>
           );
         })}
-        {matches.length === 0 ? <p className="p-3 text-sm text-slate-500">No matches found for this season.</p> : null}
+        {matches.length === 0 ? <p className="p-3 text-sm text-slate-500">이 시즌에 등록된 경기가 없습니다.</p> : null}
       </div>
     </section>
   );

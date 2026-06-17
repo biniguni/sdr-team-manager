@@ -26,7 +26,7 @@ export async function getAuthStatus() {
 export async function requireEditor() {
   const status = await getAuthStatus();
   if (!status.canEdit) {
-    return { ok: false as const, message: "Approved editor access is required." };
+    return { ok: false as const, message: "승인된 편집자 권한이 필요합니다." };
   }
   return { ok: true as const, ...status };
 }
@@ -34,10 +34,10 @@ export async function requireEditor() {
 export async function requireMatchResultManager() {
   const status = await getAuthStatus();
   if (!status.canEdit) {
-    return { ok: false as const, message: "Approved editor access is required." };
+    return { ok: false as const, message: "승인된 편집자 권한이 필요합니다." };
   }
   if (!status.canManageMatchResults) {
-    return { ok: false as const, message: "Match result permission is required." };
+    return { ok: false as const, message: "경기 결과 관리 권한이 필요합니다." };
   }
   return { ok: true as const, ...status };
 }

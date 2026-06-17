@@ -24,13 +24,13 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
         </div>
         <div className="hidden h-16 w-px bg-slate-800 sm:block" />
         <div className="grid flex-1 grid-cols-3 gap-4 text-center">
-          <SmallStat label="Win rate" value={`${winRate}%`} tone="text-accent-green" />
-          <SmallStat label="Goals" value={`${goalsFor}:${goalsAgainst}`} />
-          <SmallStat label="Diff" value={goalDiff >= 0 ? `+${goalDiff}` : `${goalDiff}`} tone={goalDiff >= 0 ? "text-accent-green" : "text-accent-red"} />
+          <SmallStat label="승률" value={`${winRate}%`} tone="text-accent-green" />
+          <SmallStat label="득실" value={`${goalsFor}:${goalsAgainst}`} />
+          <SmallStat label="득실차" value={goalDiff >= 0 ? `+${goalDiff}` : `${goalDiff}`} tone={goalDiff >= 0 ? "text-accent-green" : "text-accent-red"} />
         </div>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800 pt-4">
-        <span className="mr-1 text-xs font-medium text-slate-500">Recent</span>
+        <span className="mr-1 text-xs font-medium text-slate-500">최근 경기</span>
         {recent.map((match) => {
           const result = calculateMatchResult(match.our_score, match.opponent_score);
           const className =
@@ -46,7 +46,7 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
             </span>
           );
         })}
-        {recent.length === 0 ? <span className="text-sm text-slate-500">No scored matches yet.</span> : null}
+        {recent.length === 0 ? <span className="text-sm text-slate-500">점수가 입력된 경기가 없습니다.</span> : null}
       </div>
     </section>
   );

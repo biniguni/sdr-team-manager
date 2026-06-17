@@ -18,7 +18,7 @@ export default async function RankingPage({
   const selectedSeason = selectDefaultSeason(seasons as Season[], seasonId);
 
   if (!selectedSeason) {
-    return <p className="text-sm text-slate-400">Create a season first to view rankings.</p>;
+    return <p className="text-sm text-slate-400">순위를 보려면 시즌을 먼저 생성하세요.</p>;
   }
 
   const { data: matches = [] } = await supabase
@@ -35,8 +35,8 @@ export default async function RankingPage({
     <section className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Attack Ranking</h1>
-          <p className="mt-2 text-sm text-slate-500">Goals, assists, and attacking points for {selectedSeason.name}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">공격포인트 순위</h1>
+          <p className="mt-2 text-sm text-slate-500">{selectedSeason.name}의 득점, 도움, 공격포인트를 확인합니다.</p>
         </div>
         <SeasonFilter seasons={seasons as Season[]} selectedSeasonId={selectedSeason.id} />
       </div>

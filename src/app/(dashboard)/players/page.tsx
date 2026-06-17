@@ -25,32 +25,32 @@ export default async function PlayersPage({
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Players"
-        description="Register players once, then reuse them across seasons, squads, lineups, and match records."
+        title="선수"
+        description="선수를 한 번 등록하면 시즌 스쿼드, 라인업, 경기 기록에서 계속 사용할 수 있습니다."
       />
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         {canEdit ? (
         <Card>
-          <h2 className="mb-4 text-lg font-semibold">Add player</h2>
-          <PlayerForm action={createPlayerForm} submitLabel="Add player" />
+          <h2 className="mb-4 text-lg font-semibold">선수 추가</h2>
+          <PlayerForm action={createPlayerForm} submitLabel="선수 추가" />
         </Card>
         ) : (
         <Card>
-          <h2 className="mb-2 text-lg font-semibold">Read-only access</h2>
+          <h2 className="mb-2 text-lg font-semibold">읽기 전용 접근</h2>
           <p className="text-sm leading-6 text-slate-400">
-            Sign in with an approved editor account to add or update players.
+            선수를 추가하거나 수정하려면 승인된 편집자 계정으로 로그인하세요.
           </p>
         </Card>
         )}
 
         <Card>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Player list</h2>
+            <h2 className="text-lg font-semibold">선수 목록</h2>
             <div className="flex gap-2 text-sm">
-              <a className="text-accent-blue" href="/players?status=active">Active</a>
-              <a className="text-slate-300" href="/players?status=all">All</a>
-              <a className="text-slate-300" href="/players?status=inactive">Inactive</a>
+              <a className="text-accent-blue" href="/players?status=active">활성</a>
+              <a className="text-slate-300" href="/players?status=all">전체</a>
+              <a className="text-slate-300" href="/players?status=inactive">비활성</a>
             </div>
           </div>
           {error ? <p className="text-sm text-accent-red">{error.message}</p> : null}
@@ -66,28 +66,28 @@ export default async function PlayersPage({
                   </span>
                   <span className="flex gap-2">
                     {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
-                    <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "Active" : "Inactive"}</Badge>
+                    <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "활성" : "비활성"}</Badge>
                   </span>
                 </summary>
                 {canEdit ? (
                   <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto]">
-                    <PlayerForm player={player} action={updatePlayerForm} submitLabel="Save changes" />
+                    <PlayerForm player={player} action={updatePlayerForm} submitLabel="변경사항 저장" />
                     {player.is_active ? (
                       <form action={deactivatePlayerSubmit} className="self-end">
                         <input type="hidden" name="id" value={player.id} />
-                        <Button type="submit" variant="danger">Deactivate</Button>
+                        <Button type="submit" variant="danger">비활성화</Button>
                       </form>
                     ) : null}
                   </div>
                 ) : (
                   <dl className="mt-4 grid gap-2 text-sm text-slate-300">
-                    <div>Type: {player.player_type === "guest" ? "Guest" : "Member"}</div>
-                    <div>Status: {player.is_active ? "Active" : "Inactive"}</div>
+                    <div>구분: {player.player_type === "guest" ? "용병" : "정규 선수"}</div>
+                    <div>상태: {player.is_active ? "활성" : "비활성"}</div>
                   </dl>
                 )}
               </details>
             ))}
-            {players?.length === 0 ? <p className="text-sm text-slate-400">No players found.</p> : null}
+            {players?.length === 0 ? <p className="text-sm text-slate-400">조건에 맞는 선수가 없습니다.</p> : null}
           </div>
         </Card>
       </div>

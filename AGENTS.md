@@ -128,7 +128,4 @@ when available, test/build results, and screenshots for UI changes.
 
 ## Security & Configuration Tips
 
-Store local Supabase values in `.env.local`, including
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow
-`docs/security.md` for Auth, RLS, editor access, key handling, and security
-verification checks before production deployment.
+Do not commit secrets. Store Supabase values in `.env.local`, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Follow `docs/security.md` for Auth, RLS, editor access, key handling, and security verification checks before production deployment.

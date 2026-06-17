@@ -14,7 +14,7 @@ export async function login(_: ActionResult, formData: FormData): Promise<Action
   const password = text(formData, "password");
 
   if (!email || !password) {
-    return { ok: false, message: "Email and password are required." };
+    return { ok: false, message: "이메일과 비밀번호를 입력하세요." };
   }
 
   const supabase = await createClient();

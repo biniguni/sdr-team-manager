@@ -3,12 +3,12 @@ import { logout } from "@/actions/auth";
 import { getAuthStatus } from "@/lib/authz";
 
 const links = [
-  { href: "/", label: "Dashboard" },
+  { href: "/", label: "대시보드" },
   { href: "/lineup", label: "라인업" },
-  { href: "/seasons", label: "Seasons" },
-  { href: "/players", label: "Players" },
-  { href: "/formations", label: "Formations" },
-  { href: "/ranking", label: "Ranking" },
+  { href: "/seasons", label: "시즌" },
+  { href: "/players", label: "선수" },
+  { href: "/formations", label: "포메이션" },
+  { href: "/ranking", label: "순위" },
 ];
 
 export async function Sidebar() {
@@ -33,14 +33,14 @@ export async function Sidebar() {
       <div className="mt-8 border-t border-slate-800 pt-4 text-sm text-slate-400">
         {user ? (
           <form action={logout} className="grid gap-2">
-            <span>{canEdit ? "Editor mode" : "Signed in"}</span>
+            <span>{canEdit ? "편집자 모드" : "로그인됨"}</span>
             <button type="submit" className="text-left font-semibold text-accent-blue">
-              Sign out
+              로그아웃
             </button>
           </form>
         ) : (
           <Link href="/login" className="font-semibold text-accent-blue">
-            Editor login
+            편집자 로그인
           </Link>
         )}
       </div>

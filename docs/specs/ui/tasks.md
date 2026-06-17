@@ -24,7 +24,6 @@ work items here.
 - [x] Record visual direction: keep current dark theme and improve football
       pitch treatment in tactics/lineup screens.
 - [x] Confirm first implementation scope.
-- [x] Record that Figma/MCP is deferred because the owner is on Figma Starter.
 - [ ] Review current app screens before implementation.
 - [ ] Record any implementation discoveries back into `requirements.md` or
       `design.md` if they affect product behavior.
@@ -34,6 +33,7 @@ work items here.
 First pass scope:
 
 - Overall layout cleanup.
+- Korean UI copy cleanup.
 - Match detail workflow actions.
 - Mobile lineup interaction.
 - Mobile dashboard match card.
@@ -43,12 +43,15 @@ First pass scope:
 - [x] Keep desktop left navigation expanded with visible text.
 - [x] Reorder desktop navigation to `Dashboard`, `라인업`, `Seasons`,
       `Players`, `Formations`, `Ranking`.
+- [ ] Rename desktop navigation to Korean labels:
+      `대시보드`, `라인업`, `시즌`, `선수`, `포메이션`, `순위`.
 - [ ] Use the owner-provided lineup sample as the desktop structure reference:
       left menu, central pitch board, and dense supporting player controls.
 - [x] Add `라인업` as a top-level left-menu item.
 - [x] Keep `Formations` as a top-level menu for the first UI pass.
 - [x] Use side-menu-based mobile navigation instead of bottom tabs.
 - [x] Reorder mobile side-menu navigation to match desktop.
+- [ ] Rename mobile side-menu navigation to match the Korean desktop labels.
 - [x] Move mobile login/logout/account-state display to the bottom of the side
       menu.
 - [ ] Preserve the current dark theme across web and mobile.
@@ -156,13 +159,20 @@ First pass scope:
 
 ## Wording Cleanup
 
+- [ ] Search `src/` for remaining user-facing English UI copy.
+- [ ] Classify found copy by screen: navigation, dashboard, players, seasons,
+      matches, lineup, player records, ranking, login/account, permissions, and
+      empty states.
 - [ ] Review major navigation labels.
+- [ ] Rewrite page titles and title subtitles in natural Korean.
 - [ ] Review form labels and button text.
 - [ ] Review empty states and validation messages.
 - [ ] Use Korean-first wording while preserving natural football terms such as
       `라인업`, `MOM`, and `스쿼드`.
 - [ ] Use `기록` for data entry and `통계` for aggregated analysis.
 - [ ] Reduce awkward or unnecessary Korean/English mixing.
+- [ ] Verify translated text does not overflow buttons, cards, tables, side
+      menus, or mobile bottom sheets.
 
 ## Verification
 

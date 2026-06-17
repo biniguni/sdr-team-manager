@@ -26,8 +26,13 @@ This is the short status note for future sessions. Detailed history belongs in
 - Player management now supports editable left-foot and right-foot scores from
   1 to 5 for approved editors.
 - Default formation seed data now includes `4-2-3-1`.
-- Figma is deferred because the owner is on Figma Starter and MCP is not useful
-  enough for the current UI pass.
+- The next UI cleanup includes full Korean UI copy cleanup, not just menu-label
+  translation. Longer English subtitles, helper text, empty states, permission
+  notices, and validation messages should be rewritten in natural Korean by
+  screen.
+- A temporary UI copy review file now exists at
+  `docs/specs/ui/copy-review.md`. Use its `Owner change` column as the source
+  for final Korean wording before applying or revising code changes.
 
 ## Security State
 
@@ -68,7 +73,9 @@ The security cleanup is complete for the current owner workflow:
 2. Complete remaining lineup UI Phase 1 work:
    - improve mobile position-tap and bottom-sheet selection,
    - polish the desktop pitch/right-panel interaction after visual review,
-   - polish Korean labels and permission-needed wording.
+   - convert remaining English UI copy to natural Korean,
+   - apply owner-approved wording from `docs/specs/ui/copy-review.md`,
+   - polish permission-needed wording.
 3. Apply the updated Supabase SQL before deployment review if the target
    database does not already have `match_roster` and the `4-2-3-1` seed.
 4. Use `reference/left_menu_and_lineup_sample.png` as the current structure
@@ -90,6 +97,9 @@ The security cleanup is complete for the current owner workflow:
   verification.
 - Mobile logout/account UI is not polished yet; it is not a current security
   blocker and should be handled during UI improvement work.
+- Some Korean UI copy edits may exist as draft code changes. Treat
+  `docs/specs/ui/copy-review.md` as the approval checklist before finalizing
+  those changes.
 
 ## References
 

@@ -282,7 +282,7 @@ export function LineupBoard({
                 ))}
               </div>
               <label className="grid max-w-xs gap-1 text-sm text-slate-300">
-                Formation
+                포메이션
                 <Select value={selectedFormationId} onChange={(event) => changeFormation(event.target.value)} disabled={!canEdit}>
                   {formations.map((formation) => (
                     <option key={formation.id} value={formation.id}>
@@ -295,7 +295,7 @@ export function LineupBoard({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <span className={`text-sm ${isDirty ? "text-accent-blue" : "text-slate-400"}`}>
-                {isDirty ? "저장되지 않은 변경사항" : selectedPeriod ? `${selectedPeriod.label} 저장 상태` : "Period 없음"}
+                {isDirty ? "저장되지 않은 변경사항" : selectedPeriod ? `${selectedPeriod.label} 저장됨` : "쿼터 없음"}
               </span>
               {canEdit ? (
                 <>
@@ -303,7 +303,7 @@ export function LineupBoard({
                     되돌리기
                   </Button>
                   <Button type="submit" disabled={pending || !selectedPeriodId || !selectedFormationId || assignedCount === 0}>
-                    {pending ? "Saving..." : "Save lineup"}
+                    {pending ? "저장 중..." : "라인업 저장"}
                   </Button>
                 </>
               ) : null}
@@ -314,8 +314,8 @@ export function LineupBoard({
         <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
           <section>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-100">Pitch</h2>
-              <span className="text-xs text-slate-400">{assignedCount}/{slots.length} assigned</span>
+              <h2 className="text-sm font-semibold text-slate-100">피치</h2>
+              <span className="text-xs text-slate-400">{assignedCount}/{slots.length} 배정</span>
             </div>
             <div className="relative aspect-[7/5] min-h-[360px] overflow-hidden rounded-lg border border-emerald-500/40 bg-emerald-950">
               <div className="absolute inset-4 rounded-lg border border-white/35" />
@@ -333,12 +333,12 @@ export function LineupBoard({
 
           <section>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-100">Positions</h2>
+              <h2 className="text-sm font-semibold text-slate-100">포지션</h2>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">{unassignedPlayers.length} unassigned</span>
+                <span className="text-xs text-slate-400">미배정 {unassignedPlayers.length}명</span>
                 {canEdit ? (
                   <Button type="button" variant="secondary" className="min-h-8 px-3 py-1 text-xs" onClick={() => setGuestModalOpen(true)}>
-                    Add guest
+                    용병 추가
                   </Button>
                 ) : null}
               </div>
@@ -346,10 +346,10 @@ export function LineupBoard({
             <div className="mb-4 grid gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-100">Match roster</h3>
-                  <p className="mt-1 text-xs text-slate-400">Only these players can be assigned to this match lineup.</p>
+                  <h3 className="text-sm font-semibold text-slate-100">매치 로스터</h3>
+                  <p className="mt-1 text-xs text-slate-400">이 경기에 추가된 선수만 라인업에 배정할 수 있습니다.</p>
                 </div>
-                <span className="text-xs text-slate-400">{matchRosterPlayers.length} players</span>
+                <span className="text-xs text-slate-400">{matchRosterPlayers.length}명</span>
               </div>
               {canEdit ? (
                 <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -359,7 +359,7 @@ export function LineupBoard({
                     disabled={rosterPending || rosterCandidatePlayers.length === 0}
                     className="min-h-9 py-1.5"
                   >
-                    <option value="">Add player to match</option>
+                    <option value="">경기에 추가할 선수 선택</option>
                     {rosterCandidatePlayers.map((player) => (
                       <option key={player.id} value={player.id}>
                         #{player.number} {player.name}
@@ -373,7 +373,7 @@ export function LineupBoard({
                     disabled={!selectedRosterPlayerId || rosterPending}
                     onClick={addSelectedRosterPlayer}
                   >
-                    Add
+                    추가
                   </Button>
                 </div>
               ) : null}
@@ -382,7 +382,7 @@ export function LineupBoard({
                   <div key={player.id} className="grid min-h-8 grid-cols-[1fr_auto] items-center gap-2 rounded-md border border-slate-800 bg-slate-900 px-2 py-1 text-xs">
                     <span className="truncate font-semibold text-slate-200">
                       #{player.number} {player.name}
-                      {player.player_type === "guest" ? <span className="ml-1 text-accent-blue">Guest</span> : null}
+                      {player.player_type === "guest" ? <span className="ml-1 text-accent-blue">용병</span> : null}
                     </span>
                     {canEdit ? (
                       <button
@@ -391,12 +391,12 @@ export function LineupBoard({
                         disabled={rosterPending || assignedPlayerIds.has(player.id)}
                         onClick={() => removeRosterPlayer(player.id)}
                       >
-                        Remove
+                        제거
                       </button>
                     ) : null}
                   </div>
                 ))}
-                {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">Add players before assigning positions.</p> : null}
+                {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">포지션을 배정하기 전에 선수를 먼저 추가하세요.</p> : null}
               </div>
               {rosterState.message ? <p className={`text-sm ${rosterState.ok ? "text-accent-green" : "text-accent-red"}`}>{rosterState.message}</p> : null}
             </div>
@@ -415,7 +415,7 @@ export function LineupBoard({
                     <span className="flex min-h-7 min-w-0 items-center gap-2 text-xs">
                       <span className="w-12 shrink-0 font-bold text-accent-green">{slot.position_code}</span>
                       <span className={`min-w-0 flex-1 truncate font-semibold ${player ? "text-slate-100" : "text-slate-500"}`}>
-                        {player ? player.name : "Empty"}
+                        {player ? player.name : "비어 있음"}
                       </span>
                       {player ? (
                         <span className="flex shrink-0 items-center gap-1">
@@ -439,7 +439,7 @@ export function LineupBoard({
             </div>
 
             <div className="mt-4">
-              <h3 className="mb-2 text-sm font-semibold text-slate-100">Unassigned</h3>
+              <h3 className="mb-2 text-sm font-semibold text-slate-100">미배정 선수</h3>
               <BenchDroppable>
                 {unassignedPlayers.map((player) =>
                   canEdit ? (
@@ -448,25 +448,25 @@ export function LineupBoard({
                     <div key={player.id} className="rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300">
                       <span className="flex items-center gap-2">
                         #{player.number} {player.name}
-                        {player.player_type === "guest" ? <Badge tone="blue">Guest</Badge> : null}
+                        {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                       </span>
                     </div>
                   ),
                 )}
-                {unassignedPlayers.length === 0 ? <p className="text-sm text-slate-500">All selected players are on the board.</p> : null}
+                {unassignedPlayers.length === 0 ? <p className="text-sm text-slate-500">선택된 선수가 모두 피치에 배정되었습니다.</p> : null}
               </BenchDroppable>
             </div>
           </section>
         </div>
 
-        {periods.length === 0 ? <p className="text-sm text-accent-red">Create match periods before saving a lineup.</p> : null}
-        {formations.length === 0 ? <p className="text-sm text-accent-red">Create at least one formation before saving a lineup.</p> : null}
-        {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">Add players to this season squad before saving a lineup.</p> : null}
-        {matchRosterPlayers.length === 0 ? <p className="text-sm text-accent-red">Add players to this match roster before saving a lineup.</p> : null}
+        {periods.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 경기 쿼터를 먼저 생성하세요.</p> : null}
+        {formations.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 포메이션을 하나 이상 생성하세요.</p> : null}
+        {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 시즌 스쿼드에 선수를 먼저 추가하세요.</p> : null}
+        {matchRosterPlayers.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 매치 로스터에 선수를 먼저 추가하세요.</p> : null}
         {state.message ? <p className={`text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
 
         {!canEdit ? (
-          <p className="text-sm text-slate-400">Sign in with an approved editor account to update the lineup.</p>
+          <p className="text-sm text-slate-400">라인업을 수정하려면 승인된 편집자 계정으로 로그인하세요.</p>
         ) : null}
       </form>
 
@@ -475,7 +475,7 @@ export function LineupBoard({
           <div className="rounded-md border border-accent-blue bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-100 shadow-xl">
             <span className="flex items-center gap-2">
               #{activePlayer.number} {activePlayer.name}
-              {activePlayer.player_type === "guest" ? <Badge tone="blue">Guest</Badge> : null}
+              {activePlayer.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
             </span>
           </div>
         ) : null}
@@ -486,8 +486,8 @@ export function LineupBoard({
           <div className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-950 p-5 shadow-2xl">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Add guest</h2>
-                <p className="mt-1 text-sm text-slate-400">The guest will be added to this season squad.</p>
+                <h2 className="text-lg font-semibold text-slate-100">용병 추가</h2>
+                <p className="mt-1 text-sm text-slate-400">추가한 용병은 현재 시즌 스쿼드에 함께 등록됩니다.</p>
               </div>
               <button
                 type="button"
@@ -501,18 +501,18 @@ export function LineupBoard({
               <input type="hidden" name="season_id" value={seasonId} />
               <input type="hidden" name="match_id" value={matchId} />
               <label className="grid gap-1 text-sm text-slate-300">
-                Name
-                <Input name="name" required placeholder="Guest name" />
+                이름
+                <Input name="name" required placeholder="용병 이름" />
               </label>
               <label className="grid gap-1 text-sm text-slate-300">
-                Number
-                <Input name="number" type="number" min="0" placeholder="Leave blank for an automatic 9000-range number" />
+                등번호
+                <Input name="number" type="number" min="0" placeholder="비워두면 9000번대 임시 번호가 자동 배정됩니다" />
               </label>
               {guestState.message ? (
                 <p className={`text-sm ${guestState.ok ? "text-accent-green" : "text-accent-red"}`}>{guestState.message}</p>
               ) : null}
               <Button type="submit" disabled={guestPending}>
-                {guestPending ? "Adding..." : "Add guest"}
+                {guestPending ? "추가 중..." : "용병 추가"}
               </Button>
             </form>
           </div>
@@ -526,7 +526,7 @@ export function LineupBoard({
               <div>
                 <h2 className="text-lg font-semibold text-slate-100">{playerPickerSlot.position_code}</h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  {playerPickerCurrentPlayer ? `${playerPickerCurrentPlayer.name} #${playerPickerCurrentPlayer.number}` : "No player assigned"}
+                  {playerPickerCurrentPlayer ? `${playerPickerCurrentPlayer.name} #${playerPickerCurrentPlayer.number}` : "배정된 선수가 없습니다"}
                 </p>
               </div>
               <button
@@ -534,7 +534,7 @@ export function LineupBoard({
                 className="rounded-md border border-slate-700 px-2 py-1 text-sm text-slate-300 hover:bg-slate-900"
                 onClick={() => setPlayerPickerSlotId(null)}
               >
-                Close
+                닫기
               </button>
             </div>
             <div className="grid max-h-96 gap-2 overflow-auto pr-1">
@@ -543,7 +543,7 @@ export function LineupBoard({
                 className="flex min-h-10 items-center justify-between rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-left text-sm font-semibold text-slate-300 transition hover:border-accent-blue"
                 onClick={() => choosePlayer(playerPickerSlot.id, EMPTY_PLAYER_VALUE)}
               >
-                <span>Clear position</span>
+                <span>포지션 비우기</span>
               </button>
               {matchRosterPlayers.map((player) => {
                 const isCurrent = assignments[playerPickerSlot.id] === player.id;
@@ -562,12 +562,12 @@ export function LineupBoard({
                     <span className="min-w-0 truncate font-semibold">{player.name}</span>
                     <span className="shrink-0 rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-400">
                       #{player.number}
-                      {isAssignedElsewhere ? " assigned" : ""}
+                      {isAssignedElsewhere ? " 배정됨" : ""}
                     </span>
                   </button>
                 );
               })}
-              {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">Add players to the match roster first.</p> : null}
+              {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">매치 로스터에 선수를 먼저 추가하세요.</p> : null}
             </div>
           </div>
         </div>

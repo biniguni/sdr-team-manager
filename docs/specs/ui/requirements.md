@@ -17,6 +17,7 @@ user's point of view. Implementation details belong in `design.md` and
 - Improve lineup, match, player, dashboard, and record-entry screens without
   changing the current database or security model unless a later product
   decision explicitly requires it.
+- Convert user-facing UI copy from English to natural Korean.
 - Clean up awkward wording and mixed-language labels.
 
 ## Current Product Decisions
@@ -29,8 +30,6 @@ user's point of view. Implementation details belong in `design.md` and
   `can_manage_match_results`.
 - UI planning should happen through questions, sketches, local browser review,
   and practical screen iteration.
-- Figma is deferred for now because the owner's current Figma Starter setup does
-  not make MCP-based review useful enough to block implementation.
 - Mobile usability and overall visual/layout cleanup are equal top priorities.
   Do not treat one as secondary unless a specific screen forces a tradeoff.
 
@@ -48,8 +47,12 @@ user's point of view. Implementation details belong in `design.md` and
 - Important action buttons are too small or hard to notice on mobile.
 - Mobile player selection should feel like a clear dense list, not a cramped
   desktop table.
-- User-facing labels, buttons, and help text should be Korean-first. Natural
-  football terms such as `라인업`, `MOM`, and `스쿼드` may remain as-is.
+- User-facing labels, buttons, page titles, subtitles, empty states, validation
+  messages, permission notices, and helper text should be Korean-first.
+  Natural football terms such as `라인업`, `MOM`, and `스쿼드` may remain as-is.
+- This is not a word-by-word translation pass. Longer English descriptions
+  should be rewritten in natural Korean for the app's football team-management
+  context.
 
 ## Scope
 
@@ -92,6 +95,9 @@ user's point of view. Implementation details belong in `design.md` and
   overall visual mood.
 - Keep the current dark visual theme. Improve the football pitch treatment in
   tactics and lineup screens without creating a separate mobile theme.
+- UI copy cleanup is a first-pass priority alongside layout polish. Menus and
+  short labels can be translated directly, but title subtitles, empty states,
+  permission guidance, and validation messages should be reviewed by screen.
 
 ## Out Of Scope For Now
 

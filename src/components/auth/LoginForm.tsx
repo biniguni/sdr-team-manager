@@ -14,16 +14,16 @@ export function LoginForm() {
   return (
     <form action={formAction} className="grid gap-4">
       <label className="grid gap-1 text-sm text-slate-300">
-        Email
+        이메일
         <Input name="email" type="email" autoComplete="email" required />
       </label>
       <label className="grid gap-1 text-sm text-slate-300">
-        Password
+        비밀번호
         <Input name="password" type="password" autoComplete="current-password" required />
       </label>
       {!state.ok ? <p className="text-sm text-accent-red">{state.message}</p> : null}
       <Button type="submit" disabled={pending}>
-        {pending ? "Signing in..." : "Sign in"}
+        {pending ? "로그인 중..." : "로그인"}
       </Button>
     </form>
   );

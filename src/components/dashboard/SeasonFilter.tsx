@@ -16,7 +16,7 @@ export function SeasonFilter({ seasons, selectedSeasonId }: { seasons: Season[];
 
   return (
     <label className="grid min-w-56 gap-1 text-sm text-slate-300">
-      Season
+      시즌
       <Select value={selectedSeasonId} onChange={(event) => changeSeason(event.target.value)}>
         {seasons.map((season) => (
           <option key={season.id} value={season.id}>

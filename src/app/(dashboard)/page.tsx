@@ -23,8 +23,8 @@ export default async function DashboardHome({
   if (!selectedSeason) {
     return (
       <section className="grid gap-3">
-        <h1 className="text-3xl font-extrabold">SANDRO FC Dashboard</h1>
-        <p className="text-sm text-slate-400">Create a season first to view dashboard metrics.</p>
+        <h1 className="text-3xl font-extrabold">SANDRO FC 대시보드</h1>
+        <p className="text-sm text-slate-400">대시보드를 보려면 시즌을 먼저 생성하세요.</p>
       </section>
     );
   }
@@ -47,8 +47,8 @@ export default async function DashboardHome({
     <section className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">SANDRO FC Season Dashboard</h1>
-          <p className="mt-2 text-sm text-slate-500">{selectedSeason.name} performance summary</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">SANDRO FC 시즌 대시보드</h1>
+          <p className="mt-2 text-sm text-slate-500">{selectedSeason.name} 성과 요약</p>
         </div>
         <SeasonFilter seasons={seasons as Season[]} selectedSeasonId={selectedSeason.id} />
       </div>
