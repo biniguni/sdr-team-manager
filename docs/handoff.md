@@ -96,6 +96,17 @@ This is the next-session brief. Historical detail belongs in
 - Left blank `Owner change` rows at their current/original wording, including
   intentionally retained English labels such as `Operator login`,
   `Editor login`, and blank review items.
+- Added mobile-focused lineup polish:
+  - tapping the lineup field opens a capture-friendly enlarged lineup view,
+  - tapping outside the mobile menu closes it,
+  - dashboard ranking tables stay horizontal on mobile through table scrolling,
+  - mobile input/select controls use 16px text to avoid common browser auto-zoom,
+  - `/schedule` exists as a placeholder 경기 일정 screen and menu item.
+- Addressed PR review maintainability items:
+  - removed the global `maximumScale: 1` mobile zoom lock,
+  - moved shared menu links to `src/components/layout/navLinks.ts`,
+  - extracted shared pitch rendering to `src/components/lineup/LineupPitch.tsx`,
+  - documented `/schedule` in `docs/specs/design.md`.
 - Confirmed that historical data migration is deferred until the lineup and
   record-entry workflow is comfortable and the needed historical detail level is
   decided.
@@ -110,6 +121,10 @@ This is the next-session brief. Historical detail belongs in
   `http://localhost:3000`.
 - `npm.cmd run lint` passed after applying owner-approved UI copy.
 - `npm.cmd run build` passed after applying owner-approved UI copy.
+- `npm.cmd run lint` passed after the mobile lineup/menu/schedule changes and
+  follow-up review maintainability fixes.
+- `npm.cmd run build` passed after the mobile lineup/menu/schedule changes and
+  follow-up review maintainability fixes.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 
@@ -140,7 +155,11 @@ This is the next-session brief. Historical detail belongs in
   - `src/components/layout/MobileNav.tsx`
   - `src/components/layout/Sidebar.tsx`
   - `src/components/lineup/LineupBoard.tsx`
+  - `src/components/lineup/LineupPitch.tsx`
   - `src/components/lineup/LineupMatchCards.tsx`
+  - `src/components/layout/MobileMenu.tsx`
+  - `src/components/layout/navLinks.ts`
+  - `src/app/(dashboard)/schedule/page.tsx`
   - `src/types/index.ts`
 - `reference/left_menu_and_lineup_sample.png` is an intentional untracked
   reference image from the owner.
@@ -183,11 +202,19 @@ npm.cmd run dev
    - permission wording,
    - mobile side menu behavior,
    - mobile `/lineup` layout.
+   - verify enlarged lineup capture on a real phone.
 
 ## Remaining Work / Risks
 
 - Mobile position-tap bottom-sheet selection is not implemented yet.
 - Real-phone verification is still needed.
+- Remaining PR review follow-ups:
+  - keyboard Enter/Space on a pitch slot may also trigger field enlargement;
+    stop propagation or separate the enlarge trigger,
+  - enlarged lineup overlay still needs dialog accessibility polish such as
+    `role="dialog"`, `aria-modal`, Escape close, and focus handling,
+  - concurrent lineup save and derived position-performance refresh still need
+    a later DB transaction/RPC design.
 - Period mode change blocking after lineups exist is not implemented yet.
 - General editor behavior is not verified yet because real editor accounts will
   be added later.

@@ -40,8 +40,13 @@ This is the short status note for future sessions. Detailed history belongs in
   player picker used by the right-side position list.
 - Mobile UI polish now includes: tap the lineup field to open a capture-friendly
   enlarged lineup view, tap outside the mobile menu to close it, prevent common
-  mobile browser auto-zoom triggers, keep dashboard ranking text horizontal with
-  table scrolling, and expose a placeholder `/schedule` route in the menu.
+  mobile browser auto-zoom triggers through mobile-sized form controls, keep
+  dashboard ranking text horizontal with table scrolling, and expose a
+  placeholder `/schedule` route in the menu.
+- Navigation links are shared from `src/components/layout/navLinks.ts`, so
+  desktop and mobile menu order should stay aligned.
+- The lineup pitch is shared through `src/components/lineup/LineupPitch.tsx`,
+  so normal and enlarged lineup views use the same field rendering path.
 - Current work is not in a data-migration phase. The immediate focus is local
   browser/mobile review, finding awkward flows, and making the lineup screens
   easier to use.
@@ -78,6 +83,8 @@ The security cleanup is complete for the current owner workflow:
   tap/click player selection.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the mobile lineup,
   menu, dashboard ranking, viewport, and schedule placeholder changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after removing the global
+  mobile zoom lock and addressing maintainability review items.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
@@ -123,6 +130,9 @@ The security cleanup is complete for the current owner workflow:
 - Normal-editor behavior still needs verification once editor accounts exist.
 - Mobile lineup drag, enlarged lineup capture, and outside-tap menu close still
   need real-device verification.
+- Remaining review follow-up candidates: keyboard event propagation between
+  pitch slots and field enlargement, accessibility polish for the enlarged
+  lineup dialog, and longer-term transaction safety for concurrent lineup saves.
 - Mobile logout/account UI is not polished yet; it is not a current security
   blocker and should be handled during UI improvement work.
 - Some UI copy rows are intentionally still at their current/original wording
