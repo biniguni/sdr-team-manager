@@ -23,8 +23,8 @@ export async function createSeason(formData: FormData): Promise<ActionResult> {
   const start_date = text(formData, "start_date");
   const end_date = text(formData, "end_date");
 
-  if (!name || !start_date || !end_date) return fail("Season name, start date, and end date are required.");
-  if (end_date < start_date) return fail("Season end date must be on or after the start date.");
+  if (!name || !start_date || !end_date) return fail("시즌 이름, 시작일, 종료일을 입력하세요.");
+  if (end_date < start_date) return fail("시즌 종료일은 시작일과 같거나 이후여야 합니다.");
 
   const supabase = await createClient();
   const { error } = await supabase.from("seasons").insert({ name, start_date, end_date });
@@ -48,9 +48,9 @@ export async function updateSeason(formData: FormData): Promise<ActionResult> {
   const start_date = text(formData, "start_date");
   const end_date = text(formData, "end_date");
 
-  if (!id) return fail("Season id is missing.");
-  if (!name || !start_date || !end_date) return fail("Season name, start date, and end date are required.");
-  if (end_date < start_date) return fail("Season end date must be on or after the start date.");
+  if (!id) return fail("시즌 정보가 없습니다.");
+  if (!name || !start_date || !end_date) return fail("시즌 이름, 시작일, 종료일을 입력하세요.");
+  if (end_date < start_date) return fail("시즌 종료일은 시작일과 같거나 이후여야 합니다.");
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -76,18 +76,18 @@ export async function addSquadMember(formData: FormData): Promise<ActionResult> 
   const seasonId = text(formData, "season_id");
   const playerId = text(formData, "player_id");
 
-  if (!seasonId || !playerId) return fail("Choose an active player to add.");
+  if (!seasonId || !playerId) return fail("등록할 선수를 선택하세요.");
 
   const supabase = await createClient();
   const { data: player } = await supabase.from("players").select("is_active").eq("id", playerId).single();
-  if (!player?.is_active) return fail("Only active players can be added to a squad.");
+  if (!player?.is_active) return fail("등록 선수만 스쿼드에 추가할 수 있습니다.");
 
   const { error } = await supabase
     .from("squad_members")
     .insert({ season_id: seasonId, player_id: playerId });
 
   if (error) {
-    return fail(error.code === "23505" ? "That player is already in this squad." : error.message);
+    return fail(error.code === "23505" ? "이미 스쿼드에 포함된 선수입니다." : error.message);
   }
 
   revalidatePath(`/seasons/${seasonId}`);
@@ -104,7 +104,7 @@ export async function removeSquadMember(formData: FormData): Promise<ActionResul
 
   const seasonId = text(formData, "season_id");
   const playerId = text(formData, "player_id");
-  if (!seasonId || !playerId) return fail("Squad member is missing.");
+  if (!seasonId || !playerId) return fail("선수 정보가 없습니다.");
 
   const supabase = await createClient();
   const { data: assigned } = await supabase

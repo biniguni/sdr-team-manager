@@ -37,7 +37,7 @@ export async function savePlayerMatchStats(_: ActionResult, formData: FormData):
   const redCards = integer(formData, "red_cards");
 
   if ([goals, assists, yellowCards, redCards].some((value) => !Number.isInteger(value) || value < 0)) {
-    return fail("Goals, assists, yellow cards, and red cards must be zero or greater.");
+    return fail("득점, 도움, 경고, 퇴장은 0 이상이어야 합니다.");
   }
 
   const supabase = await createClient();
@@ -68,7 +68,7 @@ export async function savePlayerMatchStats(_: ActionResult, formData: FormData):
   if (error) return fail(error.message);
 
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
-  return { ok: true, message: "Stats saved." };
+  return { ok: true, message: "선수 기록을 저장했습니다." };
 }
 
 export async function getMatchStats(matchId: string) {

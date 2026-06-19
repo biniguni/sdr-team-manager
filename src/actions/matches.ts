@@ -46,12 +46,12 @@ export async function createMatch(formData: FormData): Promise<ActionResult> {
   const matchDate = text(formData, "match_date");
 
   if (!seasonId || !opponent || !matchDate) {
-    return fail("Season, opponent, and match date are required.");
+    return fail("시즌, 상대팀, 경기 일자를 입력하세요.");
   }
 
   const supabase = await createClient();
   const { data: season } = await supabase.from("seasons").select("is_active").eq("id", seasonId).single();
-  if (!season?.is_active) return fail("Matches can only be added to active seasons.");
+  if (!season?.is_active) return fail("진행하는 시즌에만 경기를 추가할 수 있습니다.");
 
   const { data: match, error } = await supabase
     .from("matches")
@@ -92,7 +92,7 @@ export async function updateMatch(formData: FormData): Promise<ActionResult> {
   const opponent = text(formData, "opponent");
   const matchDate = text(formData, "match_date");
 
-  if (!id || !seasonId || !opponent || !matchDate) return fail("Match id, opponent, and match date are required.");
+  if (!id || !seasonId || !opponent || !matchDate) return fail("경기 정보, 상대팀, 경기 일자를 입력하세요.");
 
   const resultFieldsSubmitted =
     formData.has("our_score") ||
@@ -147,7 +147,7 @@ export async function completeMatch(formData: FormData): Promise<ActionResult> {
 
   const id = text(formData, "id");
   const seasonId = text(formData, "season_id");
-  if (!id || !seasonId) return fail("Match id is missing.");
+  if (!id || !seasonId) return fail("경기 정보가 없습니다.");
 
   const supabase = await createClient();
   const { data: periods } = await supabase
@@ -157,7 +157,7 @@ export async function completeMatch(formData: FormData): Promise<ActionResult> {
 
   const emptyPeriods = periods?.filter((period) => !period.period_lineups || period.period_lineups.length === 0) ?? [];
   if (emptyPeriods.length > 0) {
-    return fail("Some periods do not have lineups yet. The match can still be saved, but completion is blocked.");
+    return fail("라인업이 없는 쿼터가 있어 완료할 수 없습니다. 경기 정보 저장은 가능합니다.");
   }
 
   const { error } = await supabase.from("matches").update({ status: "completed" }).eq("id", id);

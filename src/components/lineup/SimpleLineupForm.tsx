@@ -82,7 +82,7 @@ export function SimpleLineupForm({
           </Select>
         </label>
         <label className="grid gap-1 text-sm text-slate-300">
-          Formation
+          포메이션
           <Select value={selectedFormationId} onChange={(event) => changeFormation(event.target.value)}>
             {formations.map((formation) => (
               <option key={formation.id} value={formation.id}>
@@ -126,14 +126,14 @@ export function SimpleLineupForm({
         })}
       </div>
 
-      {periods.length === 0 ? <p className="text-sm text-accent-red">Create match periods before saving a lineup.</p> : null}
+      {periods.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 쿼터를 먼저 생성하세요.</p> : null}
       {formations.length === 0 ? <p className="text-sm text-accent-red">Create at least one formation before saving a lineup.</p> : null}
-      {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">Add players to this season squad before saving a lineup.</p> : null}
+      {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 스쿼드에 선수를 먼저 추가하세요.</p> : null}
       {hasDuplicatePlayers ? <p className="text-sm text-accent-red">A player can only be used once per period.</p> : null}
       {state.message ? <p className={`text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
 
       <Button type="submit" disabled={pending || hasDuplicatePlayers || !selectedPeriodId || !selectedFormationId || squadPlayers.length === 0}>
-        {pending ? "Saving..." : "Save lineup"}
+        {pending ? "저장 중..." : "라인업 저장"}
       </Button>
     </form>
   );

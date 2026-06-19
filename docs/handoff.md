@@ -15,10 +15,9 @@ This is the next-session brief. Historical detail belongs in
   access.
 - Current review path is local browser/mobile review plus direct code
   iteration.
-- Current UI copy direction: convert remaining user-facing English to natural
-  Korean across menus, titles, subtitles, helper text, empty states, validation
-  messages, and permission notices. Treat longer English text as product copy to
-  rewrite, not literal word replacement.
+- Current UI copy direction: apply only owner-approved wording from
+  `docs/specs/ui/copy-review.md`. Rows with an empty `Owner change` should stay
+  at the current/original wording until the owner fills them in.
 - Temporary copy review file:
   `docs/specs/ui/copy-review.md`. The owner should fill the `Owner change`
   column; apply that wording to code after review.
@@ -90,9 +89,10 @@ This is the next-session brief. Historical detail belongs in
 - Added `docs/specs/ui/copy-review.md` as a temporary working table for Korean
   UI copy review. It includes current/original wording, suggested drafts,
   remaining English copy, and an `Owner change` column for final wording.
-- Some UI copy was changed in code as an early draft before the owner clarified
-  the desired review flow. Treat those code edits as draft, not final, and
-  reconcile them against `docs/specs/ui/copy-review.md`.
+- Applied owner-approved UI copy from `docs/specs/ui/copy-review.md` to code.
+- Left blank `Owner change` rows at their current/original wording, including
+  intentionally retained English labels such as `Operator login`,
+  `Editor login`, and blank review items.
 
 ## Verification Completed
 
@@ -102,6 +102,10 @@ This is the next-session brief. Historical detail belongs in
 - `git diff --check` passed with only line-ending warnings.
 - Foreground `npm.cmd run dev` starts successfully and reports
   `http://localhost:3000`.
+- `npm.cmd run lint` passed after applying owner-approved UI copy.
+- `npm.cmd run build` passed after applying owner-approved UI copy.
+- A targeted source search found no remaining representative original strings
+  for the applied owner-approved copy.
 
 ## Current Git State Notes
 
@@ -167,8 +171,8 @@ npm.cmd run dev
 
 6. Polish based on review:
    - desktop pitch/right-panel density,
-   - full Korean UI copy cleanup, including longer subtitles and helper text,
-   - apply owner-approved wording from `docs/specs/ui/copy-review.md`,
+   - fill any remaining blank `Owner change` rows in
+     `docs/specs/ui/copy-review.md` before changing those strings,
    - permission wording,
    - mobile side menu behavior,
    - mobile `/lineup` layout.
@@ -186,10 +190,10 @@ npm.cmd run dev
   - owner/result manager can write match results and player stats.
 - Mobile logout/account UI exists in the side menu but still needs visual
   polish.
-- Remaining English UI copy may exist outside menus. Do a screen-by-screen copy
-  pass rather than only replacing individual English words.
-- Before finalizing Korean UI copy, review `docs/specs/ui/copy-review.md` and
-  use the `Owner change` column as the final wording source.
+- Remaining English UI copy may be intentional where `Owner change` is blank.
+  Do a screen-by-screen copy pass only after the owner fills final wording.
+- Before changing more UI copy, review `docs/specs/ui/copy-review.md` and use
+  only the `Owner change` column as the final wording source.
 
 ## Cautions
 

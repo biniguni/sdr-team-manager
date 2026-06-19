@@ -38,7 +38,7 @@ export function PlayerStatsForm({
           <h3 className="font-semibold text-slate-100">#{player.number} {player.name}</h3>
           <div className="mt-1 flex gap-2">
             {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
-            <Badge tone={isAssigned ? "green" : "default"}>{isAssigned ? "라인업 배정" : "라인업 미배정"}</Badge>
+            <Badge tone={isAssigned ? "green" : "default"}>{isAssigned ? "라인업 등록" : "라인업 미등록"}</Badge>
             {isAssigned && !stats ? <Badge tone="red">미입력</Badge> : null}
             {stats ? <Badge tone="blue">입력 완료</Badge> : null}
           </div>
@@ -76,7 +76,7 @@ export function PlayerStatsForm({
           {pending ? "저장 중..." : "선수 기록 저장"}
         </Button>
       ) : (
-        <p className="mt-3 text-sm text-slate-400">선수 기록을 수정하려면 경기 결과 관리 권한이 필요합니다.</p>
+        <p className="mt-3 text-sm text-slate-400">선수 기록을 수정하려면 권한이 필요합니다.</p>
       )}
     </form>
   );

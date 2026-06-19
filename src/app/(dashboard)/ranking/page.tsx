@@ -18,7 +18,7 @@ export default async function RankingPage({
   const selectedSeason = selectDefaultSeason(seasons as Season[], seasonId);
 
   if (!selectedSeason) {
-    return <p className="text-sm text-slate-400">순위를 보려면 시즌을 먼저 생성하세요.</p>;
+    return <p className="text-sm text-slate-400">개인 기록 순위를 보려면 시즌을 먼저 생성하세요.</p>;
   }
 
   const { data: matches = [] } = await supabase

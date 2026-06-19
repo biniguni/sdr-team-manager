@@ -27,7 +27,7 @@ export function StatCards({ players, totalMatches }: { players: PlayerAggregate[
         <div key={card.label} className="rounded-lg border border-slate-800 bg-bg-secondary/80 p-4">
           <div className="text-xs font-medium text-slate-500">{card.label}</div>
           <div className={`mt-2 truncate text-lg font-extrabold ${card.tone}`}>{card.value}</div>
-          <div className="mt-1 truncate text-xs text-slate-500">{card.sub || "아직 데이터가 없습니다"}</div>
+          <div className="mt-1 truncate text-xs text-slate-500">{card.sub || "데이터가 없습니다."}</div>
         </div>
       ))}
     </section>

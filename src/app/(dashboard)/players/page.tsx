@@ -25,8 +25,8 @@ export default async function PlayersPage({
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="선수"
-        description="선수를 한 번 등록하면 시즌 스쿼드, 라인업, 경기 기록에서 계속 사용할 수 있습니다."
+        title="선수 관리"
+        description="선수 등록 시 스쿼드, 라인업, 경기 기록에서 계속 확인 가능합니다."
       />
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
@@ -37,9 +37,9 @@ export default async function PlayersPage({
         </Card>
         ) : (
         <Card>
-          <h2 className="mb-2 text-lg font-semibold">읽기 전용 접근</h2>
+          <h2 className="mb-2 text-lg font-semibold">편집 권한 필요</h2>
           <p className="text-sm leading-6 text-slate-400">
-            선수를 추가하거나 수정하려면 승인된 편집자 계정으로 로그인하세요.
+            Sign in with an approved editor account to add or update players.
           </p>
         </Card>
         )}
@@ -48,9 +48,9 @@ export default async function PlayersPage({
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">선수 목록</h2>
             <div className="flex gap-2 text-sm">
-              <a className="text-accent-blue" href="/players?status=active">활성</a>
+              <a className="text-accent-blue" href="/players?status=active">활동 중</a>
               <a className="text-slate-300" href="/players?status=all">전체</a>
-              <a className="text-slate-300" href="/players?status=inactive">비활성</a>
+              <a className="text-slate-300" href="/players?status=inactive">휴식 중</a>
             </div>
           </div>
           {error ? <p className="text-sm text-accent-red">{error.message}</p> : null}
@@ -66,7 +66,7 @@ export default async function PlayersPage({
                   </span>
                   <span className="flex gap-2">
                     {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
-                    <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "활성" : "비활성"}</Badge>
+                    <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "활동 중" : "휴식 중"}</Badge>
                   </span>
                 </summary>
                 {canEdit ? (
@@ -81,8 +81,8 @@ export default async function PlayersPage({
                   </div>
                 ) : (
                   <dl className="mt-4 grid gap-2 text-sm text-slate-300">
-                    <div>구분: {player.player_type === "guest" ? "용병" : "정규 선수"}</div>
-                    <div>상태: {player.is_active ? "활성" : "비활성"}</div>
+                    <div>구분: {player.player_type === "guest" ? "용병" : "선수"}</div>
+                    <div>상태: {player.is_active ? "활동 중" : "휴식 중"}</div>
                   </dl>
                 )}
               </details>

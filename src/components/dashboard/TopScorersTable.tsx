@@ -21,10 +21,10 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
             <Th>순위</Th>
             <Th>선수</Th>
             <Th center>등번호</Th>
-            <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>경기</Th>
+            <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>기</Th>
             <Th center onClick={() => setSortKey("goals")} active={sortKey === "goals"}>득점</Th>
             <Th center onClick={() => setSortKey("assists")} active={sortKey === "assists"}>도움</Th>
-            <Th center onClick={() => setSortKey("points")} active={sortKey === "points"}>공격P</Th>
+            <Th center onClick={() => setSortKey("points")} active={sortKey === "points"}>공격포인트</Th>
           </tr>
         </thead>
         <tbody>
@@ -48,7 +48,7 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
           ))}
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-4 py-6 text-center text-sm text-slate-500">아직 선수 기록이 없습니다.</td>
+              <td colSpan={7} className="px-4 py-6 text-center text-sm text-slate-500">선수 기록이 없습니다.</td>
             </tr>
           ) : null}
         </tbody>

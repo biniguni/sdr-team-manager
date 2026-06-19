@@ -46,7 +46,7 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
             </span>
           );
         })}
-        {recent.length === 0 ? <span className="text-sm text-slate-500">점수가 입력된 경기가 없습니다.</span> : null}
+        {recent.length === 0 ? <span className="text-sm text-slate-500">진행된 경기가 없습니다.</span> : null}
       </div>
     </section>
   );

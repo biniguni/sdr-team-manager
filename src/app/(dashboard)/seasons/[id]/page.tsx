@@ -29,7 +29,7 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
   ]);
 
   if (!season) {
-    return <PageHeader title="Season not found" description="The selected season record does not exist." />;
+    return <PageHeader title="시즌을 찾을 수 없습니다" description="선택한 시즌 기록이 없습니다." />;
   }
 
   const squadRows = squad as unknown as SquadRow[];
@@ -39,14 +39,14 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <PageHeader title={(season as Season).name} description="Manage season details and the season squad." />
-        <Link className="text-sm font-semibold text-accent-blue" href={`/seasons/${id}/matches`}>Open matches</Link>
+        <PageHeader title={(season as Season).name} description="시즌 정보와 스쿼드 관리" />
+        <Link className="text-sm font-semibold text-accent-blue" href={`/seasons/${id}/matches`}>경기 관리</Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         {canEdit ? (
         <Card>
-          <h2 className="mb-4 text-lg font-semibold">Season details</h2>
+          <h2 className="mb-4 text-lg font-semibold">시즌 정보</h2>
           <form action={updateSeasonSubmit} className="grid gap-3">
             <input type="hidden" name="id" value={id} />
             <Input name="name" defaultValue={(season as Season).name} required />
@@ -61,19 +61,19 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
         </Card>
         ) : (
         <Card>
-          <h2 className="mb-2 text-lg font-semibold">Season details</h2>
+          <h2 className="mb-2 text-lg font-semibold">시즌 정보</h2>
           <div className="grid gap-2 text-sm text-slate-300">
-            <div>Name: {(season as Season).name}</div>
+            <div>선수명: {(season as Season).name}</div>
             <div>Period: {(season as Season).start_date} to {(season as Season).end_date}</div>
-            <div>Status: {(season as Season).is_active ? "Active" : "Closed"}</div>
+            <div>상태: {(season as Season).is_active ? "활동" : "Closed"}</div>
           </div>
         </Card>
         )}
 
         <Card>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Squad</h2>
-            <Badge tone="blue">{squadRows.length} players</Badge>
+            <h2 className="text-lg font-semibold">스쿼드</h2>
+            <Badge tone="blue">선수 {squadRows.length}명</Badge>
           </div>
           {canEdit ? (
             <form action={addSquadMemberSubmit} className="mb-5 flex flex-col gap-3 sm:flex-row">
@@ -86,7 +86,7 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
                   </option>
                 ))}
               </Select>
-              <Button type="submit">Add</Button>
+              <Button type="submit">추가</Button>
             </form>
           ) : null}
           <div className="grid gap-2">
@@ -102,12 +102,12 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
                     <form action={removeSquadMemberSubmit}>
                       <input type="hidden" name="season_id" value={id} />
                       <input type="hidden" name="player_id" value={row.player_id} />
-                      <Button type="submit" variant="danger" className="min-h-8 px-3 py-1">Remove</Button>
+                      <Button type="submit" variant="danger" className="min-h-8 px-3 py-1">삭제</Button>
                     </form>
                   ) : null}
                 </div>
               ))}
-            {squadRows.length === 0 ? <p className="text-sm text-slate-400">No squad players yet.</p> : null}
+            {squadRows.length === 0 ? <p className="text-sm text-slate-400">스쿼드에 선수가 없습니다.</p> : null}
           </div>
         </Card>
       </div>

@@ -37,7 +37,7 @@ function MomSelect({
     <label className="grid gap-1 text-sm text-slate-300">
       {label}
       <Select name={name} defaultValue={value ?? ""} disabled={disabled}>
-        <option value="">Not selected</option>
+        <option value="">선택 안 함</option>
         {players.map((player) => (
           <option key={player.id} value={player.id}>
             #{player.number} {player.name}{player.player_type === "guest" ? " [용병]" : ""}
@@ -77,18 +77,18 @@ export default async function MatchDetailPage({
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <PageHeader title={currentMatch.opponent} description="Update match details, score, result, and MOM records." />
+        <PageHeader title={currentMatch.opponent} description="경기 정보, 점수, 결과, MOM 관리" />
         <div className="flex gap-3 text-sm font-semibold text-accent-blue">
-          <Link href={`/seasons/${id}/matches`}>Back</Link>
-          <Link href={`/lineup?matchId=${matchId}`}>Lineup</Link>
-          <Link href={`/seasons/${id}/matches/${matchId}/stats`}>Stats</Link>
+          <Link href={`/seasons/${id}/matches`}>뒤로</Link>
+          <Link href={`/lineup?matchId=${matchId}`}>라인업</Link>
+          <Link href={`/seasons/${id}/matches/${matchId}/stats`}>선수 기록</Link>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[480px_1fr]">
         <Card>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">Match details</h2>
+            <h2 className="text-lg font-semibold">경기 상세</h2>
             <span className="flex gap-2">
               <Badge tone={resultTone(result)}>{result}</Badge>
               <Badge tone={currentMatch.status === "completed" ? "green" : "default"}>{currentMatch.status}</Badge>
@@ -101,17 +101,17 @@ export default async function MatchDetailPage({
                 <input type="hidden" name="season_id" value={id} />
                 <Input name="opponent" defaultValue={currentMatch.opponent} required />
                 <Input name="match_date" type="datetime-local" defaultValue={toDateTimeLocal(currentMatch.match_date)} required />
-                <Input name="venue" defaultValue={currentMatch.venue ?? ""} placeholder="Venue" />
+                <Input name="venue" defaultValue={currentMatch.venue ?? ""} placeholder="경기장" />
                 <label className="flex items-center gap-2 text-sm text-slate-300">
                   <input name="is_home" type="checkbox" defaultChecked={currentMatch.is_home} />
-                  Home match
+                  홈 경기
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <Input
                     name="our_score"
                     type="number"
                     min="0"
-                    placeholder="Sandro score"
+                    placeholder="산드로 점수"
                     defaultValue={currentMatch.our_score ?? ""}
                     disabled={!canManageMatchResults}
                   />
@@ -119,25 +119,25 @@ export default async function MatchDetailPage({
                     name="opponent_score"
                     type="number"
                     min="0"
-                    placeholder="Opponent score"
+                    placeholder="상대 점수"
                     defaultValue={currentMatch.opponent_score ?? ""}
                     disabled={!canManageMatchResults}
                   />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <MomSelect label="Match MOM" name="match_mom_player_id" players={squadPlayers} value={currentMatch.match_mom_player_id} disabled={!canManageMatchResults} />
-                  <MomSelect label="Defense MOM" name="defense_mom_player_id" players={squadPlayers} value={currentMatch.defense_mom_player_id} disabled={!canManageMatchResults} />
-                  <MomSelect label="Midfield MOM" name="midfield_mom_player_id" players={squadPlayers} value={currentMatch.midfield_mom_player_id} disabled={!canManageMatchResults} />
-                  <MomSelect label="Attack MOM" name="attack_mom_player_id" players={squadPlayers} value={currentMatch.attack_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="경기 MOM" name="match_mom_player_id" players={squadPlayers} value={currentMatch.match_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="수비 MOM" name="defense_mom_player_id" players={squadPlayers} value={currentMatch.defense_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="미드필드 MOM" name="midfield_mom_player_id" players={squadPlayers} value={currentMatch.midfield_mom_player_id} disabled={!canManageMatchResults} />
+                  <MomSelect label="공격 MOM" name="attack_mom_player_id" players={squadPlayers} value={currentMatch.attack_mom_player_id} disabled={!canManageMatchResults} />
                 </div>
                 <Select name="status" defaultValue={currentMatch.status} disabled={!canManageMatchResults}>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="completed">Completed</option>
+                  <option value="scheduled">다가올 경기</option>
+                  <option value="completed">종료</option>
                 </Select>
                 {!canManageMatchResults ? (
-                  <p className="text-sm text-slate-400">Match result permission is required to edit score, status, or MOM.</p>
+                  <p className="text-sm text-slate-400">점수, 경기 상태, MOM을 수정하기 위해서는 관리 권한이 필요합니다.</p>
                 ) : null}
-                <Button type="submit">Save match</Button>
+                <Button type="submit">매치 저장</Button>
               </form>
               {canManageMatchResults ? (
                 <form action={completeMatchSubmit} className="mt-3">
@@ -149,23 +149,23 @@ export default async function MatchDetailPage({
             </>
           ) : (
             <div className="grid gap-2 text-sm text-slate-300">
-              <div>Date: {new Date(currentMatch.match_date).toLocaleString()}</div>
-              <div>Venue: {currentMatch.venue ?? "-"}</div>
-              <div>Home/Away: {currentMatch.is_home ? "Home" : "Away"}</div>
-              <div>Score: {currentMatch.our_score ?? "-"} - {currentMatch.opponent_score ?? "-"}</div>
+              <div>일시: {new Date(currentMatch.match_date).toLocaleString()}</div>
+              <div>경기장: {currentMatch.venue ?? "-"}</div>
+              <div>홈/원정: {currentMatch.is_home ? "홈" : "원정"}</div>
+              <div>점수: {currentMatch.our_score ?? "-"} - {currentMatch.opponent_score ?? "-"}</div>
             </div>
           )}
         </Card>
 
         <Card>
-          <h2 className="mb-4 text-lg font-semibold">Periods</h2>
+          <h2 className="mb-4 text-lg font-semibold">쿼터</h2>
           <div className="grid gap-2">
             {(periods as Period[]).map((period) => (
               <div key={period.id} className="rounded-lg border border-slate-800 bg-slate-950 p-3 text-sm">
                 {period.order_num}. {period.label}
               </div>
             ))}
-            {periods?.length === 0 ? <p className="text-sm text-slate-400">No periods found.</p> : null}
+            {periods?.length === 0 ? <p className="text-sm text-slate-400">등록된 쿼터가 없습니다.</p> : null}
           </div>
         </Card>
       </div>

@@ -15,9 +15,9 @@ export default async function LoginPage() {
       <section className="w-full max-w-md rounded-lg border border-slate-800 bg-bg-secondary p-6">
         <div className="mb-6">
           <p className="text-sm font-semibold text-accent-blue">SANDRO FC</p>
-          <h1 className="mt-2 text-2xl font-bold">운영자 로그인</h1>
+          <h1 className="mt-2 text-2xl font-bold">Operator login</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            팀 기록을 관리하려면 승인된 계정으로 로그인하세요.
+            기록을 관리하려면 인증된 계정으로 로그인하길 바랍니다.
           </p>
         </div>
         <LoginForm />

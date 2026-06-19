@@ -28,9 +28,9 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   const seasonId = text(formData, "season_id");
   const matchId = text(formData, "match_id");
 
-  if (!periodId) return fail("Choose a period before saving the lineup.");
-  if (!formationId) return fail("Choose a formation before saving the lineup.");
-  if (!seasonId || !matchId) return fail("Match context is missing.");
+  if (!periodId) return fail("라인업을 저장하기 전에 쿼터를 선택하세요.");
+  if (!formationId) return fail("라인업을 저장하기 전에 포메이션을 선택하세요.");
+  if (!seasonId || !matchId) return fail("경기 정보가 없습니다.");
 
   const entries: LineupEntryInput[] = [];
   for (const [key, value] of formData.entries()) {
@@ -41,11 +41,11 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
     });
   }
 
-  if (entries.length === 0) return fail("Assign at least one player before saving.");
+  if (entries.length === 0) return fail("한 명 이상 등록한 뒤 저장하세요.");
 
   const assignedPlayers = entries.map((entry) => entry.player_id);
   if (new Set(assignedPlayers).size !== assignedPlayers.length) {
-    return fail("The same player cannot be assigned more than once in the same period.");
+    return fail("동일한 쿼터에 같은 선수를 중복 등록할 수 없습니다.");
   }
 
   const supabase = await createClient();
@@ -66,7 +66,7 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   }
 
   if (entries.some((entry) => !matchRosterPlayerIds.has(entry.player_id))) {
-    return fail("Only players added to this match roster can be assigned.");
+    return fail("경기 명단에 추가된 선수만 배정할 수 있습니다.");
   }
 
   const { error: deleteError } = await supabase.from("period_lineups").delete().eq("period_id", periodId);
@@ -84,7 +84,7 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   if (insertError) {
     return fail(
       insertError.code === "23505"
-        ? "A player or position was assigned more than once in this period."
+        ? "같은 쿼터에서 선수 또는 포지션이 중복 배정되었습니다."
         : insertError.message,
     );
   }
@@ -95,7 +95,7 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
   revalidatePath("/lineup");
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
-  return { ok: true, message: "Lineup saved." };
+  return { ok: true, message: "라인업을 저장했습니다." };
 }
 
 export async function addMatchRosterPlayer(formData: FormData): Promise<ActionResult> {
@@ -106,7 +106,7 @@ export async function addMatchRosterPlayer(formData: FormData): Promise<ActionRe
   const matchId = text(formData, "match_id");
   const playerId = text(formData, "player_id");
 
-  if (!seasonId || !matchId || !playerId) return fail("Choose a player to add to this match.");
+  if (!seasonId || !matchId || !playerId) return fail("이 경기 명단에 등록할 선수를 선택하세요.");
 
   const supabase = await createClient();
   const { data: squadMember, error: squadError } = await supabase
@@ -117,7 +117,7 @@ export async function addMatchRosterPlayer(formData: FormData): Promise<ActionRe
     .maybeSingle();
 
   if (squadError) return fail(squadError.message);
-  if (!squadMember) return fail("Only players in this season squad can be added to the match roster.");
+  if (!squadMember) return fail("이 시즌 스쿼드에 포함된 선수만 경기 명단에 추가할 수 있습니다.");
 
   const { error } = await supabase.from("match_roster").upsert(
     { match_id: matchId, player_id: playerId },
@@ -130,7 +130,7 @@ export async function addMatchRosterPlayer(formData: FormData): Promise<ActionRe
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
-  return { ok: true, message: "Player added to this match." };
+  return { ok: true, message: "선수를 이 경기에 추가했습니다." };
 }
 
 export async function removeMatchRosterPlayer(formData: FormData): Promise<ActionResult> {
@@ -141,7 +141,7 @@ export async function removeMatchRosterPlayer(formData: FormData): Promise<Actio
   const matchId = text(formData, "match_id");
   const playerId = text(formData, "player_id");
 
-  if (!seasonId || !matchId || !playerId) return fail("Match roster context is missing.");
+  if (!seasonId || !matchId || !playerId) return fail("경기 명단이 없습니다.");
 
   const supabase = await createClient();
   const { data: existingLineup, error: lineupError } = await supabase
@@ -175,7 +175,7 @@ export async function createGuestPlayerForLineup(_: ActionResult, formData: Form
   const name = text(formData, "name");
   const numberText = text(formData, "number");
 
-  if (!seasonId || !matchId) return fail("Match context is missing.");
+  if (!seasonId || !matchId) return fail("경기 정보가 없습니다.");
   if (!name) return fail("Guest name is required.");
 
   const explicitNumber = numberText ? Number(numberText) : null;
@@ -214,7 +214,7 @@ export async function createGuestPlayerForLineup(_: ActionResult, formData: Form
 
     if (playerError) {
       if (!explicitNumber && playerError.code === "23505") continue;
-      return fail(playerError.code === "23505" ? "That player number is already in use." : playerError.message);
+      return fail(playerError.code === "23505" ? "이미 사용 중인 등번호입니다." : playerError.message);
     }
 
     const { error: squadError } = await supabase.from("squad_members").upsert(

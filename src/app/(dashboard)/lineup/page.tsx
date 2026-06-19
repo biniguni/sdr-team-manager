@@ -144,7 +144,7 @@ export default async function LineupPage({
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <PageHeader title="라인업" description={`${season.name}의 경기 전 라인업을 쿼터별로 준비합니다.`} />
+        <PageHeader title="라인업" description="경기 전 라인업 쿼터별로 준비" />
         <Link className="text-sm font-semibold text-accent-blue" href={`/seasons/${season.id}/matches`}>
           경기 관리
         </Link>
@@ -153,7 +153,7 @@ export default async function LineupPage({
       <section className="grid gap-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-slate-100">경기 선택</h2>
-          <span className="text-xs text-slate-400">{sortedMatches.length} matches</span>
+          <span className="text-xs text-slate-400">{sortedMatches.length}경기</span>
         </div>
         <LineupMatchCards matches={sortedMatches} selectedMatchId={selectedMatch.id} />
       </section>
@@ -175,9 +175,9 @@ export default async function LineupPage({
           </div>
           <div className="flex flex-wrap gap-3 text-sm font-semibold text-accent-blue">
             <Link href={`/seasons/${season.id}/matches/${selectedMatch.id}`}>경기 상세</Link>
-            <Link href={`/seasons/${season.id}/matches/${selectedMatch.id}`}>{canManageMatchResults ? "결과 입력" : "결과 입력 권한 필요"}</Link>
+            <Link href={`/seasons/${season.id}/matches/${selectedMatch.id}`}>{canManageMatchResults ? "결과 입력" : "권한 필요"}</Link>
             <Link href={`/seasons/${season.id}/matches/${selectedMatch.id}/stats`}>
-              {canManageMatchResults ? "선수 기록" : "선수 기록 권한 필요"}
+              {canManageMatchResults ? "선수 기록" : "권한 필요"}
             </Link>
           </div>
         </div>

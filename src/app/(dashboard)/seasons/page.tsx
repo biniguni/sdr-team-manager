@@ -18,14 +18,14 @@ export default async function SeasonsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader title="시즌" description="시즌은 특정 기간의 스쿼드와 경기를 함께 관리하는 단위입니다." />
+      <PageHeader title="시즌 관리" description="특정 기간의 스쿼드와 경기를 함께 관리합니다." />
 
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         {canEdit ? (
         <Card>
           <h2 className="mb-4 text-lg font-semibold">시즌 생성</h2>
           <form action={createSeasonSubmit} className="grid gap-3">
-            <Input name="name" placeholder="시즌 이름" required />
+            <Input name="name" placeholder="시즌명" required />
             <Input name="start_date" type="date" required />
             <Input name="end_date" type="date" required />
             <Button type="submit">시즌 생성</Button>
@@ -33,9 +33,9 @@ export default async function SeasonsPage() {
         </Card>
         ) : (
         <Card>
-          <h2 className="mb-2 text-lg font-semibold">읽기 전용 접근</h2>
+          <h2 className="mb-2 text-lg font-semibold">편집 권한 필요</h2>
           <p className="text-sm leading-6 text-slate-400">
-            시즌을 생성하려면 승인된 편집자 계정으로 로그인하세요.
+            시즌을 생성하려면 승인된 계정으로 로그인하세요.
           </p>
         </Card>
         )}
@@ -54,7 +54,7 @@ export default async function SeasonsPage() {
                   <span className="block font-medium">{season.name}</span>
                   <span className="text-sm text-slate-400">{season.start_date} ~ {season.end_date}</span>
                 </span>
-                <Badge tone={season.is_active ? "green" : "default"}>{season.is_active ? "활성" : "종료"}</Badge>
+                <Badge tone={season.is_active ? "green" : "default"}>{season.is_active ? "Active" : "Closed"}</Badge>
               </Link>
             ))}
             {seasons?.length === 0 ? <p className="text-sm text-slate-400">등록된 시즌이 없습니다.</p> : null}

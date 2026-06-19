@@ -52,7 +52,7 @@ export async function createFormation(formData: FormData): Promise<ActionResult>
   const name = text(formData, "name");
   const slots = parseSlots(text(formData, "slots"));
 
-  if (!name) return fail("Formation name is required.");
+  if (!name) return fail("포메이션 이름을 입력하세요.");
   if (typeof slots === "string") return fail(slots);
 
   const supabase = await createClient();
@@ -63,7 +63,7 @@ export async function createFormation(formData: FormData): Promise<ActionResult>
     .single();
 
   if (error || !formation) {
-    return fail(error?.code === "23505" ? "That formation name already exists." : error?.message ?? "Formation could not be created.");
+    return fail(error?.code === "23505" ? "이미 사용 중인 포메이션 이름입니다." : error?.message ?? "포메이션을 생성하지 못했습니다.");
   }
 
   const { error: slotError } = await supabase.from("position_slots").insert(
@@ -90,7 +90,7 @@ export async function deleteFormation(formData: FormData): Promise<ActionResult>
   if (!editor.ok) return fail(editor.message);
 
   const id = text(formData, "id");
-  if (!id) return fail("Formation id is missing.");
+  if (!id) return fail("포메이션 정보가 없습니다.");
 
   const supabase = await createClient();
   const { data: used } = await supabase.from("period_lineups").select("id").eq("formation_id", id).limit(1);

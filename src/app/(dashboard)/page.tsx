@@ -47,8 +47,8 @@ export default async function DashboardHome({
     <section className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">SANDRO FC 시즌 대시보드</h1>
-          <p className="mt-2 text-sm text-slate-500">{selectedSeason.name} 성과 요약</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">SANDRO FC 시즌 현황</h1>
+          <p className="mt-2 text-sm text-slate-500">{selectedSeason.name} 시즌 요약</p>
         </div>
         <SeasonFilter seasons={seasons as Season[]} selectedSeasonId={selectedSeason.id} />
       </div>

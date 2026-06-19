@@ -30,7 +30,7 @@ export default async function MatchStatsPage({
     ]);
 
   if (!match) {
-    return <PageHeader title="Match not found" description="The selected match record does not exist." />;
+    return <PageHeader title="경기를 찾을 수 없습니다." description="선택한 경기 기록이 없습니다." />;
   }
 
   const squadPlayers = (squad as unknown as SquadRow[])
@@ -45,17 +45,17 @@ export default async function MatchStatsPage({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <PageHeader
           title={`${(match as Match).opponent} stats`}
-          description="Enter post-match player totals for lineup-assigned squad players."
+          description="라인업에 배정된 선수의 경기 후 기록을 입력합니다."
         />
         <div className="flex gap-3 text-sm font-semibold text-accent-blue">
           <Link href={`/seasons/${id}/matches/${matchId}`}>Back to match</Link>
-          <Link href={`/seasons/${id}/matches/${matchId}/lineup`}>Lineup</Link>
+          <Link href={`/seasons/${id}/matches/${matchId}/lineup`}>라인업</Link>
         </div>
       </div>
 
       <Card>
         <div className="mb-5">
-          <h2 className="text-lg font-semibold">Player records</h2>
+          <h2 className="text-lg font-semibold">선수 기록</h2>
           <p className="mt-1 text-sm text-slate-400">
             Players assigned in any period lineup can receive match stats. Unassigned squad players are shown for context.
           </p>
@@ -72,7 +72,7 @@ export default async function MatchStatsPage({
               canEdit={canManageMatchResults}
             />
           ))}
-          {squadPlayers.length === 0 ? <p className="text-sm text-slate-400">No squad players found for this season.</p> : null}
+          {squadPlayers.length === 0 ? <p className="text-sm text-slate-400">해당 시즌의 스쿼드 선수가 없습니다.</p> : null}
         </div>
       </Card>
     </div>

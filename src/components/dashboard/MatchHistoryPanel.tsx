@@ -37,7 +37,7 @@ export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; 
             </article>
           );
         })}
-        {matches.length === 0 ? <p className="p-3 text-sm text-slate-500">이 시즌에 등록된 경기가 없습니다.</p> : null}
+        {matches.length === 0 ? <p className="p-3 text-sm text-slate-500">등록된 경기가 없습니다.</p> : null}
       </div>
     </section>
   );

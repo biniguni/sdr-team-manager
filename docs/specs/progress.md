@@ -33,6 +33,11 @@ This is the short status note for future sessions. Detailed history belongs in
 - A temporary UI copy review file now exists at
   `docs/specs/ui/copy-review.md`. Use its `Owner change` column as the source
   for final Korean wording before applying or revising code changes.
+- Owner-approved wording from `docs/specs/ui/copy-review.md` has been applied
+  to code. Rows with an empty `Owner change` were intentionally left at the
+  current/original wording.
+- On `/lineup`, pitch position slots can now be tapped/clicked to open the same
+  player picker used by the right-side position list.
 
 ## Security State
 
@@ -60,6 +65,12 @@ The security cleanup is complete for the current owner workflow:
 - `npm.cmd run build` passed after the security cleanup code changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the match-roster and
   `4-2-3-1` lineup changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after applying the
+  owner-approved UI copy.
+- `npm.cmd run lint` and `npm.cmd run build` passed after enabling pitch-slot
+  tap/click player selection.
+- A targeted source search found no remaining representative original strings
+  for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
 - `git diff --check` passed; only line-ending warnings were reported.
 - General editor behavior is not verified yet because real editor accounts will
@@ -73,9 +84,9 @@ The security cleanup is complete for the current owner workflow:
 2. Complete remaining lineup UI Phase 1 work:
    - improve mobile position-tap and bottom-sheet selection,
    - polish the desktop pitch/right-panel interaction after visual review,
-   - convert remaining English UI copy to natural Korean,
-   - apply owner-approved wording from `docs/specs/ui/copy-review.md`,
-   - polish permission-needed wording.
+   - review any `copy-review.md` rows that still have an empty `Owner change`
+     before changing those strings,
+   - polish permission-needed wording where the owner later provides final copy.
 3. Apply the updated Supabase SQL before deployment review if the target
    database does not already have `match_roster` and the `4-2-3-1` seed.
 4. Use `reference/left_menu_and_lineup_sample.png` as the current structure
@@ -97,9 +108,8 @@ The security cleanup is complete for the current owner workflow:
   verification.
 - Mobile logout/account UI is not polished yet; it is not a current security
   blocker and should be handled during UI improvement work.
-- Some Korean UI copy edits may exist as draft code changes. Treat
-  `docs/specs/ui/copy-review.md` as the approval checklist before finalizing
-  those changes.
+- Some UI copy rows are intentionally still at their current/original wording
+  because `Owner change` was left empty.
 
 ## References
 
