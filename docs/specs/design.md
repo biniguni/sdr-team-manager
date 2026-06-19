@@ -52,6 +52,7 @@ The app supports these product areas:
 | Matches | Create match schedules and later record results | `matches`, `periods` |
 | Formations | Manage position templates such as `4-4-2` | `formations`, `position_slots` |
 | Lineups | Prepare active-season match rosters and period lineups before match day | `match_roster`, `period_lineups` |
+| Schedule | View a future calendar-style match schedule | `matches`, `periods` |
 | Guest players | Add temporary guests during lineup work | `players`, `squad_members` |
 | Match stats | Record played, goals, assists, and cards | `player_match_stats` |
 | Dashboard | Summarize season record and player output | `matches`, `player_match_stats` |
@@ -99,6 +100,7 @@ src/
     (dashboard)/layout.tsx
     (dashboard)/page.tsx
     (dashboard)/lineup/page.tsx             # planned central lineup workflow
+    (dashboard)/schedule/page.tsx           # placeholder for future calendar schedule
     (dashboard)/ranking/page.tsx
     (dashboard)/players/page.tsx
     (dashboard)/formations/page.tsx
@@ -147,6 +149,7 @@ src/
 | --- | --- | --- |
 | `/` | Dashboard for the selected season | Public-readable. |
 | `/lineup` | Active-season lineup planning | Planned central route; can accept `?matchId=...`. |
+| `/schedule` | Future calendar-style match schedule | Placeholder screen until the owner provides the FM reference. |
 | `/ranking` | Player ranking table | Built from player match stats. |
 | `/players` | Player list and player editing | Editor controls hidden for non-editors. |
 | `/formations` | Formation management | Used by lineup board. |

@@ -4,8 +4,8 @@ import { DndContext, DragEndEvent, DragOverlay, PointerSensor, TouchSensor, useD
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { addMatchRosterPlayer, createGuestPlayerForLineup, removeMatchRosterPlayer, saveLineup } from "@/actions/lineups";
+import { LineupPitch } from "@/components/lineup/LineupPitch";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
-import { PositionSlotDroppable } from "@/components/lineup/PositionSlotDroppable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -82,6 +82,7 @@ export function LineupBoard({
   const [rosterState, setRosterState] = useState<ActionResult>(initialState);
   const [rosterPending, startRosterTransition] = useTransition();
   const [isDirty, setIsDirty] = useState(false);
+  const [fieldExpanded, setFieldExpanded] = useState(false);
   const [state, formAction, pending] = useActionState(saveLineup, initialState);
   const [guestState, guestFormAction, guestPending] = useActionState(createGuestPlayerForLineup, initialState);
 
@@ -317,20 +318,14 @@ export function LineupBoard({
               <h2 className="text-sm font-semibold text-slate-100">필드</h2>
               <span className="text-xs text-slate-400">{assignedCount}/{slots.length} 등록</span>
             </div>
-            <div className="relative aspect-[7/5] min-h-[360px] overflow-hidden rounded-lg border border-emerald-500/40 bg-emerald-950">
-              <div className="absolute inset-4 rounded-lg border border-white/35" />
-              <div className="absolute left-1/2 top-4 h-[calc(100%-2rem)] w-px bg-white/25" />
-              <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/25" />
-              {slots.map((slot) => (
-                <PositionSlotDroppable
-                  key={slot.id}
-                  slot={slot}
-                  player={playersById.get(assignments[slot.id] ?? "") ?? null}
-                  canPick={canEdit}
-                  onPick={() => setPlayerPickerSlotId(slot.id)}
-                />
-              ))}
-            </div>
+            <LineupPitch
+              slots={slots}
+              assignments={assignments}
+              playersById={playersById}
+              canPick={canEdit}
+              onPickSlot={setPlayerPickerSlotId}
+              onExpand={() => setFieldExpanded(true)}
+            />
           </section>
 
           <section>
@@ -571,6 +566,27 @@ export function LineupBoard({
               })}
               {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">선수 명단에 선수를 먼저 추가하세요.</p> : null}
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {fieldExpanded ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950 px-3 py-4">
+          <div className="grid h-full w-full max-w-3xl grid-rows-[auto_1fr] gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold text-slate-100">{selectedPeriod?.label ?? "라인업"}</h2>
+                <p className="text-xs text-slate-400">{selectedFormation?.name ?? ""}</p>
+              </div>
+              <button
+                type="button"
+                className="rounded-md border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-300"
+                onClick={() => setFieldExpanded(false)}
+              >
+                닫기
+              </button>
+            </div>
+            <LineupPitch slots={slots} assignments={assignments} playersById={playersById} expanded />
           </div>
         </div>
       ) : null}

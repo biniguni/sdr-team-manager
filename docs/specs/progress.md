@@ -38,6 +38,13 @@ This is the short status note for future sessions. Detailed history belongs in
   current/original wording.
 - On `/lineup`, pitch position slots can now be tapped/clicked to open the same
   player picker used by the right-side position list.
+- Mobile UI polish now includes: tap the lineup field to open a capture-friendly
+  enlarged lineup view, tap outside the mobile menu to close it, prevent common
+  mobile browser auto-zoom triggers, keep dashboard ranking text horizontal with
+  table scrolling, and expose a placeholder `/schedule` route in the menu.
+- Current work is not in a data-migration phase. The immediate focus is local
+  browser/mobile review, finding awkward flows, and making the lineup screens
+  easier to use.
 
 ## Security State
 
@@ -69,9 +76,14 @@ The security cleanup is complete for the current owner workflow:
   owner-approved UI copy.
 - `npm.cmd run lint` and `npm.cmd run build` passed after enabling pitch-slot
   tap/click player selection.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the mobile lineup,
+  menu, dashboard ranking, viewport, and schedule placeholder changes.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
+- `npm.cmd run dev` started successfully in the foreground and reported
+  `http://localhost:3000` plus a LAN URL; background launch for this session
+  failed due to a PowerShell `Start-Process` PATH-key error.
 - `git diff --check` passed; only line-ending warnings were reported.
 - General editor behavior is not verified yet because real editor accounts will
   be added later.
@@ -82,34 +94,42 @@ The security cleanup is complete for the current owner workflow:
 1. Review the new `/lineup` UI visually with the owner against
    `reference/left_menu_and_lineup_sample.png`.
 2. Complete remaining lineup UI Phase 1 work:
-   - improve mobile position-tap and bottom-sheet selection,
+   - verify the enlarged lineup capture view on a real phone,
    - polish the desktop pitch/right-panel interaction after visual review,
+   - click through buttons and forms to catch errors or awkward flows,
    - review any `copy-review.md` rows that still have an empty `Owner change`
      before changing those strings,
    - polish permission-needed wording where the owner later provides final copy.
-3. Apply the updated Supabase SQL before deployment review if the target
+3. Defer historical data migration until the lineup/recording workflow and
+   needed historical detail level are confirmed.
+4. Apply the updated Supabase SQL before deployment review if the target
    database does not already have `match_roster` and the `4-2-3-1` seed.
-4. Use `reference/left_menu_and_lineup_sample.png` as the current structure
+5. Use `reference/left_menu_and_lineup_sample.png` as the current structure
    reference for desktop navigation and lineup/tactics layout.
-5. Work with the owner through one-question-at-a-time planning, local browser
+6. Work with the owner through one-question-at-a-time planning, local browser
    review, and small code iterations.
-6. Keep mobile login/logout/account-state improvements in the UI backlog.
-7. When normal editor accounts are added, verify:
+7. Keep mobile login/logout/account-state improvements in the UI backlog.
+8. When normal editor accounts are added, verify:
    - normal editor can manage general records and lineups,
    - normal editor cannot write match results or player stats,
    - owner/result manager can write match results and player stats.
-8. Verify mobile lineup dragging and the mobile side-menu flow on a real phone
+9. Verify mobile lineup dragging and the mobile side-menu flow on a real phone
    browser.
+10. Build the full calendar-style 경기 일정 screen after the owner provides the
+    FM reference.
 
 ## Remaining Risk
 
 - Normal-editor behavior still needs verification once editor accounts exist.
-- Mobile lineup drag and the planned hamburger side menu still need real-device
-  verification.
+- Mobile lineup drag, enlarged lineup capture, and outside-tap menu close still
+  need real-device verification.
 - Mobile logout/account UI is not polished yet; it is not a current security
   blocker and should be handled during UI improvement work.
 - Some UI copy rows are intentionally still at their current/original wording
   because `Owner change` was left empty.
+- Historical data migration is intentionally deferred. For accurate lineup
+  backfill later, prepare match, period, player, and position-code data; if that
+  detail is unavailable, migrate only reliable match-level stats.
 
 ## References
 

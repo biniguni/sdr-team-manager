@@ -14,8 +14,8 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-800 bg-bg-secondary/80">
-      <table className="w-full border-collapse">
+    <div className="overflow-x-auto rounded-lg border border-slate-800 bg-bg-secondary/80">
+      <table className="min-w-[620px] w-full border-collapse">
         <thead className="bg-slate-950/70 text-left text-[11px] uppercase tracking-wide text-slate-500">
           <tr>
             <Th>순위</Th>
@@ -34,7 +34,7 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
                 <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
               </td>
               <td className="px-4 py-3 font-semibold">
-                <span className="flex items-center gap-2">
+                <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
                   {row.player.name}
                   {row.player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                 </span>
@@ -59,7 +59,7 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
 
 function Th({ children, center = false, onClick, active = false }: { children: React.ReactNode; center?: boolean; onClick?: () => void; active?: boolean }) {
   return (
-    <th className={`px-4 py-3 font-semibold ${center ? "text-center" : ""} ${active ? "text-accent-blue" : ""}`}>
+    <th className={`whitespace-nowrap px-4 py-3 font-semibold ${center ? "text-center" : ""} ${active ? "text-accent-blue" : ""}`}>
       {onClick ? <button type="button" onClick={onClick}>{children}</button> : children}
     </th>
   );

@@ -1,15 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/actions/auth";
+import { navLinks } from "@/components/layout/navLinks";
 import { getAuthStatus } from "@/lib/authz";
-
-const links = [
-  { href: "/", label: "대시보드" },
-  { href: "/lineup", label: "라인업" },
-  { href: "/seasons", label: "시즌" },
-  { href: "/players", label: "선수" },
-  { href: "/formations", label: "포메이션" },
-  { href: "/ranking", label: "Ranking" },
-];
 
 export async function Sidebar() {
   const { user, canEdit } = await getAuthStatus();
@@ -20,7 +12,7 @@ export async function Sidebar() {
         SDR Team
       </Link>
       <nav className="mt-8 grid gap-2">
-        {links.map((link) => (
+        {navLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}

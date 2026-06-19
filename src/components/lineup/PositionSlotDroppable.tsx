@@ -26,7 +26,10 @@ export function PositionSlotDroppable({
       role={canPick ? "button" : undefined}
       tabIndex={canPick ? 0 : undefined}
       aria-label={canPick ? `${slot.position_code} 선수 선택` : undefined}
-      onClick={canPick ? onPick : undefined}
+      onClick={(event) => {
+        event.stopPropagation();
+        if (canPick) onPick?.();
+      }}
       onKeyDown={(event) => {
         if (!canPick || !onPick) return;
         if (event.key === "Enter" || event.key === " ") {

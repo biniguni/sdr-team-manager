@@ -18,6 +18,9 @@ This is the next-session brief. Historical detail belongs in
 - Current UI copy direction: apply only owner-approved wording from
   `docs/specs/ui/copy-review.md`. Rows with an empty `Owner change` should stay
   at the current/original wording until the owner fills them in.
+- Current product phase: UI review and usability polish, not historical data
+  migration. Click through local screens, find errors or awkward flows, and
+  improve the lineup experience in small iterations.
 - Temporary copy review file:
   `docs/specs/ui/copy-review.md`. The owner should fill the `Owner change`
   column; apply that wording to code after review.
@@ -93,6 +96,9 @@ This is the next-session brief. Historical detail belongs in
 - Left blank `Owner change` rows at their current/original wording, including
   intentionally retained English labels such as `Operator login`,
   `Editor login`, and blank review items.
+- Confirmed that historical data migration is deferred until the lineup and
+  record-entry workflow is comfortable and the needed historical detail level is
+  decided.
 
 ## Verification Completed
 
@@ -171,6 +177,7 @@ npm.cmd run dev
 
 6. Polish based on review:
    - desktop pitch/right-panel density,
+   - click through buttons/forms and fix errors or awkward flows,
    - fill any remaining blank `Owner change` rows in
      `docs/specs/ui/copy-review.md` before changing those strings,
    - permission wording,
@@ -194,6 +201,9 @@ npm.cmd run dev
   Do a screen-by-screen copy pass only after the owner fills final wording.
 - Before changing more UI copy, review `docs/specs/ui/copy-review.md` and use
   only the `Owner change` column as the final wording source.
+- Do not restart historical migration work yet. If migration resumes later,
+  decide first whether old records need full match/period/player/position
+  backfill or only reliable match-level stats.
 
 ## Cautions
 
