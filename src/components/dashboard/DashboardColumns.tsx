@@ -26,10 +26,10 @@ export function DashboardColumns({ left, right }: { left: React.ReactNode; right
 
   return (
     <div
-      className="grid min-h-0 items-stretch gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.85fr)]"
+      className="grid min-h-0 items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.85fr)]"
       style={heightStyle}
     >
-      <div ref={leftRef} className="grid min-h-0 gap-4">
+      <div ref={leftRef} className="grid min-h-0 gap-4 self-start">
         {left}
       </div>
       {right}
