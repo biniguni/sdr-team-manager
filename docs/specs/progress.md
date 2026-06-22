@@ -47,6 +47,10 @@ This is the short status note for future sessions. Detailed history belongs in
   reads `경기`, mobile keeps rank/player columns sticky while stats scroll
   horizontally, and the desktop dashboard gives the ranking table more width
   while narrowing and stretching the match-history panel.
+- Layout stability was tightened after the lineup menu zoom/width-shift report:
+  the app now reserves scrollbar gutter, blocks horizontal page overflow, and
+  constrains the lineup page grid, match-card strip, and pitch from widening the
+  viewport.
 - Navigation links are shared from `src/components/layout/navLinks.ts`, so
   desktop and mobile menu order should stay aligned.
 - The lineup pitch is shared through `src/components/lineup/LineupPitch.tsx`,
@@ -91,6 +95,8 @@ The security cleanup is complete for the current owner workflow:
   mobile zoom lock and addressing maintainability review items.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard ranking
   sticky-column and match-history layout changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
+  zoom/width-shift layout stability changes.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
@@ -134,8 +140,8 @@ The security cleanup is complete for the current owner workflow:
 ## Remaining Risk
 
 - Normal-editor behavior still needs verification once editor accounts exist.
-- Mobile lineup drag, enlarged lineup capture, and outside-tap menu close still
-  need real-device verification.
+- Mobile lineup drag, enlarged lineup capture, outside-tap menu close, and the
+  lineup menu zoom/width-shift fix still need real-device verification.
 - Remaining review follow-up candidates: keyboard event propagation between
   pitch slots and field enlargement, accessibility polish for the enlarged
   lineup dialog, and longer-term transaction safety for concurrent lineup saves.

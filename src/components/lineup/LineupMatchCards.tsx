@@ -26,7 +26,7 @@ export function LineupMatchCards({
   selectedMatchId: string;
 }) {
   return (
-    <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
+    <div className="-mx-4 flex max-w-[100vw] gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:max-w-full sm:px-0">
       {matches.map((match) => {
         const selected = match.id === selectedMatchId;
         const result = calculateMatchResult(match.our_score, match.opponent_score);
@@ -39,7 +39,7 @@ export function LineupMatchCards({
               const ok = window.confirm("저장하지 않은 변경사항이 있습니다. 저장하지 않고 이동할까요?");
               if (!ok) event.preventDefault();
             }}
-            className={`min-w-56 rounded-lg border p-3 transition ${
+            className={`min-w-56 max-w-[calc(100vw-2rem)] rounded-lg border p-3 transition ${
               selected ? "border-accent-blue bg-sky-950/40" : "border-slate-800 bg-bg-secondary hover:border-slate-600"
             }`}
           >

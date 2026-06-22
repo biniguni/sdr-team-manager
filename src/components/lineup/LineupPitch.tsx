@@ -65,7 +65,7 @@ export function LineupPitch({
       <div
         role="button"
         tabIndex={0}
-        className="relative block aspect-[7/5] min-h-[360px] w-full overflow-hidden rounded-lg border border-emerald-500/40 bg-emerald-950 text-left"
+        className="relative block aspect-[7/5] min-h-[360px] w-full max-w-full overflow-hidden rounded-lg border border-emerald-500/40 bg-emerald-950 text-left"
         aria-label="라인업 확대"
         onClick={onExpand}
         onKeyDown={(event) => {

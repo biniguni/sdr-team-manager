@@ -312,8 +312,8 @@ export function LineupBoard({
           </div>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
-          <section>
+        <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <section className="min-w-0">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-100">필드</h2>
               <span className="text-xs text-slate-400">{assignedCount}/{slots.length} 등록</span>
@@ -328,7 +328,7 @@ export function LineupBoard({
             />
           </section>
 
-          <section>
+          <section className="min-w-0">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-100">포지션</h2>
               <div className="flex items-center gap-2">

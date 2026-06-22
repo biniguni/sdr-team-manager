@@ -110,6 +110,9 @@ This is the next-session brief. Historical detail belongs in
 - Confirmed that historical data migration is deferred until the lineup and
   record-entry workflow is comfortable and the needed historical detail level is
   decided.
+- Tightened layout stability for the remaining lineup menu zoom/width-shift
+  report by reserving scrollbar gutter globally, hiding horizontal page
+  overflow, and constraining the lineup grid, match-card strip, and pitch width.
 
 ## Verification Completed
 
@@ -127,6 +130,8 @@ This is the next-session brief. Historical detail belongs in
   follow-up review maintainability fixes.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
+  zoom/width-shift layout stability changes.
 
 ## Current Git State Notes
 
@@ -203,11 +208,14 @@ npm.cmd run dev
    - mobile side menu behavior,
    - mobile `/lineup` layout.
    - verify enlarged lineup capture on a real phone.
+   - verify that entering `/lineup` from the menu no longer looks slightly
+     zoomed or width-shifted on the affected device.
 
 ## Remaining Work / Risks
 
 - Mobile position-tap bottom-sheet selection is not implemented yet.
-- Real-phone verification is still needed.
+- Real-phone verification is still needed, including the latest lineup
+  zoom/width-shift fix.
 - Remaining PR review follow-ups:
   - keyboard Enter/Space on a pitch slot may also trigger field enlargement;
     stop propagation or separate the enlarge trigger,
