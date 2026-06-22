@@ -1,3 +1,4 @@
+import { DashboardColumns } from "@/components/dashboard/DashboardColumns";
 import { MatchHistoryPanel } from "@/components/dashboard/MatchHistoryPanel";
 import { SeasonFilter } from "@/components/dashboard/SeasonFilter";
 import { SeasonSummaryCard } from "@/components/dashboard/SeasonSummaryCard";
@@ -53,14 +54,16 @@ export default async function DashboardHome({
         <SeasonFilter seasons={seasons as Season[]} selectedSeasonId={selectedSeason.id} />
       </div>
 
-      <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.85fr)]">
-        <div className="grid gap-4">
-          <SeasonSummaryCard matches={matches as Match[]} />
-          <StatCards players={playerRows} totalMatches={(matches as Match[]).length} />
-          <TopScorersTable players={playerRows} limit={5} />
-        </div>
-        <MatchHistoryPanel matches={matches as Match[]} playersById={playersById} />
-      </div>
+      <DashboardColumns
+        left={
+          <>
+            <SeasonSummaryCard matches={matches as Match[]} />
+            <StatCards players={playerRows} totalMatches={(matches as Match[]).length} />
+            <TopScorersTable players={playerRows} limit={5} />
+          </>
+        }
+        right={<MatchHistoryPanel matches={matches as Match[]} playersById={playersById} />}
+      />
     </section>
   );
 }

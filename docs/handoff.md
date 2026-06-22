@@ -116,6 +116,8 @@ This is the next-session brief. Historical detail belongs in
 - Followed up by making mobile lineup pitch slots and compact player buttons
   responsive, so the width-shift fix does not force cards to overlap on narrow
   screens.
+- Corrected the dashboard match-history layout so desktop height follows the
+  left summary/ranking column and long seasons scroll inside the right panel.
 
 ## Verification Completed
 
@@ -137,6 +139,8 @@ This is the next-session brief. Historical detail belongs in
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
   pitch slots responsive.
+- `npm.cmd run lint` and `npm.cmd run build` passed after correcting the
+  dashboard match-history height to follow the left column.
 
 ## Current Git State Notes
 
