@@ -51,6 +51,8 @@ This is the short status note for future sessions. Detailed history belongs in
   the app now reserves scrollbar gutter, blocks horizontal page overflow, and
   constrains the lineup page grid, match-card strip, and pitch from widening the
   viewport.
+- Mobile lineup pitch slots now scale down below the `sm` breakpoint so the
+  width-shift fix does not make player cards overlap on narrow screens.
 - Navigation links are shared from `src/components/layout/navLinks.ts`, so
   desktop and mobile menu order should stay aligned.
 - The lineup pitch is shared through `src/components/lineup/LineupPitch.tsx`,
@@ -97,6 +99,8 @@ The security cleanup is complete for the current owner workflow:
   sticky-column and match-history layout changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
   zoom/width-shift layout stability changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
+  pitch slots responsive.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.

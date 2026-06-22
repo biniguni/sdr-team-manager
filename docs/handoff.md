@@ -113,6 +113,9 @@ This is the next-session brief. Historical detail belongs in
 - Tightened layout stability for the remaining lineup menu zoom/width-shift
   report by reserving scrollbar gutter globally, hiding horizontal page
   overflow, and constraining the lineup grid, match-card strip, and pitch width.
+- Followed up by making mobile lineup pitch slots and compact player buttons
+  responsive, so the width-shift fix does not force cards to overlap on narrow
+  screens.
 
 ## Verification Completed
 
@@ -132,6 +135,8 @@ This is the next-session brief. Historical detail belongs in
   for the applied owner-approved copy.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
   zoom/width-shift layout stability changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
+  pitch slots responsive.
 
 ## Current Git State Notes
 

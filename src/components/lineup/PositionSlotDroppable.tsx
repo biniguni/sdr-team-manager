@@ -37,7 +37,7 @@ export function PositionSlotDroppable({
           onPick();
         }
       }}
-      className={`absolute flex h-16 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-md border px-2 text-center shadow-lg transition ${
+      className={`absolute flex h-12 w-16 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-md border px-1 text-center shadow-lg transition sm:h-16 sm:w-24 sm:px-2 ${
         isOver
           ? "border-accent-blue bg-sky-950 text-white"
           : canPick
@@ -46,9 +46,9 @@ export function PositionSlotDroppable({
       }`}
       style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
     >
-      <span className="text-xs font-bold text-accent-green">{slot.position_code}</span>
-      <div className="mt-1 w-full">
-        {player ? <PlayerDraggable player={player} compact /> : <span className="text-xs text-slate-400">비어 있음</span>}
+      <span className="text-[10px] font-bold text-accent-green sm:text-xs">{slot.position_code}</span>
+      <div className="mt-0.5 w-full sm:mt-1">
+        {player ? <PlayerDraggable player={player} compact /> : <span className="text-[10px] text-slate-400 sm:text-xs">비어 있음</span>}
       </div>
     </div>
   );

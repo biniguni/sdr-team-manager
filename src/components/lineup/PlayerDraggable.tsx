@@ -29,7 +29,7 @@ export function PlayerDraggable({
       type="button"
       style={style}
       className={`w-full cursor-grab select-none rounded-md border border-slate-700 bg-slate-950 text-left transition hover:border-accent-blue active:cursor-grabbing ${
-        compact ? "px-1.5 py-1 text-[11px]" : "px-3 py-2 text-sm"
+        compact ? "px-1 py-0.5 text-[10px] sm:px-1.5 sm:py-1 sm:text-[11px]" : "px-3 py-2 text-sm"
       } ${
         isDragging ? "opacity-40" : ""
       }`}
