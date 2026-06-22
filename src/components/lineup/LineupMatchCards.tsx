@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { calculateMatchResult, resultTone } from "@/lib/matches";
+import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/matches";
 import type { Match } from "@/types";
 
 function formatMatchDate(value: string) {
@@ -45,7 +45,7 @@ export function LineupMatchCards({
           >
             <div className="mb-2 flex items-center justify-between gap-2">
               <Badge tone={match.status === "completed" ? "green" : "blue"}>{match.status === "completed" ? "완료" : "예정"}</Badge>
-              {match.status === "completed" ? <Badge tone={resultTone(result)}>{result}</Badge> : null}
+              {match.status === "completed" ? <Badge tone={resultTone(result)}>{formatMatchResult(result)}</Badge> : null}
             </div>
             <div className="font-semibold text-slate-100">vs {match.opponent || "상대 미정"}</div>
             <div className="mt-1 text-xs text-slate-400">{formatMatchDate(match.match_date)}</div>

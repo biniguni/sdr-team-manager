@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/Badge";
-import { calculateMatchResult, resultTone } from "@/lib/matches";
+import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/matches";
 import type { Match, Player } from "@/types";
 
 export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; playersById: Map<string, Player> }) {
   return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800 bg-bg-secondary/80 xl:h-[var(--dashboard-left-height)] xl:max-h-[var(--dashboard-left-height)]">
+    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800 bg-bg-secondary/80">
       <div className="border-b border-slate-800 px-5 py-4 text-sm font-bold">경기 기록</div>
       <div className="grid min-h-0 max-h-[640px] flex-1 gap-3 overflow-y-auto p-3 xl:max-h-none">
         {matches.map((match) => {
@@ -16,7 +16,7 @@ export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; 
                 <span className="text-xs text-slate-500">
                   {new Date(match.match_date).toLocaleDateString()} {match.venue ? `/ ${match.venue}` : ""}
                 </span>
-                <Badge tone={resultTone(result)}>{result}</Badge>
+                <Badge tone={resultTone(result)}>{formatMatchResult(result)}</Badge>
               </div>
               <div className="mt-3 flex items-center justify-center gap-4">
                 <div className="flex-1 text-right text-sm font-bold">

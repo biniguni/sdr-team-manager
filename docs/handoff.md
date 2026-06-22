@@ -116,8 +116,12 @@ This is the next-session brief. Historical detail belongs in
 - Followed up by making mobile lineup pitch slots and compact player buttons
   responsive, so the width-shift fix does not force cards to overlap on narrow
   screens.
-- Corrected the dashboard match-history layout so desktop height follows the
-  left summary/ranking column and long seasons scroll inside the right panel.
+- Corrected the dashboard match-history layout so it sits under the season
+  summary on the left and long seasons scroll inside that panel.
+- Reorganized the dashboard: season summary and match history are on the left,
+  team composition and personal records are on the right. Top page titles now
+  use mobile `text-2xl` and desktop `sm:text-3xl`, player status filters reflect
+  the selected tab, and match results display as `승/무/패`.
 
 ## Verification Completed
 
@@ -141,6 +145,9 @@ This is the next-session brief. Historical detail belongs in
   pitch slots responsive.
 - `npm.cmd run lint` and `npm.cmd run build` passed after correcting the
   dashboard match-history height to follow the left column.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard
+  reorganization, title-size alignment, player-filter active state fix, and
+  Korean result-label changes.
 
 ## Current Git State Notes
 

@@ -35,7 +35,7 @@ export default async function RankingPage({
     <section className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">공격포인트 순위</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 sm:text-3xl">공격포인트 순위</h1>
           <p className="mt-2 text-sm text-slate-500">{selectedSeason.name}의 득점, 도움, 공격포인트를 확인합니다.</p>
         </div>
         <SeasonFilter seasons={seasons as Season[]} selectedSeasonId={selectedSeason.id} />

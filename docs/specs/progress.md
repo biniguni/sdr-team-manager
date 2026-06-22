@@ -47,9 +47,12 @@ This is the short status note for future sessions. Detailed history belongs in
   reads `경기`, mobile keeps rank/player columns sticky while stats scroll
   horizontally, and the desktop dashboard gives the ranking table more width
   while narrowing and stretching the match-history panel.
-- Dashboard match history height is now bound to the left summary/ranking
-  column on desktop, so long seasons scroll inside the right panel instead of
-  making the whole dashboard page very tall.
+- Dashboard match history now sits under the season summary on the left and
+  scrolls inside its own panel, so long seasons do not make the whole dashboard
+  page very tall.
+- Dashboard layout was reorganized: season summary and match history are on the
+  left, team composition and personal records are on the right. Result labels
+  now use `승/무/패`, and top page titles share a responsive size pattern.
 - Layout stability was tightened after the lineup menu zoom/width-shift report:
   the app now reserves scrollbar gutter, blocks horizontal page overflow, and
   constrains the lineup page grid, match-card strip, and pitch from widening the
@@ -102,6 +105,9 @@ The security cleanup is complete for the current owner workflow:
   sticky-column and match-history layout changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after correcting the
   dashboard match-history height to follow the left column.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard
+  reorganization, title-size alignment, player-filter active state fix, and
+  Korean result-label changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup

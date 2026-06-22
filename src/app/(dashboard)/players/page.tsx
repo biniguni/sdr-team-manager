@@ -7,6 +7,10 @@ import { Card, PageHeader } from "@/components/ui/Card";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import type { Player } from "@/types";
 
+function statusLinkClass(currentStatus: string, value: string) {
+  return currentStatus === value ? "text-accent-blue" : "text-slate-300 hover:text-white";
+}
+
 export default async function PlayersPage({
   searchParams,
 }: {
@@ -48,9 +52,9 @@ export default async function PlayersPage({
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">선수 목록</h2>
             <div className="flex gap-2 text-sm">
-              <a className="text-accent-blue" href="/players?status=active">활동 중</a>
-              <a className="text-slate-300" href="/players?status=all">전체</a>
-              <a className="text-slate-300" href="/players?status=inactive">휴식 중</a>
+              <a className={statusLinkClass(status, "active")} href="/players?status=active">활동 중</a>
+              <a className={statusLinkClass(status, "all")} href="/players?status=all">전체</a>
+              <a className={statusLinkClass(status, "inactive")} href="/players?status=inactive">휴식 중</a>
             </div>
           </div>
           {error ? <p className="text-sm text-accent-red">{error.message}</p> : null}

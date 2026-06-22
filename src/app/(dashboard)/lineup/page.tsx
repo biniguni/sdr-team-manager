@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthStatus } from "@/lib/authz";
-import { calculateMatchResult, resultTone } from "@/lib/matches";
+import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/matches";
 import type { Formation, Match, Period, PeriodLineup, Player, PositionSlot, Season } from "@/types";
 
 type SearchParams = {
@@ -166,7 +166,7 @@ export default async function LineupPage({
               <Badge tone={selectedMatch.status === "completed" ? "green" : "blue"}>
                 {selectedMatch.status === "completed" ? "완료" : "예정"}
               </Badge>
-              {selectedMatch.status === "completed" ? <Badge tone={resultTone(selectedResult)}>{selectedResult}</Badge> : null}
+              {selectedMatch.status === "completed" ? <Badge tone={resultTone(selectedResult)}>{formatMatchResult(selectedResult)}</Badge> : null}
             </div>
             <p className="mt-2 text-sm text-slate-400">
               {formatMatchDate(selectedMatch.match_date)}
