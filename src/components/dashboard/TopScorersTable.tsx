@@ -15,13 +15,13 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
 
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-800 bg-bg-secondary/80">
-      <table className="min-w-[620px] w-full border-collapse">
+      <table className="w-full min-w-[640px] border-collapse xl:min-w-0">
         <thead className="bg-slate-950/70 text-left text-[11px] uppercase tracking-wide text-slate-500">
           <tr>
-            <Th>순위</Th>
-            <Th>선수</Th>
+            <Th sticky="rank">순위</Th>
+            <Th sticky="player">선수</Th>
             <Th center>등번호</Th>
-            <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>기</Th>
+            <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>경기</Th>
             <Th center onClick={() => setSortKey("goals")} active={sortKey === "goals"}>득점</Th>
             <Th center onClick={() => setSortKey("assists")} active={sortKey === "assists"}>도움</Th>
             <Th center onClick={() => setSortKey("points")} active={sortKey === "points"}>공격포인트</Th>
@@ -30,10 +30,10 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
         <tbody>
           {rows.map((row, index) => (
             <tr key={row.player.id} className="border-t border-slate-800 text-sm hover:bg-slate-900/70">
-              <td className="px-4 py-3 text-center">
+              <td className="sticky left-0 z-10 w-[64px] bg-bg-secondary/95 px-3 py-3 text-center xl:static xl:bg-transparent">
                 <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
               </td>
-              <td className="px-4 py-3 font-semibold">
+              <td className="sticky left-[64px] z-10 w-[132px] bg-bg-secondary/95 px-3 py-3 font-semibold xl:static xl:w-auto xl:bg-transparent xl:px-4">
                 <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
                   {row.player.name}
                   {row.player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
@@ -57,9 +57,28 @@ export function TopScorersTable({ players, limit }: { players: PlayerAggregate[]
   );
 }
 
-function Th({ children, center = false, onClick, active = false }: { children: React.ReactNode; center?: boolean; onClick?: () => void; active?: boolean }) {
+function Th({
+  children,
+  center = false,
+  onClick,
+  active = false,
+  sticky,
+}: {
+  children: React.ReactNode;
+  center?: boolean;
+  onClick?: () => void;
+  active?: boolean;
+  sticky?: "rank" | "player";
+}) {
+  const stickyClass =
+    sticky === "rank"
+      ? "sticky left-0 z-20 w-[64px] bg-slate-950 px-3 xl:static xl:bg-transparent"
+      : sticky === "player"
+        ? "sticky left-[64px] z-20 w-[132px] bg-slate-950 px-3 xl:static xl:w-auto xl:bg-transparent xl:px-4"
+        : "px-4";
+
   return (
-    <th className={`whitespace-nowrap px-4 py-3 font-semibold ${center ? "text-center" : ""} ${active ? "text-accent-blue" : ""}`}>
+    <th className={`whitespace-nowrap py-3 font-semibold ${stickyClass} ${center ? "text-center" : ""} ${active ? "text-accent-blue" : ""}`}>
       {onClick ? <button type="button" onClick={onClick}>{children}</button> : children}
     </th>
   );

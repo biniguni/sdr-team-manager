@@ -53,7 +53,7 @@ export default async function DashboardHome({
         <SeasonFilter seasons={seasons as Season[]} selectedSeasonId={selectedSeason.id} />
       </div>
 
-      <div className="grid items-start gap-5 xl:grid-cols-[1fr_1.4fr]">
+      <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.85fr)]">
         <div className="grid gap-4">
           <SeasonSummaryCard matches={matches as Match[]} />
           <StatCards players={playerRows} totalMatches={(matches as Match[]).length} />

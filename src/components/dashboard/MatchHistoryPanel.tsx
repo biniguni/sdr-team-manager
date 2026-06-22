@@ -4,9 +4,9 @@ import type { Match, Player } from "@/types";
 
 export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; playersById: Map<string, Player> }) {
   return (
-    <section className="rounded-lg border border-slate-800 bg-bg-secondary/80">
+    <section className="flex h-full flex-col rounded-lg border border-slate-800 bg-bg-secondary/80">
       <div className="border-b border-slate-800 px-5 py-4 text-sm font-bold">경기 기록</div>
-      <div className="grid max-h-[560px] gap-3 overflow-y-auto p-3">
+      <div className="grid max-h-[640px] flex-1 gap-3 overflow-y-auto p-3 xl:max-h-none">
         {matches.map((match) => {
           const result = calculateMatchResult(match.our_score, match.opponent_score);
 

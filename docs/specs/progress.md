@@ -43,6 +43,10 @@ This is the short status note for future sessions. Detailed history belongs in
   mobile browser auto-zoom triggers through mobile-sized form controls, keep
   dashboard ranking text horizontal with table scrolling, and expose a
   placeholder `/schedule` route in the menu.
+- Dashboard ranking usability was adjusted: the appearance-count header now
+  reads `경기`, mobile keeps rank/player columns sticky while stats scroll
+  horizontally, and the desktop dashboard gives the ranking table more width
+  while narrowing and stretching the match-history panel.
 - Navigation links are shared from `src/components/layout/navLinks.ts`, so
   desktop and mobile menu order should stay aligned.
 - The lineup pitch is shared through `src/components/lineup/LineupPitch.tsx`,
@@ -85,6 +89,8 @@ The security cleanup is complete for the current owner workflow:
   menu, dashboard ranking, viewport, and schedule placeholder changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after removing the global
   mobile zoom lock and addressing maintainability review items.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard ranking
+  sticky-column and match-history layout changes.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
