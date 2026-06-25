@@ -7,6 +7,7 @@ This is the next-session brief. Historical detail belongs in
 ## Project Context
 
 - Repository: `D:\kk\backup\project\sdr-team-manager`
+- Current branch observed: `UI-rework`.
 - Owner context: explain product impact first, then implementation details in
   plain language.
 - Current operating mode: public read access, approved-editor write access.
@@ -37,6 +38,8 @@ This is the next-session brief. Historical detail belongs in
 - Logged-out write blocking was verified by the owner.
 - Sensitive/memo fields disappearing from deployed UI was verified by the
   owner.
+- Match-only guest work was merged through GitHub PR #1
+  (`member-except-guest`) and is present in the current `UI-rework` branch.
 
 ## Work Completed In This Session
 
@@ -99,6 +102,8 @@ This is the next-session brief. Historical detail belongs in
   player, squad, lineup, match detail, and stats flows.
 - The old test guest player `권대솔` was deleted directly in Supabase by the
   owner, so broad legacy-guest cleanup is not part of the migration.
+- `docs/specs/samala-analysis.md` was included in the merged branch. Treat it as
+  reference/planning material unless the owner decides to remove it later.
 - Added `docs/specs/ui/copy-review.md` as a temporary working table for Korean
   UI copy review. It includes current/original wording, suggested drafts,
   remaining English copy, and an `Owner change` column for final wording.
@@ -158,6 +163,8 @@ This is the next-session brief. Historical detail belongs in
 - `npm.cmd run lint`, `npm.cmd run build`, and `git diff --check` passed after
   hiding old guest-player rows from player, squad, lineup, match detail, and
   stats flows.
+- GitHub PR #1 was merged and the current local `UI-rework` branch includes the
+  merge commit.
 - `npm.cmd run lint` and `npm.cmd run build` passed after correcting the
   dashboard match-history height to follow the left column.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard
@@ -246,6 +253,11 @@ npm.cmd run dev
    - verify that entering `/lineup` from the menu no longer looks slightly
      zoomed or width-shifted on the affected device.
 
+7. Leave root `CHANGELOG.md` for release/deployment notes after the next actual
+   deployment. It currently contains older guest-player wording and should be
+   refreshed when preparing a real release note, not during the current UI
+   review cycle.
+
 ## Remaining Work / Risks
 
 - Mobile position-tap bottom-sheet selection is not implemented yet.
@@ -273,6 +285,8 @@ npm.cmd run dev
 - `docs/database/supabase-match-roster.sql` is now a schema migration only. It
   does not delete or convert existing guest-player data; any known test guest
   rows should be removed manually after confirming the exact player.
+- Root `CHANGELOG.md` is stale relative to the match-only guest decision. Update
+  it later as part of deployment/release-note cleanup.
 - Remaining English UI copy may be intentional where `Owner change` is blank.
   Do a screen-by-screen copy pass only after the owner fills final wording.
 - Before changing more UI copy, review `docs/specs/ui/copy-review.md` and use

@@ -14,6 +14,8 @@ This is the short status note for future sessions. Detailed history belongs in
 - Editors sign in at `/login`.
 - `team_editors` is the editor allowlist.
 - Vercel has been connected by the project owner.
+- Match-only guest work was merged through GitHub PR #1
+  (`member-except-guest`) and is present in the current `UI-rework` branch.
 - UI Phase 1 navigation and top-level lineup workflow are implemented in code:
   desktop/menu order includes `라인업`, mobile uses a hamburger side menu, and
   `/lineup` shows active-season match cards with period lineup editing.
@@ -27,6 +29,8 @@ This is the short status note for future sessions. Detailed history belongs in
   registered-player choices to `players.player_type = 'member'`.
 - The old test guest player `권대솔` was deleted directly in Supabase by the
   owner, so no broad legacy-guest migration is planned.
+- `docs/specs/samala-analysis.md` was included in the merged branch. It is
+  reference/planning material, not app runtime behavior.
 - The right-side lineup panel has been compacted so each position row reads as
   position, player name, and number on one line.
 - The lineup right panel is widened to 380px and shows left-foot/right-foot
@@ -125,6 +129,8 @@ The security cleanup is complete for the current owner workflow:
 - `npm.cmd run lint`, `npm.cmd run build`, and `git diff --check` passed after
   hiding old guest-player rows from player, squad, lineup, match detail, and
   stats flows.
+- GitHub PR #1 was merged and the local `UI-rework` branch now includes that
+  merge commit.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
@@ -166,6 +172,9 @@ The security cleanup is complete for the current owner workflow:
    browser.
 10. Build the full calendar-style 경기 일정 screen after the owner provides the
     FM reference.
+11. Leave root `CHANGELOG.md` for release/deployment notes after the next
+    actual deployment. It is currently not the source of truth for in-progress
+    UI review work.
 
 ## Remaining Risk
 
@@ -183,6 +192,9 @@ The security cleanup is complete for the current owner workflow:
 - `docs/database/supabase-match-roster.sql` is now a schema migration only. It
   does not delete or convert existing guest-player data; any known test guest
   rows should be removed manually after confirming the exact player.
+- Root `CHANGELOG.md` still contains older guest-player wording from a previous
+  direction. Update it when preparing a real release note after deployment,
+  rather than during the current UI review cycle.
 - Some UI copy rows are intentionally still at their current/original wording
   because `Owner change` was left empty.
 - Historical data migration is intentionally deferred. For accurate lineup
