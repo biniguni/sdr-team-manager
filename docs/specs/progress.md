@@ -75,6 +75,8 @@ This is the short status note for future sessions. Detailed history belongs in
   desktop and mobile menu order should stay aligned.
 - The lineup pitch is shared through `src/components/lineup/LineupPitch.tsx`,
   so normal and enlarged lineup views use the same field rendering path.
+- A static architecture and user-flow chart document now exists at
+  `docs/flowcharts/system-flows.html`.
 - Current work is not in a data-migration phase. The immediate focus is local
   browser/mobile review, finding awkward flows, and making the lineup screens
   easier to use.
@@ -141,6 +143,9 @@ The security cleanup is complete for the current owner workflow:
 - General editor behavior is not verified yet because real editor accounts will
   be added later.
 - Mobile lineup dragging still needs real-phone verification.
+- `docs/flowcharts/system-flows.html` was created as a standalone HTML/CSS
+  document based on the current design, requirements, security, and progress
+  docs.
 
 ## Next Actions
 
