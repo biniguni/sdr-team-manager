@@ -25,14 +25,14 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
       .select("player_id, players(*)")
       .eq("season_id", id)
       .order("player_id"),
-    supabase.from("players").select("*").eq("is_active", true).order("number"),
+    supabase.from("players").select("*").eq("is_active", true).eq("player_type", "member").order("number"),
   ]);
 
   if (!season) {
     return <PageHeader title="시즌을 찾을 수 없습니다" description="선택한 시즌 기록이 없습니다." />;
   }
 
-  const squadRows = squad as unknown as SquadRow[];
+  const squadRows = (squad as unknown as SquadRow[]).filter((row) => row.players.player_type === "member");
   const squadPlayerIds = new Set(squadRows.map((row) => row.player_id));
   const availablePlayers = (activePlayers as Player[]).filter((player) => !squadPlayerIds.has(player.id));
 
@@ -82,7 +82,7 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
                 <option value="">Choose active player</option>
                 {availablePlayers.map((player) => (
                   <option key={player.id} value={player.id}>
-                    #{player.number} {player.name}{player.player_type === "guest" ? " [용병]" : ""}
+                    #{player.number} {player.name}
                   </option>
                 ))}
               </Select>
@@ -96,7 +96,6 @@ export default async function SeasonDetailPage({ params }: { params: Promise<{ i
                 <div key={row.player_id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3">
                   <span className="flex items-center gap-2 text-sm">
                     #{row.players.number} {row.players.name}
-                    {row.players.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                   </span>
                   {canEdit ? (
                     <form action={removeSquadMemberSubmit}>

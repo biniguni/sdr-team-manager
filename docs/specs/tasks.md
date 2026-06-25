@@ -79,8 +79,8 @@
   - 요구사항: 요구사항 6
 
 - [ ] 1.4 라인업 및 기록 테이블 생성
-  - `match_roster`: id, match_id(FK CASCADE), player_id(FK), created_at + UNIQUE(match_id, player_id)
-  - `period_lineups`: id, period_id(FK CASCADE), formation_id(FK), position_slot_id(FK), player_id(FK) + UNIQUE(period_id, position_slot_id), UNIQUE(period_id, player_id)
+  - `match_roster`: id, match_id(FK CASCADE), player_id(FK nullable), guest_name(nullable), guest_number(nullable), created_at + UNIQUE(match_id, player_id)
+  - `period_lineups`: id, period_id(FK CASCADE), formation_id(FK), position_slot_id(FK), match_roster_id(FK nullable), player_id(FK nullable) + UNIQUE(period_id, position_slot_id), UNIQUE INDEX(period_id, match_roster_id) where match_roster_id is not null
   - `player_match_stats`: id, match_id(FK CASCADE), player_id(FK), played, goals, assists, yellow_cards, red_cards, minutes_played(nullable) + UNIQUE(match_id, player_id)
   - 공개 조회 모드에서는 player_match_stats.memo를 사용하지 않고 기존 값은 null 처리 예정
   - `position_performance`: id, season_id(FK CASCADE), player_id(FK CASCADE), position_code, period_count, match_count, minutes_played(nullable), goals(nullable), assists(nullable) + UNIQUE(season_id, player_id, position_code)
@@ -199,7 +199,7 @@
   - 요구사항: 요구사항 7
 
 - [x] 2.2 드롭다운 기반 단순 라인업 입력 UI 구현
-  - `src/components/lineup/SimpleLineupForm.tsx` (CSC)
+  - 이전 `SimpleLineupForm` 기반 UI는 Phase 3 보드 도입 후 제거됨
   - 포메이션 선택 드롭다운
   - 각 포지션 슬롯별 선수 선택 드롭다운 (스쿼드 선수 목록)
   - 동일 period 내 선수 중복 배정 클라이언트 측 방지
@@ -209,7 +209,7 @@
 - [x] 2.3 라인업 배정 페이지 구현 (단순 버전)
   - `src/app/(dashboard)/seasons/[id]/matches/[matchId]/lineup/page.tsx`
   - period 탭 전환
-  - SimpleLineupForm 연동
+  - 이후 중앙 `/lineup` + `LineupBoard` 흐름으로 대체됨
   - 저장 후 현재 라인업 표시 (포지션 코드 + 선수 이름)
   - 요구사항: 요구사항 7
 
@@ -250,7 +250,7 @@
   - 요구사항: 요구사항 7
 
 - [x] 3.4 라인업 배정 페이지 업그레이드 (드래그앤드롭 버전)
-  - Phase 2의 SimpleLineupForm을 LineupBoard로 교체
+  - Phase 2의 단순 라인업 입력 UI를 LineupBoard로 교체
   - "저장" 버튼 → Phase 2에서 구현한 Server Action 재사용
   - 낙관적 업데이트(optimistic update) 적용
   - 요구사항: 요구사항 7

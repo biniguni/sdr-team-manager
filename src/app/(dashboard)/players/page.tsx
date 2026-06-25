@@ -19,7 +19,7 @@ export default async function PlayersPage({
   const { status = "active" } = await searchParams;
   const supabase = await createClient();
   const { canEdit } = await getAuthStatus();
-  let query = supabase.from("players").select("*").order("name").order("number");
+  let query = supabase.from("players").select("*").eq("player_type", "member").order("name").order("number");
 
   if (status === "active") query = query.eq("is_active", true);
   if (status === "inactive") query = query.eq("is_active", false);
@@ -69,7 +69,6 @@ export default async function PlayersPage({
                     <span className="text-slate-500">#{player.number}</span>
                   </span>
                   <span className="flex gap-2">
-                    {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                     <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "활동 중" : "휴식 중"}</Badge>
                   </span>
                 </summary>
@@ -85,7 +84,7 @@ export default async function PlayersPage({
                   </div>
                 ) : (
                   <dl className="mt-4 grid gap-2 text-sm text-slate-300">
-                    <div>구분: {player.player_type === "guest" ? "용병" : "선수"}</div>
+                    <div>구분: 선수</div>
                     <div>상태: {player.is_active ? "활동 중" : "휴식 중"}</div>
                   </dl>
                 )}

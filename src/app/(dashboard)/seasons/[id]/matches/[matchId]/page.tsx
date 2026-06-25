@@ -72,6 +72,7 @@ export default async function MatchDetailPage({
   const squadPlayers = (squad as unknown as SquadRow[])
     .map((row) => row.players)
     .filter(Boolean)
+    .filter((player) => player.player_type === "member")
     .sort((a, b) => a.number - b.number);
 
   return (

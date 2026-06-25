@@ -50,7 +50,7 @@ export default async function DashboardHome({
   const { data: stats = [] } = matchIds.length
     ? await supabase.from("player_match_stats").select("*, players(*)").in("match_id", matchIds)
     : { data: [] };
-  const { data: players = [] } = await supabase.from("players").select("*");
+  const { data: players = [] } = await supabase.from("players").select("*").eq("player_type", "member");
   const [{ data: squad = [] }, { data: lineupAttendance = [] }] = await Promise.all([
     supabase.from("squad_members").select("players(*)").eq("season_id", selectedSeason.id),
     supabase
@@ -61,7 +61,10 @@ export default async function DashboardHome({
 
   const playerRows = aggregatePlayers(stats as unknown as PlayerStatsRow[]);
   const playersById = buildPlayersById((players ?? []) as Player[]);
-  const squadPlayers = ((squad ?? []) as unknown as SquadPlayerRow[]).map((row) => row.players).filter(Boolean);
+  const squadPlayers = ((squad ?? []) as unknown as SquadPlayerRow[])
+    .map((row) => row.players)
+    .filter(Boolean)
+    .filter((player) => player.player_type === "member");
   const activeSquadPlayers = squadPlayers.filter((player) => player.is_active).length;
   const attendanceByMatch = new Map<string, Set<string>>();
   for (const row of (lineupAttendance ?? []) as unknown as LineupAttendanceRow[]) {

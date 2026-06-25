@@ -112,13 +112,16 @@ export async function addMatchRosterPlayer(formData: FormData): Promise<ActionRe
   const supabase = await createClient();
   const { data: squadMember, error: squadError } = await supabase
     .from("squad_members")
-    .select("id")
+    .select("id, players!inner(player_type)")
     .eq("season_id", seasonId)
     .eq("player_id", playerId)
     .maybeSingle();
 
   if (squadError) return fail(squadError.message);
   if (!squadMember) return fail("이 시즌 스쿼드에 포함된 선수만 경기 명단에 추가할 수 있습니다.");
+  if ((squadMember.players as { player_type?: string } | null)?.player_type !== "member") {
+    return fail("등록 선수만 경기 명단에 추가할 수 있습니다.");
+  }
 
   const { error } = await supabase.from("match_roster").upsert(
     { match_id: matchId, player_id: playerId },

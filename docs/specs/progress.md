@@ -23,6 +23,10 @@ This is the short status note for future sessions. Detailed history belongs in
 - `/lineup` now treats guests as match-only participants: adding a guest creates
   a `match_roster` guest row for that match instead of creating a registered
   `players` row or season squad member.
+- Player, season squad, lineup, match detail, and stats entry flows now filter
+  registered-player choices to `players.player_type = 'member'`.
+- The old test guest player `권대솔` was deleted directly in Supabase by the
+  owner, so no broad legacy-guest migration is planned.
 - The right-side lineup panel has been compacted so each position row reads as
   position, player name, and number on one line.
 - The lineup right panel is widened to 380px and shows left-foot/right-foot
@@ -118,6 +122,9 @@ The security cleanup is complete for the current owner workflow:
   pitch slots responsive.
 - `npm.cmd run lint` and `npm.cmd run build` passed after changing guests from
   registered players to match-only lineup participants.
+- `npm.cmd run lint`, `npm.cmd run build`, and `git diff --check` passed after
+  hiding old guest-player rows from player, squad, lineup, match detail, and
+  stats flows.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
@@ -142,9 +149,10 @@ The security cleanup is complete for the current owner workflow:
    - polish permission-needed wording where the owner later provides final copy.
 3. Defer historical data migration until the lineup/recording workflow and
    needed historical detail level are confirmed.
-4. Apply the updated Supabase SQL before deployment review if the target
-   database does not already have `match_roster`, match-only guest columns,
-   `period_lineups.match_roster_id`, and the `4-2-3-1` seed.
+4. For the existing Supabase DB, apply `docs/database/supabase-match-roster.sql`
+   before deployment review if it does not already have `match_roster`,
+   match-only guest columns, `period_lineups.match_roster_id`, and the
+   `4-2-3-1` seed. Use `docs/database/supabase-schema.sql` only for a fresh DB.
 5. Use `reference/left_menu_and_lineup_sample.png` as the current structure
    reference for desktop navigation and lineup/tactics layout.
 6. Work with the owner through one-question-at-a-time planning, local browser
@@ -172,6 +180,9 @@ The security cleanup is complete for the current owner workflow:
 - Match-only guests currently work for lineup assignment only. Match stats, MOM
   selections, rankings, and dashboard output remain registered-player based
   until a separate guest-result reporting decision is made.
+- `docs/database/supabase-match-roster.sql` is now a schema migration only. It
+  does not delete or convert existing guest-player data; any known test guest
+  rows should be removed manually after confirming the exact player.
 - Some UI copy rows are intentionally still at their current/original wording
   because `Owner change` was left empty.
 - Historical data migration is intentionally deferred. For accurate lineup

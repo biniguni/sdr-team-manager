@@ -99,7 +99,6 @@ Fill in `Owner change` with the final wording to apply.
 | Badge | Active | 활성 | 활동 중 |
 | Badge | Inactive | 비활성 | 휴식 중 |
 | Player type | Member | 정규 선수 | 선수 |
-| Player type | Guest | 용병 | 용병 |
 | Button | Save changes | 변경사항 저장 | 변경사항 저장 |
 | Button | Deactivate | 비활성화 | 비활성화 |
 | Empty state | No players found. | 조건에 맞는 선수가 없습니다. | 조건에 맞는 선수가 없습니다. |

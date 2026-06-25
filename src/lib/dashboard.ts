@@ -19,6 +19,7 @@ export function aggregatePlayers(stats: PlayerStatsRow[]): PlayerAggregate[] {
 
   for (const row of stats) {
     if (!row.players) continue;
+    if (row.players.player_type !== "member") continue;
 
     const current = groups.get(row.player_id) ?? {
       player: row.players,
