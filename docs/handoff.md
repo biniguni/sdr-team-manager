@@ -89,6 +89,16 @@ This is the next-session brief. Historical detail belongs in
   formation in `docs/database/supabase-schema.sql`.
 - Added editable player left-foot/right-foot scores and
   `docs/database/supabase-player-foot-scores.sql`.
+- Changed the guest lineup workflow so guests are match-only participants:
+  adding a guest on `/lineup` creates a `match_roster` row with `guest_name` and
+  optional `guest_number`, not a `players` row or `squad_members` row.
+- Updated lineup saving to use `period_lineups.match_roster_id`, with
+  `player_id` retained only for registered-player compatibility and derived
+  position-performance refresh.
+- Filtered registered-player choices to `players.player_type = 'member'` in
+  player, squad, lineup, match detail, and stats flows.
+- The old test guest player `권대솔` was deleted directly in Supabase by the
+  owner, so broad legacy-guest cleanup is not part of the migration.
 - Added `docs/specs/ui/copy-review.md` as a temporary working table for Korean
   UI copy review. It includes current/original wording, suggested drafts,
   remaining English copy, and an `Owner change` column for final wording.
@@ -116,8 +126,12 @@ This is the next-session brief. Historical detail belongs in
 - Followed up by making mobile lineup pitch slots and compact player buttons
   responsive, so the width-shift fix does not force cards to overlap on narrow
   screens.
-- Corrected the dashboard match-history layout so desktop height follows the
-  left summary/ranking column and long seasons scroll inside the right panel.
+- Corrected the dashboard match-history layout so it sits under the season
+  summary on the left and long seasons scroll inside that panel.
+- Reorganized the dashboard: season summary and match history are on the left,
+  team composition and personal records are on the right. Top page titles now
+  use mobile `text-2xl` and desktop `sm:text-3xl`, player status filters reflect
+  the selected tab, and match results display as `승/무/패`.
 
 ## Verification Completed
 
@@ -139,8 +153,16 @@ This is the next-session brief. Historical detail belongs in
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
   pitch slots responsive.
+- `npm.cmd run lint` and `npm.cmd run build` passed after changing guests from
+  registered players to match-only lineup participants.
+- `npm.cmd run lint`, `npm.cmd run build`, and `git diff --check` passed after
+  hiding old guest-player rows from player, squad, lineup, match detail, and
+  stats flows.
 - `npm.cmd run lint` and `npm.cmd run build` passed after correcting the
   dashboard match-history height to follow the left column.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard
+  reorganization, title-size alignment, player-filter active state fix, and
+  Korean result-label changes.
 
 ## Current Git State Notes
 
@@ -193,11 +215,15 @@ npm.cmd run dev
 2. Review desktop `/lineup` in the browser against
    `reference/left_menu_and_lineup_sample.png`.
 
-3. Before deployment or shared DB review, apply the updated database SQL if the
-   database does not already include:
-   - `match_roster`
-   - RLS policies for `match_roster`
-   - seeded `4-2-3-1` formation and slots
+3. Before deployment or shared DB review, apply
+   `docs/database/supabase-match-roster.sql` to the existing Supabase DB if it
+   does not already include:
+  - `match_roster`
+  - `match_roster.guest_name` and `match_roster.guest_number`
+  - `period_lineups.match_roster_id`
+  - RLS policies for `match_roster`
+  - seeded `4-2-3-1` formation and slots
+   Use `docs/database/supabase-schema.sql` only for a fresh DB.
 
 4. Review mobile:
    - first try the dev server network URL shown by Next.js, for example
@@ -241,6 +267,12 @@ npm.cmd run dev
   - owner/result manager can write match results and player stats.
 - Mobile logout/account UI exists in the side menu but still needs visual
   polish.
+- Match-only guests currently participate in lineups only. Stats, MOM,
+  rankings, and dashboard summaries still use registered players unless a later
+  guest-result reporting design is added.
+- `docs/database/supabase-match-roster.sql` is now a schema migration only. It
+  does not delete or convert existing guest-player data; any known test guest
+  rows should be removed manually after confirming the exact player.
 - Remaining English UI copy may be intentional where `Owner change` is blank.
   Do a screen-by-screen copy pass only after the owner fills final wording.
 - Before changing more UI copy, review `docs/specs/ui/copy-review.md` and use

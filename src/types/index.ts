@@ -33,8 +33,20 @@ export interface SquadMember {
 export interface MatchRoster {
   id: UUID;
   match_id: UUID;
-  player_id: UUID;
+  player_id: UUID | null;
+  guest_name: string | null;
+  guest_number: number | null;
   created_at: string;
+}
+
+export interface LineupParticipant {
+  id: UUID;
+  player_id: UUID | null;
+  name: string;
+  number: number | null;
+  left_foot_score: number | null;
+  right_foot_score: number | null;
+  participant_type: "member" | "guest";
 }
 
 export type MatchStatus = "scheduled" | "completed";
@@ -92,7 +104,8 @@ export interface PeriodLineup {
   period_id: UUID;
   formation_id: UUID;
   position_slot_id: UUID;
-  player_id: UUID;
+  match_roster_id: UUID | null;
+  player_id: UUID | null;
   created_at: string;
   updated_at: string;
 }

@@ -10,6 +10,10 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
   const goalsAgainst = completed.reduce((sum, match) => sum + (match.opponent_score ?? 0), 0);
   const goalDiff = goalsFor - goalsAgainst;
   const winRate = completed.length ? Math.round((wins / completed.length) * 1000) / 10 : 0;
+  const goalsForPerMatch = completed.length ? (goalsFor / completed.length).toFixed(1) : "0.0";
+  const goalsAgainstPerMatch = completed.length ? (goalsAgainst / completed.length).toFixed(1) : "0.0";
+  const cleanSheets = completed.filter((match) => match.opponent_score === 0).length;
+  const scorelessMatches = completed.filter((match) => match.our_score === 0).length;
   const recent = [...completed]
     .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime())
     .slice(-8);
@@ -18,9 +22,10 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
     <section className="rounded-lg border border-slate-800 bg-bg-secondary/80 p-5">
       <div className="flex flex-wrap items-center gap-5">
         <div className="flex gap-5">
-          <RecordNumber label="W" value={wins} tone="text-accent-blue" />
-          <RecordNumber label="D" value={draws} tone="text-slate-300" />
-          <RecordNumber label="L" value={losses} tone="text-accent-red" />
+          <RecordNumber label="전체" value={matches.length} tone="text-slate-100" />
+          <RecordNumber label="승" value={wins} tone="text-accent-blue" />
+          <RecordNumber label="무" value={draws} tone="text-slate-300" />
+          <RecordNumber label="패" value={losses} tone="text-accent-red" />
         </div>
         <div className="hidden h-16 w-px bg-slate-800 sm:block" />
         <div className="grid flex-1 grid-cols-3 gap-4 text-center">
@@ -39,14 +44,21 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
               : result === "Loss"
                 ? "border-red-400/30 bg-red-400/10 text-accent-red"
                 : "border-slate-500/30 bg-slate-500/10 text-slate-300";
+          const label = result === "Win" ? "승" : result === "Draw" ? "무" : "패";
 
           return (
             <span key={match.id} className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-bold ${className}`}>
-              {result[0]}
+              {label}
             </span>
           );
         })}
-        {recent.length === 0 ? <span className="text-sm text-slate-500">진행된 경기가 없습니다.</span> : null}
+        {recent.length === 0 ? <span className="text-sm text-slate-500">진행한 경기가 없습니다.</span> : null}
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-800 pt-4 sm:grid-cols-4">
+        <SmallStat label="경기당 득점" value={goalsForPerMatch} tone="text-accent-blue" />
+        <SmallStat label="경기당 실점" value={goalsAgainstPerMatch} tone="text-accent-red" />
+        <SmallStat label="무실점 경기" value={`${cleanSheets}`} tone="text-accent-green" />
+        <SmallStat label="무득점 경기" value={`${scorelessMatches}`} tone="text-slate-300" />
       </div>
     </section>
   );

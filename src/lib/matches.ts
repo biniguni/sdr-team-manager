@@ -11,8 +11,15 @@ export function calculateMatchResult(
 }
 
 export function resultTone(result: MatchResult): "default" | "green" | "red" | "blue" {
-  if (result === "Win") return "green";
+  if (result === "Win") return "blue";
   if (result === "Loss") return "red";
-  if (result === "Draw") return "blue";
+  if (result === "Draw") return "default";
   return "default";
+}
+
+export function formatMatchResult(result: MatchResult) {
+  if (result === "Win") return "승";
+  if (result === "Draw") return "무";
+  if (result === "Loss") return "패";
+  return "예정";
 }

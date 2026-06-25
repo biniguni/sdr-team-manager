@@ -41,12 +41,21 @@ export async function savePlayerMatchStats(_: ActionResult, formData: FormData):
   }
 
   const supabase = await createClient();
-  const { data: assigned } = await supabase
-    .from("period_lineups")
-    .select("id, periods!inner(match_id)")
-    .eq("player_id", playerId)
-    .eq("periods.match_id", matchId)
-    .limit(1);
+  const [{ data: player, error: playerError }, { data: assigned, error: assignedError }] = await Promise.all([
+    supabase.from("players").select("player_type").eq("id", playerId).maybeSingle(),
+    supabase
+      .from("period_lineups")
+      .select("id, periods!inner(match_id)")
+      .eq("player_id", playerId)
+      .eq("periods.match_id", matchId)
+      .limit(1),
+  ]);
+
+  if (playerError) return fail(playerError.message);
+  if (assignedError) return fail(assignedError.message);
+  if (player?.player_type !== "member") {
+    return fail("등록 선수만 경기 기록을 저장할 수 있습니다.");
+  }
 
   if (!assigned || assigned.length === 0) {
     return fail("Only players assigned to this match lineup can receive match stats.");

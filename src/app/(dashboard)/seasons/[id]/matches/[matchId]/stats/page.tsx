@@ -36,8 +36,9 @@ export default async function MatchStatsPage({
   const squadPlayers = (squad as unknown as SquadRow[])
     .map((row) => row.players)
     .filter(Boolean)
+    .filter((player) => player.player_type === "member")
     .sort((a, b) => a.number - b.number);
-  const assignedPlayerIds = new Set((assigned ?? []).map((row) => row.player_id));
+  const assignedPlayerIds = new Set((assigned ?? []).map((row) => row.player_id).filter(Boolean));
   const statsByPlayerId = new Map((stats as PlayerMatchStats[]).map((row) => [row.player_id, row]));
 
   return (

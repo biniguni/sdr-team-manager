@@ -7,6 +7,10 @@ import { Card, PageHeader } from "@/components/ui/Card";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import type { Player } from "@/types";
 
+function statusLinkClass(currentStatus: string, value: string) {
+  return currentStatus === value ? "text-accent-blue" : "text-slate-300 hover:text-white";
+}
+
 export default async function PlayersPage({
   searchParams,
 }: {
@@ -15,7 +19,7 @@ export default async function PlayersPage({
   const { status = "active" } = await searchParams;
   const supabase = await createClient();
   const { canEdit } = await getAuthStatus();
-  let query = supabase.from("players").select("*").order("name").order("number");
+  let query = supabase.from("players").select("*").eq("player_type", "member").order("name").order("number");
 
   if (status === "active") query = query.eq("is_active", true);
   if (status === "inactive") query = query.eq("is_active", false);
@@ -48,9 +52,9 @@ export default async function PlayersPage({
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">선수 목록</h2>
             <div className="flex gap-2 text-sm">
-              <a className="text-accent-blue" href="/players?status=active">활동 중</a>
-              <a className="text-slate-300" href="/players?status=all">전체</a>
-              <a className="text-slate-300" href="/players?status=inactive">휴식 중</a>
+              <a className={statusLinkClass(status, "active")} href="/players?status=active">활동 중</a>
+              <a className={statusLinkClass(status, "all")} href="/players?status=all">전체</a>
+              <a className={statusLinkClass(status, "inactive")} href="/players?status=inactive">휴식 중</a>
             </div>
           </div>
           {error ? <p className="text-sm text-accent-red">{error.message}</p> : null}
@@ -65,7 +69,6 @@ export default async function PlayersPage({
                     <span className="text-slate-500">#{player.number}</span>
                   </span>
                   <span className="flex gap-2">
-                    {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                     <Badge tone={player.is_active ? "green" : "red"}>{player.is_active ? "활동 중" : "휴식 중"}</Badge>
                   </span>
                 </summary>
@@ -81,7 +84,7 @@ export default async function PlayersPage({
                   </div>
                 ) : (
                   <dl className="mt-4 grid gap-2 text-sm text-slate-300">
-                    <div>구분: {player.player_type === "guest" ? "용병" : "선수"}</div>
+                    <div>구분: 선수</div>
                     <div>상태: {player.is_active ? "활동 중" : "휴식 중"}</div>
                   </dl>
                 )}

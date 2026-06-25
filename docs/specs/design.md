@@ -53,7 +53,7 @@ The app supports these product areas:
 | Formations | Manage position templates such as `4-4-2` | `formations`, `position_slots` |
 | Lineups | Prepare active-season match rosters and period lineups before match day | `match_roster`, `period_lineups` |
 | Schedule | View a future calendar-style match schedule | `matches`, `periods` |
-| Guest players | Add temporary guests during lineup work | `players`, `squad_members` |
+| Guest players | Add match-only guests during lineup work | `match_roster` |
 | Match stats | Record played, goals, assists, and cards | `player_match_stats` |
 | Dashboard | Summarize season record and player output | `matches`, `player_match_stats` |
 | Rankings | Rank players from match stats | `player_match_stats`, `players` |
@@ -193,7 +193,7 @@ Permission helpers:
 
 | Helper | Allows | Use for |
 | --- | --- | --- |
-| `requireEditor()` | Approved editors | General records, squads, formations, lineups, guest players. |
+| `requireEditor()` | Approved editors | General records, squads, formations, lineups, match-only guests. |
 | `requireMatchResultManager()` | Editors with result authority | Scores, completion, MOM, player match stats. |
 
 Design rule: hiding buttons in the UI improves clarity, but it is not security.
@@ -213,16 +213,19 @@ matches < player_match_stats > players
 seasons < position_performance > players
 ```
 
+`match_roster` can point to a registered player, or hold a match-only guest
+name for lineup use.
+
 Plain-language version:
 
 | Relationship | Meaning |
 | --- | --- |
 | `players` to `squad_members` to `seasons` | A player joins a specific season squad. |
 | `seasons` to `matches` | A match belongs to one season. |
-| `matches` to `match_roster` | A match has its own available player list. |
+| `matches` to `match_roster` | A match has its own available participant list: registered squad players plus optional match-only guests. |
 | `matches` to `periods` | A match is split into periods. |
 | `formations` to `position_slots` | A formation defines board positions. |
-| `periods` to `period_lineups` | A period has player-position assignments. |
+| `periods` to `period_lineups` | A period has participant-position assignments. |
 | `matches` to `player_match_stats` | Player stats are recorded per match. |
 | `seasons` to `position_performance` | Position summaries are stored by season. |
 
@@ -234,11 +237,11 @@ Plain-language version:
 | `seasons` | Season name, dates, active status | End date cannot be before start date. |
 | `squad_members` | Player-season membership | A player can appear once per season squad. |
 | `matches` | Match details and result fields | Result fields need stronger permission checks. |
-| `match_roster` | Player-match availability | A player can appear once per match roster. |
+| `match_roster` | Match participant availability | A registered player can appear once per match roster; guests are stored as match-only names. |
 | `periods` | Match parts | Labels and order numbers are unique within a match. |
 | `formations` | Formation names | Built-in formations are seeded by SQL. |
 | `position_slots` | Positions inside formations | Coordinates stay between 0 and 100. |
-| `period_lineups` | Player assignment to period positions | No duplicate player or slot in the same period. |
+| `period_lineups` | Participant assignment to period positions | No duplicate match roster participant or slot in the same period. |
 | `player_match_stats` | Per-player match totals | Numeric stats must be zero or greater. |
 | `position_performance` | Derived position summary | Refreshed from lineup data after lineup saves. |
 | `team_editors` | Approved editor list | Controls write access. |
@@ -250,9 +253,9 @@ Plain-language version:
 | `players` | `name`, `number`, `left_foot_score`, `right_foot_score`, `player_type`, `is_active` |
 | `seasons` | `name`, `start_date`, `end_date`, `is_active` |
 | `matches` | `opponent`, `match_date`, `venue`, `is_home`, scores, status, MOM fields |
-| `match_roster` | `match_id`, `player_id` |
+| `match_roster` | `match_id`, `player_id`, `guest_name`, `guest_number` |
 | `position_slots` | `formation_id`, `position_code`, `x`, `y` |
-| `period_lineups` | `period_id`, `formation_id`, `position_slot_id`, `player_id` |
+| `period_lineups` | `period_id`, `formation_id`, `position_slot_id`, `match_roster_id`, `player_id` |
 | `player_match_stats` | `played`, `goals`, `assists`, `yellow_cards`, `red_cards` |
 | `position_performance` | `season_id`, `player_id`, `position_code`, `period_count`, `match_count` |
 | `team_editors` | `user_id`, `role`, `can_manage_match_results` |
@@ -277,7 +280,7 @@ Every write should follow this order:
 | `src/actions/seasons.ts` | Create/update seasons and manage squads | Editor |
 | `src/actions/matches.ts` | Create/update matches and result fields | Editor or result manager, depending on field |
 | `src/actions/formations.ts` | Manage formations and slots | Editor |
-| `src/actions/lineups.ts` | Save lineups and create guest players | Editor |
+| `src/actions/lineups.ts` | Save lineups and add match-only guests | Editor |
 | `src/actions/stats.ts` | Save player match stats | Result manager |
 | `src/actions/auth.ts` | Login/logout | Signed-in user flow |
 
@@ -326,8 +329,8 @@ Product impact: scheduling and result entry can happen at different times.
 | 1 | Editor opens `라인업`, which shows active-season matches. |
 | 2 | App defaults to the nearest upcoming scheduled match, or the most recent completed match if no upcoming match exists. |
 | 3 | Editor selects a period and formation. |
-| 4 | Editor adds available players from the season squad to the match roster. |
-| 5 | Editor changes the lineup on the pitch board or in the position-ordered side panel, using only match-roster players. |
+| 4 | Editor adds available players from the season squad to the match roster, and may add match-only guests directly on that match. |
+| 5 | Editor changes the lineup on the pitch board or in the position-ordered side panel, using only match-roster participants. |
 | 6 | Changes remain draft-only until the editor saves. |
 | 7 | Server Action validates period, slots, match roster membership, and duplicates. |
 | 8 | Existing period lineup rows are replaced. |
@@ -349,18 +352,18 @@ Lineup planning UI rules:
 | Quarter-copy is deferred | Keeps the first pass focused. |
 | Per-period position fine-tuning is deferred | Needs schema support such as lineup-level custom coordinates. |
 
-### Guest Player Add
+### Match-Only Guest Add
 
 | Step | What happens |
 | --- | --- |
-| 1 | Editor adds a guest from the lineup screen. |
-| 2 | App creates a `players` row with `player_type = 'guest'`. |
-| 3 | If no number is provided, app assigns a 9000-range temporary number. |
-| 4 | App adds the guest to the current season squad. |
-| 5 | Guest can be used in lineups, stats, MOM selections, and rankings. |
+| 1 | Editor adds a guest from the lineup screen for a specific match. |
+| 2 | App creates a `match_roster` row with `guest_name` and optional `guest_number`. |
+| 3 | App does not create a `players` row or add the guest to the season squad. |
+| 4 | Guest can be used in period lineups for that match. |
+| 5 | Registered-player stats, MOM selections, rankings, and reports stay tied to `players` unless a later guest-reporting decision changes that. |
 
-Product impact: guest participation stays structured and reportable instead of
-becoming untracked free text.
+Product impact: player registration stays clean while match-day lineups can
+still include temporary guests without polluting the season squad.
 
 ### Match Result Save
 

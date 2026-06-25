@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { calculateMatchResult, resultTone } from "@/lib/matches";
+import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/matches";
 import type { Match, Season } from "@/types";
 
 export default async function SeasonMatchesPage({ params }: { params: Promise<{ id: string }> }) {
@@ -84,7 +84,7 @@ export default async function SeasonMatchesPage({ params }: { params: Promise<{ 
                     </span>
                   </span>
                   <span className="flex flex-wrap justify-end gap-2">
-                    <Badge tone={resultTone(result)}>{result}</Badge>
+                    <Badge tone={resultTone(result)}>{formatMatchResult(result)}</Badge>
                     <Badge tone={match.status === "completed" ? "green" : "default"}>{match.status === "completed" ? "종료" : "다가올 경기"}</Badge>
                   </span>
                 </Link>

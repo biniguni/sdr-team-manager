@@ -7,7 +7,8 @@ This is the short status note for future sessions. Detailed history belongs in
 
 - The app foundation is implemented: Next.js shell, Supabase schema scripts,
   player/season/squad/match/formation management, period lineups, player match
-  stats, dashboard, rankings, login screen, guest players, and deployment notes.
+  stats, dashboard, rankings, login screen, match-only guests, and deployment
+  notes.
 - Intended access mode is public read access with approved editing.
 - Global login blocking is intentionally disabled in `src/proxy.ts`.
 - Editors sign in at `/login`.
@@ -19,6 +20,13 @@ This is the short status note for future sessions. Detailed history belongs in
 - `/lineup` now supports match rosters: editors add players from the season
   squad to a specific match first, then assign only those match-roster players
   to period lineups.
+- `/lineup` now treats guests as match-only participants: adding a guest creates
+  a `match_roster` guest row for that match instead of creating a registered
+  `players` row or season squad member.
+- Player, season squad, lineup, match detail, and stats entry flows now filter
+  registered-player choices to `players.player_type = 'member'`.
+- The old test guest player `권대솔` was deleted directly in Supabase by the
+  owner, so no broad legacy-guest migration is planned.
 - The right-side lineup panel has been compacted so each position row reads as
   position, player name, and number on one line.
 - The lineup right panel is widened to 380px and shows left-foot/right-foot
@@ -47,9 +55,12 @@ This is the short status note for future sessions. Detailed history belongs in
   reads `경기`, mobile keeps rank/player columns sticky while stats scroll
   horizontally, and the desktop dashboard gives the ranking table more width
   while narrowing and stretching the match-history panel.
-- Dashboard match history height is now bound to the left summary/ranking
-  column on desktop, so long seasons scroll inside the right panel instead of
-  making the whole dashboard page very tall.
+- Dashboard match history now sits under the season summary on the left and
+  scrolls inside its own panel, so long seasons do not make the whole dashboard
+  page very tall.
+- Dashboard layout was reorganized: season summary and match history are on the
+  left, team composition and personal records are on the right. Result labels
+  now use `승/무/패`, and top page titles share a responsive size pattern.
 - Layout stability was tightened after the lineup menu zoom/width-shift report:
   the app now reserves scrollbar gutter, blocks horizontal page overflow, and
   constrains the lineup page grid, match-card strip, and pitch from widening the
@@ -102,10 +113,18 @@ The security cleanup is complete for the current owner workflow:
   sticky-column and match-history layout changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after correcting the
   dashboard match-history height to follow the left column.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard
+  reorganization, title-size alignment, player-filter active state fix, and
+  Korean result-label changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
   pitch slots responsive.
+- `npm.cmd run lint` and `npm.cmd run build` passed after changing guests from
+  registered players to match-only lineup participants.
+- `npm.cmd run lint`, `npm.cmd run build`, and `git diff --check` passed after
+  hiding old guest-player rows from player, squad, lineup, match detail, and
+  stats flows.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
@@ -130,8 +149,10 @@ The security cleanup is complete for the current owner workflow:
    - polish permission-needed wording where the owner later provides final copy.
 3. Defer historical data migration until the lineup/recording workflow and
    needed historical detail level are confirmed.
-4. Apply the updated Supabase SQL before deployment review if the target
-   database does not already have `match_roster` and the `4-2-3-1` seed.
+4. For the existing Supabase DB, apply `docs/database/supabase-match-roster.sql`
+   before deployment review if it does not already have `match_roster`,
+   match-only guest columns, `period_lineups.match_roster_id`, and the
+   `4-2-3-1` seed. Use `docs/database/supabase-schema.sql` only for a fresh DB.
 5. Use `reference/left_menu_and_lineup_sample.png` as the current structure
    reference for desktop navigation and lineup/tactics layout.
 6. Work with the owner through one-question-at-a-time planning, local browser
@@ -156,6 +177,12 @@ The security cleanup is complete for the current owner workflow:
   lineup dialog, and longer-term transaction safety for concurrent lineup saves.
 - Mobile logout/account UI is not polished yet; it is not a current security
   blocker and should be handled during UI improvement work.
+- Match-only guests currently work for lineup assignment only. Match stats, MOM
+  selections, rankings, and dashboard output remain registered-player based
+  until a separate guest-result reporting decision is made.
+- `docs/database/supabase-match-roster.sql` is now a schema migration only. It
+  does not delete or convert existing guest-player data; any known test guest
+  rows should be removed manually after confirming the exact player.
 - Some UI copy rows are intentionally still at their current/original wording
   because `Owner change` was left empty.
 - Historical data migration is intentionally deferred. For accurate lineup

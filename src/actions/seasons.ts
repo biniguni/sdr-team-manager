@@ -79,8 +79,8 @@ export async function addSquadMember(formData: FormData): Promise<ActionResult> 
   if (!seasonId || !playerId) return fail("등록할 선수를 선택하세요.");
 
   const supabase = await createClient();
-  const { data: player } = await supabase.from("players").select("is_active").eq("id", playerId).single();
-  if (!player?.is_active) return fail("등록 선수만 스쿼드에 추가할 수 있습니다.");
+  const { data: player } = await supabase.from("players").select("is_active, player_type").eq("id", playerId).single();
+  if (!player?.is_active || player.player_type !== "member") return fail("등록 선수만 스쿼드에 추가할 수 있습니다.");
 
   const { error } = await supabase
     .from("squad_members")

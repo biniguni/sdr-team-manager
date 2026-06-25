@@ -129,10 +129,42 @@ create table if not exists periods (
 create table if not exists match_roster (
   id uuid primary key default gen_random_uuid(),
   match_id uuid not null references matches(id) on delete cascade,
-  player_id uuid not null references players(id) on delete restrict,
+  player_id uuid references players(id) on delete restrict,
+  guest_name text,
+  guest_number integer check (guest_number is null or guest_number >= 0),
   created_at timestamptz not null default now(),
+  constraint match_roster_member_or_guest check (
+    (player_id is not null and guest_name is null) or
+    (player_id is null and guest_name is not null)
+  ),
   unique (match_id, player_id)
 );
+
+alter table match_roster add column if not exists guest_name text;
+alter table match_roster add column if not exists guest_number integer;
+alter table match_roster alter column player_id drop not null;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'match_roster_guest_number_check') then
+    alter table match_roster add constraint match_roster_guest_number_check
+      check (guest_number is null or guest_number >= 0);
+  end if;
+
+  if not exists (select 1 from pg_constraint where conname = 'match_roster_member_or_guest') then
+    alter table match_roster add constraint match_roster_member_or_guest
+      check (
+        (player_id is not null and guest_name is null) or
+        (player_id is null and guest_name is not null)
+      );
+  end if;
+
+  if not exists (select 1 from pg_constraint where conname = 'match_roster_match_id_player_id_key') then
+    drop index if exists match_roster_match_id_player_id_key;
+    alter table match_roster add constraint match_roster_match_id_player_id_key
+      unique (match_id, player_id);
+  end if;
+end $$;
 
 create table if not exists formations (
   id uuid primary key default gen_random_uuid(),
@@ -157,12 +189,31 @@ create table if not exists period_lineups (
   period_id uuid not null references periods(id) on delete cascade,
   formation_id uuid not null references formations(id) on delete restrict,
   position_slot_id uuid not null references position_slots(id) on delete restrict,
-  player_id uuid not null references players(id) on delete restrict,
+  match_roster_id uuid references match_roster(id) on delete restrict,
+  player_id uuid references players(id) on delete restrict,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (period_id, position_slot_id),
-  unique (period_id, player_id)
+  unique (period_id, position_slot_id)
 );
+
+alter table period_lineups add column if not exists match_roster_id uuid;
+alter table period_lineups alter column player_id drop not null;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'period_lineups_match_roster_id_fkey') then
+    alter table period_lineups add constraint period_lineups_match_roster_id_fkey
+      foreign key (match_roster_id) references match_roster(id) on delete restrict;
+  end if;
+
+  if exists (select 1 from pg_constraint where conname = 'period_lineups_period_id_player_id_key') then
+    alter table period_lineups drop constraint period_lineups_period_id_player_id_key;
+  end if;
+end $$;
+
+create unique index if not exists period_lineups_period_id_match_roster_id_key
+  on period_lineups(period_id, match_roster_id)
+  where match_roster_id is not null;
 
 create table if not exists player_match_stats (
   id uuid primary key default gen_random_uuid(),

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { calculateMatchResult, resultTone } from "@/lib/matches";
+import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/matches";
 import type { Match, Period, Player } from "@/types";
 
 type SquadRow = {
@@ -72,6 +72,7 @@ export default async function MatchDetailPage({
   const squadPlayers = (squad as unknown as SquadRow[])
     .map((row) => row.players)
     .filter(Boolean)
+    .filter((player) => player.player_type === "member")
     .sort((a, b) => a.number - b.number);
 
   return (
@@ -90,7 +91,7 @@ export default async function MatchDetailPage({
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold">경기 상세</h2>
             <span className="flex gap-2">
-              <Badge tone={resultTone(result)}>{result}</Badge>
+              <Badge tone={resultTone(result)}>{formatMatchResult(result)}</Badge>
               <Badge tone={currentMatch.status === "completed" ? "green" : "default"}>{currentMatch.status}</Badge>
             </span>
           </div>
