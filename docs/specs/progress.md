@@ -7,7 +7,8 @@ This is the short status note for future sessions. Detailed history belongs in
 
 - The app foundation is implemented: Next.js shell, Supabase schema scripts,
   player/season/squad/match/formation management, period lineups, player match
-  stats, dashboard, rankings, login screen, guest players, and deployment notes.
+  stats, dashboard, rankings, login screen, match-only guests, and deployment
+  notes.
 - Intended access mode is public read access with approved editing.
 - Global login blocking is intentionally disabled in `src/proxy.ts`.
 - Editors sign in at `/login`.
@@ -19,6 +20,9 @@ This is the short status note for future sessions. Detailed history belongs in
 - `/lineup` now supports match rosters: editors add players from the season
   squad to a specific match first, then assign only those match-roster players
   to period lineups.
+- `/lineup` now treats guests as match-only participants: adding a guest creates
+  a `match_roster` guest row for that match instead of creating a registered
+  `players` row or season squad member.
 - The right-side lineup panel has been compacted so each position row reads as
   position, player name, and number on one line.
 - The lineup right panel is widened to 380px and shows left-foot/right-foot
@@ -112,6 +116,8 @@ The security cleanup is complete for the current owner workflow:
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
   pitch slots responsive.
+- `npm.cmd run lint` and `npm.cmd run build` passed after changing guests from
+  registered players to match-only lineup participants.
 - A targeted source search found no remaining representative original strings
   for the applied owner-approved copy.
 - A temporary local dev server returned `200 OK` for `/lineup`.
@@ -137,7 +143,8 @@ The security cleanup is complete for the current owner workflow:
 3. Defer historical data migration until the lineup/recording workflow and
    needed historical detail level are confirmed.
 4. Apply the updated Supabase SQL before deployment review if the target
-   database does not already have `match_roster` and the `4-2-3-1` seed.
+   database does not already have `match_roster`, match-only guest columns,
+   `period_lineups.match_roster_id`, and the `4-2-3-1` seed.
 5. Use `reference/left_menu_and_lineup_sample.png` as the current structure
    reference for desktop navigation and lineup/tactics layout.
 6. Work with the owner through one-question-at-a-time planning, local browser
@@ -162,6 +169,9 @@ The security cleanup is complete for the current owner workflow:
   lineup dialog, and longer-term transaction safety for concurrent lineup saves.
 - Mobile logout/account UI is not polished yet; it is not a current security
   blocker and should be handled during UI improvement work.
+- Match-only guests currently work for lineup assignment only. Match stats, MOM
+  selections, rankings, and dashboard output remain registered-player based
+  until a separate guest-result reporting decision is made.
 - Some UI copy rows are intentionally still at their current/original wording
   because `Owner change` was left empty.
 - Historical data migration is intentionally deferred. For accurate lineup

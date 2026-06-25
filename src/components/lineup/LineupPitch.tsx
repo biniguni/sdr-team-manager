@@ -1,12 +1,12 @@
 "use client";
 
 import { PositionSlotDroppable } from "@/components/lineup/PositionSlotDroppable";
-import type { Player, PositionSlot } from "@/types";
+import type { LineupParticipant, PositionSlot } from "@/types";
 
 export function LineupPitch({
   slots,
   assignments,
-  playersById,
+  participantsById,
   canPick = false,
   expanded = false,
   onPickSlot,
@@ -14,7 +14,7 @@ export function LineupPitch({
 }: {
   slots: PositionSlot[];
   assignments: Record<string, string>;
-  playersById: Map<string, Player>;
+  participantsById: Map<string, LineupParticipant>;
   canPick?: boolean;
   expanded?: boolean;
   onPickSlot?: (slotId: string) => void;
@@ -30,7 +30,7 @@ export function LineupPitch({
         }`}
       />
       {slots.map((slot) => {
-        const player = playersById.get(assignments[slot.id] ?? "") ?? null;
+        const player = participantsById.get(assignments[slot.id] ?? "") ?? null;
 
         if (expanded) {
           return (
@@ -41,7 +41,7 @@ export function LineupPitch({
             >
               <span className="text-xs font-bold text-accent-green">{slot.position_code}</span>
               <span className="mt-0.5 max-w-full truncate text-[10px] font-semibold text-slate-100 sm:mt-1 sm:text-xs">
-                {player ? `#${player.number} ${player.name}` : "-"}
+                {player ? `${player.number === null ? "" : `#${player.number} `}${player.name}` : "-"}
               </span>
             </div>
           );

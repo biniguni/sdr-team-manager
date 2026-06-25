@@ -416,10 +416,10 @@ Phase 6  Auth / RLS / 배포
 ```
 ## Guest Player Support
 
-- [x] Add `players.player_type` with `member` and `guest` values, defaulting to `member`.
+- [x] Keep regular player registration focused on registered team members.
 - [ ] Remove/defer `players.memo` usage in public-read mode and clear existing memo values to null during security cleanup.
 - [x] Add a lineup-screen `+ 용병 추가` flow for approved editors.
-- [x] Auto-assign 9000-range temporary numbers when a guest number is not provided.
-- [x] Insert newly created guests into the current season squad immediately.
-- [x] Preserve `player_id` storage for `period_lineups` and `player_match_stats`.
-- [x] Show a `용병` badge where regular players and guests appear together.
+- [x] Store lineup guests as match-only `match_roster` participants with a name and optional number.
+- [x] Do not insert newly added lineup guests into `players` or the current season squad.
+- [x] Store new lineup assignments by `match_roster_id`, while preserving `player_id` for registered-player compatibility.
+- [x] Show a `용병` badge where regular players and match-only guests appear together.

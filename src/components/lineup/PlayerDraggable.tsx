@@ -2,20 +2,20 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { Badge } from "@/components/ui/Badge";
-import type { Player } from "@/types";
+import type { LineupParticipant } from "@/types";
 
 export function PlayerDraggable({
-  player,
+  participant,
   disabled = false,
   compact = false,
 }: {
-  player: Player;
+  participant: LineupParticipant;
   disabled?: boolean;
   compact?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `player:${player.id}`,
-    data: { player },
+    id: `participant:${participant.id}`,
+    data: { participant },
     disabled,
   });
 
@@ -37,8 +37,11 @@ export function PlayerDraggable({
       {...attributes}
     >
       <span className="flex min-w-0 items-center gap-1.5">
-        <span className="truncate font-semibold text-slate-100">#{player.number} {player.name}</span>
-        {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+        <span className="truncate font-semibold text-slate-100">
+          {participant.number === null ? "" : `#${participant.number} `}
+          {participant.name}
+        </span>
+        {participant.participant_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
       </span>
     </button>
   );

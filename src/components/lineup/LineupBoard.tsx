@@ -3,14 +3,14 @@
 import { DndContext, DragEndEvent, DragOverlay, PointerSensor, TouchSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
-import { addMatchRosterPlayer, createGuestPlayerForLineup, removeMatchRosterPlayer, saveLineup } from "@/actions/lineups";
+import { addGuestToMatchRoster, addMatchRosterPlayer, removeMatchRosterPlayer, saveLineup } from "@/actions/lineups";
 import { LineupPitch } from "@/components/lineup/LineupPitch";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { ActionResult, Formation, Period, PeriodLineup, Player, PositionSlot } from "@/types";
+import type { ActionResult, Formation, LineupParticipant, Period, PeriodLineup, Player, PositionSlot } from "@/types";
 
 type FormationWithSlots = Formation & {
   position_slots: PositionSlot[];
@@ -18,7 +18,6 @@ type FormationWithSlots = Formation & {
 
 type ExistingLineup = PeriodLineup & {
   position_slots: PositionSlot;
-  players: Player;
 };
 
 const initialState: ActionResult = { ok: true, message: "" };
@@ -45,7 +44,7 @@ export function LineupBoard({
   periods,
   formations,
   squadPlayers,
-  matchRosterPlayers,
+  matchRosterParticipants,
   existingLineups,
   canEdit,
 }: {
@@ -54,7 +53,7 @@ export function LineupBoard({
   periods: Period[];
   formations: FormationWithSlots[];
   squadPlayers: Player[];
-  matchRosterPlayers: Player[];
+  matchRosterParticipants: LineupParticipant[];
   existingLineups: ExistingLineup[];
   canEdit: boolean;
 }) {
@@ -73,9 +72,9 @@ export function LineupBoard({
   const initialFormationId = periodLineup[0]?.formation_id ?? formations[0]?.id ?? "";
   const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
   const [assignments, setAssignments] = useState<Record<string, string>>(() =>
-    Object.fromEntries(periodLineup.map((entry) => [entry.position_slot_id, entry.player_id])),
+    Object.fromEntries(periodLineup.map((entry) => [entry.position_slot_id, entry.match_roster_id ?? ""]).filter(([, rosterId]) => rosterId)),
   );
-  const [activePlayer, setActivePlayer] = useState<Player | null>(null);
+  const [activeParticipant, setActiveParticipant] = useState<LineupParticipant | null>(null);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [playerPickerSlotId, setPlayerPickerSlotId] = useState<string | null>(null);
   const [selectedRosterPlayerId, setSelectedRosterPlayerId] = useState("");
@@ -84,7 +83,7 @@ export function LineupBoard({
   const [isDirty, setIsDirty] = useState(false);
   const [fieldExpanded, setFieldExpanded] = useState(false);
   const [state, formAction, pending] = useActionState(saveLineup, initialState);
-  const [guestState, guestFormAction, guestPending] = useActionState(createGuestPlayerForLineup, initialState);
+  const [guestState, guestFormAction, guestPending] = useActionState(addGuestToMatchRoster, initialState);
 
   useEffect(() => {
     if (!state.ok || !state.message) return;
@@ -106,21 +105,24 @@ export function LineupBoard({
   const selectedFormation = formations.find((formation) => formation.id === selectedFormationId);
   const slots = useMemo(() => selectedFormation?.position_slots ?? [], [selectedFormation]);
   const orderedSlots = useMemo(() => [...slots].sort((a, b) => b.y - a.y || a.x - b.x), [slots]);
-  const playersById = useMemo(() => new Map(matchRosterPlayers.map((player) => [player.id, player])), [matchRosterPlayers]);
-  const matchRosterPlayerIds = useMemo(() => new Set(matchRosterPlayers.map((player) => player.id)), [matchRosterPlayers]);
+  const participantsById = useMemo(() => new Map(matchRosterParticipants.map((participant) => [participant.id, participant])), [matchRosterParticipants]);
+  const matchRosterPlayerIds = useMemo(
+    () => new Set(matchRosterParticipants.map((participant) => participant.player_id).filter(Boolean)),
+    [matchRosterParticipants],
+  );
   const rosterCandidatePlayers = squadPlayers.filter((player) => !matchRosterPlayerIds.has(player.id));
   const assignedPlayerIds = new Set(Object.values(assignments).filter(Boolean));
-  const unassignedPlayers = matchRosterPlayers.filter((player) => !assignedPlayerIds.has(player.id));
+  const unassignedParticipants = matchRosterParticipants.filter((participant) => !assignedPlayerIds.has(participant.id));
   const selectedPeriod = periods.find((period) => period.id === selectedPeriodId);
   const playerPickerSlot = playerPickerSlotId ? slots.find((slot) => slot.id === playerPickerSlotId) ?? null : null;
-  const playerPickerCurrentPlayer = playerPickerSlotId ? playersById.get(assignments[playerPickerSlotId] ?? "") ?? null : null;
+  const playerPickerCurrentPlayer = playerPickerSlotId ? participantsById.get(assignments[playerPickerSlotId] ?? "") ?? null : null;
 
   function lineupForPeriod(periodId: string) {
     return existingLineups.filter((entry) => entry.period_id === periodId);
   }
 
   function assignmentsForPeriod(periodId: string) {
-    return Object.fromEntries(lineupForPeriod(periodId).map((entry) => [entry.position_slot_id, entry.player_id]));
+    return Object.fromEntries(lineupForPeriod(periodId).map((entry) => [entry.position_slot_id, entry.match_roster_id ?? ""]).filter(([, rosterId]) => rosterId));
   }
 
   function confirmDiscard() {
@@ -134,7 +136,7 @@ export function LineupBoard({
     const nextFormationId = lineup[0]?.formation_id ?? selectedFormationId;
     setSelectedPeriodId(periodId);
     setSelectedFormationId(nextFormationId);
-    setAssignments(Object.fromEntries(lineup.map((entry) => [entry.position_slot_id, entry.player_id])));
+    setAssignments(assignmentsForPeriod(periodId));
     setIsDirty(false);
   }
 
@@ -171,43 +173,43 @@ export function LineupBoard({
     setIsDirty(false);
   }
 
-  function assignPlayer(slotId: string, playerId: string) {
+  function assignPlayer(slotId: string, participantId: string) {
     setAssignments((current) => {
-      const withoutPlayer = Object.fromEntries(Object.entries(current).filter(([, currentPlayerId]) => currentPlayerId !== playerId));
+      const withoutPlayer = Object.fromEntries(Object.entries(current).filter(([, currentParticipantId]) => currentParticipantId !== participantId));
 
-      if (playerId === EMPTY_PLAYER_VALUE) {
+      if (participantId === EMPTY_PLAYER_VALUE) {
         const next = { ...current };
         delete next[slotId];
         return next;
       }
 
-      return { ...withoutPlayer, [slotId]: playerId };
+      return { ...withoutPlayer, [slotId]: participantId };
     });
     setIsDirty(true);
   }
 
-  function choosePlayer(slotId: string, playerId: string) {
-    assignPlayer(slotId, playerId);
+  function choosePlayer(slotId: string, participantId: string) {
+    assignPlayer(slotId, participantId);
     setPlayerPickerSlotId(null);
   }
 
   function handleDragEnd(event: DragEndEvent) {
     if (!canEdit) return;
 
-    const player = event.active.data.current?.player as Player | undefined;
+    const participant = event.active.data.current?.participant as LineupParticipant | undefined;
     const overId = event.over?.id.toString();
-    setActivePlayer(null);
+    setActiveParticipant(null);
 
-    if (!player || !overId) return;
+    if (!participant || !overId) return;
 
     setAssignments((current) => {
-      const withoutPlayer = Object.fromEntries(Object.entries(current).filter(([, playerId]) => playerId !== player.id));
+      const withoutPlayer = Object.fromEntries(Object.entries(current).filter(([, participantId]) => participantId !== participant.id));
 
       if (overId === "bench") return withoutPlayer;
       if (!overId.startsWith("slot:")) return current;
 
       const slotId = overId.replace("slot:", "");
-      return { ...withoutPlayer, [slotId]: player.id };
+      return { ...withoutPlayer, [slotId]: participant.id };
     });
     setIsDirty(true);
   }
@@ -231,11 +233,11 @@ export function LineupBoard({
     });
   }
 
-  function removeRosterPlayer(playerId: string) {
+  function removeRosterPlayer(rosterId: string) {
     const formData = new FormData();
     formData.set("season_id", seasonId);
     formData.set("match_id", matchId);
-    formData.set("player_id", playerId);
+    formData.set("match_roster_id", rosterId);
 
     startRosterTransition(() => {
       void removeMatchRosterPlayer(formData).then((result) => {
@@ -250,9 +252,9 @@ export function LineupBoard({
   return (
     <DndContext
       sensors={sensors}
-      onDragStart={(event) => setActivePlayer(event.active.data.current?.player as Player)}
+      onDragStart={(event) => setActiveParticipant(event.active.data.current?.participant as LineupParticipant)}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setActivePlayer(null)}
+      onDragCancel={() => setActiveParticipant(null)}
     >
       <form action={formAction} className="grid gap-5" onSubmit={() => setIsDirty(false)}>
         <input type="hidden" name="season_id" value={seasonId} />
@@ -321,7 +323,7 @@ export function LineupBoard({
             <LineupPitch
               slots={slots}
               assignments={assignments}
-              playersById={playersById}
+              participantsById={participantsById}
               canPick={canEdit}
               onPickSlot={setPlayerPickerSlotId}
               onExpand={() => setFieldExpanded(true)}
@@ -332,7 +334,7 @@ export function LineupBoard({
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-100">포지션</h2>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">미배정 {unassignedPlayers.length}명</span>
+                <span className="text-xs text-slate-400">미배정 {unassignedParticipants.length}명</span>
                 {canEdit ? (
                   <Button type="button" variant="secondary" className="min-h-8 px-3 py-1 text-xs" onClick={() => setGuestModalOpen(true)}>
                     용병 추가
@@ -346,7 +348,7 @@ export function LineupBoard({
                   <h3 className="text-sm font-semibold text-slate-100">선발 명단</h3>
                   <p className="mt-1 text-xs text-slate-400">경기에 추가된 선수만 라인업에 등록할 수 있습니다.</p>
                 </div>
-                <span className="text-xs text-slate-400">{matchRosterPlayers.length}명</span>
+                <span className="text-xs text-slate-400">{matchRosterParticipants.length}명</span>
               </div>
               {canEdit ? (
                 <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -375,11 +377,12 @@ export function LineupBoard({
                 </div>
               ) : null}
               <div className="grid max-h-44 gap-1 overflow-auto pr-1">
-                {matchRosterPlayers.map((player) => (
+                {matchRosterParticipants.map((player) => (
                   <div key={player.id} className="grid min-h-8 grid-cols-[1fr_auto] items-center gap-2 rounded-md border border-slate-800 bg-slate-900 px-2 py-1 text-xs">
                     <span className="truncate font-semibold text-slate-200">
-                      #{player.number} {player.name}
-                      {player.player_type === "guest" ? <span className="ml-1 text-accent-blue">용병</span> : null}
+                      {player.number === null ? "" : `#${player.number} `}
+                      {player.name}
+                      {player.participant_type === "guest" ? <span className="ml-1 text-accent-blue">용병</span> : null}
                     </span>
                     {canEdit ? (
                       <button
@@ -393,14 +396,14 @@ export function LineupBoard({
                     ) : null}
                   </div>
                 ))}
-                {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">포지션을 배정하기 전에 선수를 먼저 추가하세요.</p> : null}
+                {matchRosterParticipants.length === 0 ? <p className="text-sm text-slate-500">포지션을 배정하기 전에 선수를 먼저 추가하세요.</p> : null}
               </div>
               {rosterState.message ? <p className={`text-sm ${rosterState.ok ? "text-accent-green" : "text-accent-red"}`}>{rosterState.message}</p> : null}
             </div>
             <div className="grid gap-2 rounded-lg border border-slate-800 bg-slate-950 p-3">
               {orderedSlots.map((slot) => {
                 const playerId = assignments[slot.id];
-                const player = playerId ? playersById.get(playerId) : null;
+                const player = playerId ? participantsById.get(playerId) : null;
                 return (
                   <button
                     key={slot.id}
@@ -417,16 +420,16 @@ export function LineupBoard({
                       {player ? (
                         <span className="flex shrink-0 items-center gap-1">
                           <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
-                            L{player.left_foot_score}
+                            L{player.left_foot_score ?? "-"}
                           </span>
                           <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
-                            R{player.right_foot_score}
+                            R{player.right_foot_score ?? "-"}
                           </span>
                         </span>
                       ) : null}
                       {player ? (
                         <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
-                          #{player.number}
+                          {player.number === null ? "용병" : `#${player.number}`}
                         </span>
                       ) : null}
                     </span>
@@ -438,19 +441,20 @@ export function LineupBoard({
             <div className="mt-4">
               <h3 className="mb-2 text-sm font-semibold text-slate-100">미출전 선수</h3>
               <BenchDroppable>
-                {unassignedPlayers.map((player) =>
+                {unassignedParticipants.map((player) =>
                   canEdit ? (
-                    <PlayerDraggable key={player.id} player={player} />
+                    <PlayerDraggable key={player.id} participant={player} />
                   ) : (
                     <div key={player.id} className="rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300">
                       <span className="flex items-center gap-2">
-                        #{player.number} {player.name}
-                        {player.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                        {player.number === null ? "" : `#${player.number} `}
+                        {player.name}
+                        {player.participant_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
                       </span>
                     </div>
                   ),
                 )}
-                {unassignedPlayers.length === 0 ? <p className="text-sm text-slate-500">선택된 선수가 모두 필드에 있습니다.</p> : null}
+                {unassignedParticipants.length === 0 ? <p className="text-sm text-slate-500">선택된 선수가 모두 필드에 있습니다.</p> : null}
               </BenchDroppable>
             </div>
           </section>
@@ -459,7 +463,7 @@ export function LineupBoard({
         {periods.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 쿼터를 먼저 생성하세요.</p> : null}
         {formations.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 포메이션을 하나 이상 생성하세요.</p> : null}
         {squadPlayers.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 스쿼드에 선수를 먼저 추가하세요.</p> : null}
-        {matchRosterPlayers.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 선발 명단에 선수를 먼저 추가하세요.</p> : null}
+        {matchRosterParticipants.length === 0 ? <p className="text-sm text-accent-red">라인업을 저장하려면 선발 명단에 선수를 먼저 추가하세요.</p> : null}
         {state.message ? <p className={`text-sm ${state.ok ? "text-accent-green" : "text-accent-red"}`}>{state.message}</p> : null}
 
         {!canEdit ? (
@@ -468,11 +472,12 @@ export function LineupBoard({
       </form>
 
       <DragOverlay>
-        {activePlayer ? (
+        {activeParticipant ? (
           <div className="rounded-md border border-accent-blue bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-100 shadow-xl">
             <span className="flex items-center gap-2">
-              #{activePlayer.number} {activePlayer.name}
-              {activePlayer.player_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+              {activeParticipant.number === null ? "" : `#${activeParticipant.number} `}
+              {activeParticipant.name}
+              {activeParticipant.participant_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
             </span>
           </div>
         ) : null}
@@ -484,7 +489,7 @@ export function LineupBoard({
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-100">용병 추가</h2>
-                <p className="mt-1 text-sm text-slate-400">The guest will be added to this season squad.</p>
+                <p className="mt-1 text-sm text-slate-400">이 경기 라인업에서만 사용할 임시 선수를 추가합니다.</p>
               </div>
               <button
                 type="button"
@@ -503,7 +508,7 @@ export function LineupBoard({
               </label>
               <label className="grid gap-1 text-sm text-slate-300">
                 등번호
-                <Input name="number" type="number" min="0" placeholder="Leave blank for an automatic 9000-range number" />
+                <Input name="number" type="number" min="0" placeholder="비워도 됩니다" />
               </label>
               {guestState.message ? (
                 <p className={`text-sm ${guestState.ok ? "text-accent-green" : "text-accent-red"}`}>{guestState.message}</p>
@@ -523,7 +528,9 @@ export function LineupBoard({
               <div>
                 <h2 className="text-lg font-semibold text-slate-100">{playerPickerSlot.position_code}</h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  {playerPickerCurrentPlayer ? `${playerPickerCurrentPlayer.name} #${playerPickerCurrentPlayer.number}` : "배정된 선수가 없습니다."}
+                  {playerPickerCurrentPlayer
+                    ? `${playerPickerCurrentPlayer.number === null ? "" : `#${playerPickerCurrentPlayer.number} `}${playerPickerCurrentPlayer.name}`
+                    : "배정된 선수가 없습니다."}
                 </p>
               </div>
               <button
@@ -542,7 +549,7 @@ export function LineupBoard({
               >
                 <span>포지션 비우기</span>
               </button>
-              {matchRosterPlayers.map((player) => {
+              {matchRosterParticipants.map((player) => {
                 const isCurrent = assignments[playerPickerSlot.id] === player.id;
                 const isAssignedElsewhere = !isCurrent && assignedPlayerIds.has(player.id);
                 return (
@@ -558,13 +565,13 @@ export function LineupBoard({
                   >
                     <span className="min-w-0 truncate font-semibold">{player.name}</span>
                     <span className="shrink-0 rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-400">
-                      #{player.number}
+                      {player.number === null ? "용병" : `#${player.number}`}
                       {isAssignedElsewhere ? " 등록됨" : ""}
                     </span>
                   </button>
                 );
               })}
-              {matchRosterPlayers.length === 0 ? <p className="text-sm text-slate-500">선수 명단에 선수를 먼저 추가하세요.</p> : null}
+              {matchRosterParticipants.length === 0 ? <p className="text-sm text-slate-500">선수 명단에 선수를 먼저 추가하세요.</p> : null}
             </div>
           </div>
         </div>
@@ -586,7 +593,7 @@ export function LineupBoard({
                 닫기
               </button>
             </div>
-            <LineupPitch slots={slots} assignments={assignments} playersById={playersById} expanded />
+            <LineupPitch slots={slots} assignments={assignments} participantsById={participantsById} expanded />
           </div>
         </div>
       ) : null}

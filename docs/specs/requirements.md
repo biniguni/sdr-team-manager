@@ -56,9 +56,9 @@ feature with explicit RLS protection.
 
 ## Player Management
 
-- Players have a name, unique number, active/inactive status, and player type.
-- `player_type` is either `member` or `guest`.
-- New players default to `member` unless created as guests.
+- Players have a name, unique number, and active/inactive status.
+- Regular player registration is for team members. Match-only guests should not
+  be added to player registration just to build a lineup.
 - Player profiles include editable left-foot and right-foot scores from 1 to 5.
 - Player numbers remain public because they are used for identification,
   lineups, rankings, and match records.
@@ -67,15 +67,17 @@ feature with explicit RLS protection.
 
 ## Guest Players
 
-- Guest players are stored in `players` with `player_type = 'guest'`.
-- Lineups, stats, MOM selections, rankings, and reports continue to use
-  `player_id`, not free-text guest names.
-- Approved editors can add guests from the lineup screen.
-- If no guest number is entered, the app assigns the next available 9000-range
-  temporary number.
-- A guest added from a lineup is also added to the current season squad.
-- Guest players should be visually marked with a guest badge where members and
-  guests appear together.
+- Approved editors can add match-only guests from the lineup screen.
+- Match-only guests are stored on that match roster with a guest name and
+  optional guest number.
+- A match-only guest is not added to `players` or the current season squad.
+- Lineups use the match roster row, so regular players and match-only guests can
+  both be assigned without treating guests as registered players.
+- Match-only guests should be visually marked with a guest badge where regular
+  players and guests appear together.
+- Match stats, MOM selections, rankings, and reports currently remain tied to
+  registered players. If guest stats need to count later, add a separate product
+  decision for guest result reporting.
 - Guest memo storage is deferred because the app currently uses public-read
   access.
 
@@ -108,12 +110,13 @@ feature with explicit RLS protection.
 
 - Matches are divided into periods.
 - Each period can have one formation and one lineup.
-- A lineup entry links period, formation slot, and player.
+- A lineup entry links period, formation slot, and a match roster participant.
 - Each match has a match roster selected from the season squad before period
   lineups are assigned.
-- Only players added to the match roster can be assigned to that match's period
-  lineups.
-- A player cannot be assigned twice in the same period.
+- Approved editors may also add match-only guests directly to the match roster.
+- Only participants added to the match roster can be assigned to that match's
+  period lineups.
+- A participant cannot be assigned twice in the same period.
 - A position slot cannot be assigned twice in the same period.
 - The same player may play different positions in different periods.
 - Lineup saving is available to normal approved editors because it is an

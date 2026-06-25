@@ -44,7 +44,7 @@ export async function createPlayer(formData: FormData): Promise<ActionResult> {
     number,
     left_foot_score: leftFootScore,
     right_foot_score: rightFootScore,
-    player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
+    player_type: "member",
   });
 
   if (error) {
@@ -82,7 +82,7 @@ export async function updatePlayer(formData: FormData): Promise<ActionResult> {
       number,
       left_foot_score: leftFootScore,
       right_foot_score: rightFootScore,
-      player_type: text(formData, "player_type") === "guest" ? "guest" : "member",
+      player_type: "member",
       is_active: formData.get("is_active") === "on",
     })
     .eq("id", id);

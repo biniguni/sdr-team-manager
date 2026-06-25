@@ -7,7 +7,7 @@ import { Card, PageHeader } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthStatus } from "@/lib/authz";
 import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/matches";
-import type { Formation, Match, Period, PeriodLineup, Player, PositionSlot, Season } from "@/types";
+import type { Formation, LineupParticipant, Match, Period, PeriodLineup, Player, PositionSlot, Season } from "@/types";
 
 type SearchParams = {
   matchId?: string;
@@ -18,7 +18,11 @@ type SquadRow = {
 };
 
 type MatchRosterRow = {
-  players: Player;
+  id: string;
+  player_id: string | null;
+  guest_name: string | null;
+  guest_number: number | null;
+  players: Player | null;
 };
 
 type FormationRow = Formation & {
@@ -27,7 +31,6 @@ type FormationRow = Formation & {
 
 type ExistingLineupRow = PeriodLineup & {
   position_slots: PositionSlot;
-  players: Player;
 };
 
 function sortLineupMatches(matches: Match[]) {
@@ -123,11 +126,11 @@ export default async function LineupPage({
   const [{ data: periods = [] }, { data: squad = [] }, { data: matchRoster = [] }, { data: formations = [] }, { data: lineups = [] }] = await Promise.all([
     supabase.from("periods").select("*").eq("match_id", selectedMatch.id).order("order_num"),
     supabase.from("squad_members").select("players(*)").eq("season_id", season.id),
-    supabase.from("match_roster").select("players(*)").eq("match_id", selectedMatch.id),
+    supabase.from("match_roster").select("id, player_id, guest_name, guest_number, players(*)").eq("match_id", selectedMatch.id),
     supabase.from("formations").select("*, position_slots(*)").order("is_default", { ascending: false }).order("name"),
     supabase
       .from("period_lineups")
-      .select("*, players(*), position_slots(*), periods!inner(match_id)")
+      .select("*, position_slots(*), periods!inner(match_id)")
       .eq("periods.match_id", selectedMatch.id),
   ]);
 
@@ -135,10 +138,43 @@ export default async function LineupPage({
     .map((row) => row.players)
     .filter(Boolean)
     .sort((a, b) => a.number - b.number);
-  const matchRosterPlayers = ((matchRoster ?? []) as unknown as MatchRosterRow[])
-    .map((row) => row.players)
-    .filter(Boolean)
-    .sort((a, b) => a.number - b.number);
+  const matchRosterParticipants = ((matchRoster ?? []) as unknown as MatchRosterRow[])
+    .map((row): LineupParticipant | null => {
+      if (row.players) {
+        return {
+          id: row.id,
+          player_id: row.player_id,
+          name: row.players.name,
+          number: row.players.number,
+          left_foot_score: row.players.left_foot_score,
+          right_foot_score: row.players.right_foot_score,
+          participant_type: "member",
+        };
+      }
+
+      if (!row.guest_name) return null;
+
+      return {
+        id: row.id,
+        player_id: null,
+        name: row.guest_name,
+        number: row.guest_number,
+        left_foot_score: null,
+        right_foot_score: null,
+        participant_type: "guest",
+      };
+    })
+    .filter((participant): participant is LineupParticipant => participant !== null)
+    .sort((a, b) => (a.number ?? 100000) - (b.number ?? 100000) || a.name.localeCompare(b.name));
+  const rosterIdByPlayerId = new Map(
+    matchRosterParticipants
+      .filter((participant): participant is LineupParticipant & { player_id: string } => participant.player_id !== null)
+      .map((participant) => [participant.player_id, participant.id]),
+  );
+  const existingLineups = ((lineups ?? []) as unknown as ExistingLineupRow[]).map((entry) => ({
+    ...entry,
+    match_roster_id: entry.match_roster_id ?? (entry.player_id ? rosterIdByPlayerId.get(entry.player_id) : null) ?? null,
+  }));
   const selectedResult = calculateMatchResult(selectedMatch.our_score, selectedMatch.opponent_score);
 
   return (
@@ -189,8 +225,8 @@ export default async function LineupPage({
         periods={periods as Period[]}
         formations={formations as unknown as FormationRow[]}
         squadPlayers={squadPlayers}
-        matchRosterPlayers={matchRosterPlayers}
-        existingLineups={lineups as unknown as ExistingLineupRow[]}
+        matchRosterParticipants={matchRosterParticipants}
+        existingLineups={existingLineups}
         canEdit={canEdit}
       />
     </div>

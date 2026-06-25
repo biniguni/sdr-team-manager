@@ -247,12 +247,12 @@ Fill in `Owner change` with the final wording to apply.
 | Error | Add players to this match roster before saving a lineup. | 라인업을 저장하려면 매치 로스터에 선수를 먼저 추가하세요. | 라인업을 저장하려면 선발 명단에 선수를 먼저 추가하세요. |
 | Permission notice | Sign in with an approved editor account to update the lineup. | 라인업을 수정하려면 승인된 편집자 계정으로 로그인하세요. | 라인업을 수정하려면 승인된 계정으로 로그인하세요. |
 | Guest modal title | Add guest | 용병 추가 | 용병 추가 |
-| Guest modal helper | The guest will be added to this season squad. | 추가한 용병은 현재 시즌 스쿼드에 함께 등록됩니다. |  |
+| Guest modal helper | The guest will be added to this season squad. | 이 경기 라인업에서만 사용할 임시 선수를 추가합니다. | 이 경기 라인업에서만 사용할 임시 선수를 추가합니다. |
 | Button | Close | 닫기 | 닫기 |
 | Field label | Name | 이름 | 이름 |
 | Placeholder | Guest name | 용병 이름 | 용병 이름 |
 | Field label | Number | 등번호 | 등번호 |
-| Placeholder | Leave blank for an automatic 9000-range number | 비워두면 9000번대 임시 번호가 자동 배정됩니다 |  |
+| Placeholder | Leave blank for an automatic 9000-range number | 비워도 됩니다 | 비워도 됩니다 |
 | Pending button | Adding... | 추가 중... | 추가 중...  |
 | Picker empty | No player assigned | 배정된 선수가 없습니다 | 배정된 선수가 없습니다. |
 | Picker action | Clear position | 포지션 비우기 | 포지션 비우기 |

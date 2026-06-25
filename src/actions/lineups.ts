@@ -7,7 +7,7 @@ import type { ActionResult } from "@/types";
 
 type LineupEntryInput = {
   position_slot_id: string;
-  player_id: string;
+  match_roster_id: string;
 };
 
 function text(formData: FormData, key: string) {
@@ -37,14 +37,14 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
     if (!key.startsWith("slot_") || typeof value !== "string" || !value) continue;
     entries.push({
       position_slot_id: key.replace("slot_", ""),
-      player_id: value,
+      match_roster_id: value,
     });
   }
 
   if (entries.length === 0) return fail("한 명 이상 등록한 뒤 저장하세요.");
 
-  const assignedPlayers = entries.map((entry) => entry.player_id);
-  if (new Set(assignedPlayers).size !== assignedPlayers.length) {
+  const assignedRosterIds = entries.map((entry) => entry.match_roster_id);
+  if (new Set(assignedRosterIds).size !== assignedRosterIds.length) {
     return fail("동일한 쿼터에 같은 선수를 중복 등록할 수 없습니다.");
   }
 
@@ -52,20 +52,20 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
 
   const [{ data: slots, error: slotsError }, { data: roster, error: rosterError }] = await Promise.all([
     supabase.from("position_slots").select("id").eq("formation_id", formationId),
-    supabase.from("match_roster").select("player_id").eq("match_id", matchId),
+    supabase.from("match_roster").select("id, player_id").eq("match_id", matchId),
   ]);
 
   if (slotsError) return fail(slotsError.message);
   if (rosterError) return fail(rosterError.message);
 
   const slotIds = new Set((slots ?? []).map((slot) => slot.id));
-  const matchRosterPlayerIds = new Set((roster ?? []).map((member) => member.player_id));
+  const matchRosterById = new Map((roster ?? []).map((member) => [member.id, member.player_id ?? null]));
 
   if (entries.some((entry) => !slotIds.has(entry.position_slot_id))) {
     return fail("One or more selected positions do not belong to the chosen formation.");
   }
 
-  if (entries.some((entry) => !matchRosterPlayerIds.has(entry.player_id))) {
+  if (entries.some((entry) => !matchRosterById.has(entry.match_roster_id))) {
     return fail("경기 명단에 추가된 선수만 배정할 수 있습니다.");
   }
 
@@ -77,7 +77,8 @@ export async function saveLineup(_: ActionResult, formData: FormData): Promise<A
       period_id: periodId,
       formation_id: formationId,
       position_slot_id: entry.position_slot_id,
-      player_id: entry.player_id,
+      match_roster_id: entry.match_roster_id,
+      player_id: matchRosterById.get(entry.match_roster_id) ?? null,
     })),
   );
 
@@ -139,34 +140,58 @@ export async function removeMatchRosterPlayer(formData: FormData): Promise<Actio
 
   const seasonId = text(formData, "season_id");
   const matchId = text(formData, "match_id");
-  const playerId = text(formData, "player_id");
+  const rosterId = text(formData, "match_roster_id");
 
-  if (!seasonId || !matchId || !playerId) return fail("경기 명단이 없습니다.");
+  if (!seasonId || !matchId || !rosterId) return fail("경기 명단이 없습니다.");
 
   const supabase = await createClient();
+  const { data: rosterMember, error: rosterMemberError } = await supabase
+    .from("match_roster")
+    .select("id, player_id")
+    .eq("id", rosterId)
+    .eq("match_id", matchId)
+    .maybeSingle();
+
+  if (rosterMemberError) return fail(rosterMemberError.message);
+  if (!rosterMember) return fail("경기 명단이 없습니다.");
+
   const { data: existingLineup, error: lineupError } = await supabase
     .from("period_lineups")
     .select("id, periods!inner(match_id)")
-    .eq("player_id", playerId)
+    .eq("match_roster_id", rosterId)
     .eq("periods.match_id", matchId)
     .limit(1);
 
   if (lineupError) return fail(lineupError.message);
   if (existingLineup && existingLineup.length > 0) {
-    return fail("Remove this player from the period lineup before removing them from the match roster.");
+    return fail("라인업에서 먼저 제외한 뒤 경기 명단에서 제거하세요.");
   }
 
-  const { error } = await supabase.from("match_roster").delete().eq("match_id", matchId).eq("player_id", playerId);
+  if (rosterMember.player_id) {
+    const { data: legacyLineup, error: legacyLineupError } = await supabase
+      .from("period_lineups")
+      .select("id, periods!inner(match_id)")
+      .eq("player_id", rosterMember.player_id)
+      .eq("periods.match_id", matchId)
+      .limit(1);
+
+    if (legacyLineupError) return fail(legacyLineupError.message);
+    if (legacyLineup && legacyLineup.length > 0) {
+      return fail("라인업에서 먼저 제외한 뒤 경기 명단에서 제거하세요.");
+    }
+  }
+
+  const { error } = await supabase.from("match_roster").delete().eq("id", rosterId).eq("match_id", matchId);
   if (error) return fail(error.message);
 
   revalidatePath("/lineup");
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
   revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
-  return { ok: true, message: "Player removed from this match." };
+  return { ok: true, message: "경기 명단에서 제거했습니다." };
 }
 
-export async function createGuestPlayerForLineup(_: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function addGuestToMatchRoster(_: ActionResult, formData: FormData): Promise<ActionResult> {
   const editor = await requireEditor();
   if (!editor.ok) return fail(editor.message);
 
@@ -176,70 +201,28 @@ export async function createGuestPlayerForLineup(_: ActionResult, formData: Form
   const numberText = text(formData, "number");
 
   if (!seasonId || !matchId) return fail("경기 정보가 없습니다.");
-  if (!name) return fail("Guest name is required.");
+  if (!name) return fail("용병 이름을 입력하세요.");
 
   const explicitNumber = numberText ? Number(numberText) : null;
   if (explicitNumber !== null && (!Number.isInteger(explicitNumber) || explicitNumber < 0)) {
-    return fail("Guest number must be zero or greater.");
+    return fail("용병 등번호는 0 이상이어야 합니다.");
   }
 
   const supabase = await createClient();
-  let nextNumber = explicitNumber;
+  const { error } = await supabase.from("match_roster").insert({
+    match_id: matchId,
+    player_id: null,
+    guest_name: name,
+    guest_number: explicitNumber,
+  });
 
-  if (nextNumber === null) {
-    const { data: latestGuest, error: latestGuestError } = await supabase
-      .from("players")
-      .select("number")
-      .gte("number", 9000)
-      .lt("number", 10000)
-      .order("number", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  if (error) return fail(error.message);
 
-    if (latestGuestError) return fail(latestGuestError.message);
-    nextNumber = Math.max((latestGuest?.number ?? 9000) + 1, 9001);
-  }
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const candidateNumber = explicitNumber ?? nextNumber + attempt;
-    const { data: player, error: playerError } = await supabase
-      .from("players")
-      .insert({
-        name,
-        number: candidateNumber,
-        player_type: "guest",
-      })
-      .select("id")
-      .single();
-
-    if (playerError) {
-      if (!explicitNumber && playerError.code === "23505") continue;
-      return fail(playerError.code === "23505" ? "이미 사용 중인 등번호입니다." : playerError.message);
-    }
-
-    const { error: squadError } = await supabase.from("squad_members").upsert(
-      { season_id: seasonId, player_id: player.id },
-      { onConflict: "season_id,player_id" },
-    );
-
-    if (squadError) return fail(squadError.message);
-
-    const { error: rosterError } = await supabase.from("match_roster").upsert(
-      { match_id: matchId, player_id: player.id },
-      { onConflict: "match_id,player_id" },
-    );
-
-    if (rosterError) return fail(rosterError.message);
-
-    revalidatePath(`/seasons/${seasonId}`);
-    revalidatePath("/lineup");
-    revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
-    revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
-    revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
-    return { ok: true, message: `Guest player added: #${candidateNumber} ${name}` };
-  }
-
-  return fail("Could not assign a temporary guest number. Try entering a number manually.");
+  revalidatePath("/lineup");
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}`);
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/lineup`);
+  revalidatePath(`/seasons/${seasonId}/matches/${matchId}/stats`);
+  return { ok: true, message: `용병을 이 경기 명단에 추가했습니다: ${explicitNumber === null ? "" : `#${explicitNumber} `}${name}` };
 }
 
 async function refreshPositionPerformance(seasonId: string): Promise<string | null> {
@@ -247,6 +230,7 @@ async function refreshPositionPerformance(seasonId: string): Promise<string | nu
   const { data, error } = await supabase
     .from("period_lineups")
     .select("player_id, position_slots(position_code), periods!inner(id, matches!inner(id, season_id))")
+    .not("player_id", "is", null)
     .eq("periods.matches.season_id", seasonId);
 
   if (error) return error.message;
@@ -295,6 +279,6 @@ export async function getLineup(periodId: string) {
   const supabase = await createClient();
   return supabase
     .from("period_lineups")
-    .select("*, players(*), position_slots(*)")
+    .select("*, players(*), match_roster(*), position_slots(*)")
     .eq("period_id", periodId);
 }

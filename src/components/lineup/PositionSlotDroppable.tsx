@@ -2,7 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
-import type { Player, PositionSlot } from "@/types";
+import type { LineupParticipant, PositionSlot } from "@/types";
 
 export function PositionSlotDroppable({
   slot,
@@ -11,7 +11,7 @@ export function PositionSlotDroppable({
   onPick,
 }: {
   slot: PositionSlot;
-  player: Player | null;
+  player: LineupParticipant | null;
   canPick?: boolean;
   onPick?: () => void;
 }) {
@@ -48,7 +48,7 @@ export function PositionSlotDroppable({
     >
       <span className="text-[10px] font-bold text-accent-green sm:text-xs">{slot.position_code}</span>
       <div className="mt-0.5 w-full sm:mt-1">
-        {player ? <PlayerDraggable player={player} compact /> : <span className="text-[10px] text-slate-400 sm:text-xs">비어 있음</span>}
+        {player ? <PlayerDraggable participant={player} compact /> : <span className="text-[10px] text-slate-400 sm:text-xs">비어 있음</span>}
       </div>
     </div>
   );

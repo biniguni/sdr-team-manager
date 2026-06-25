@@ -12,7 +12,8 @@ row-level security, editor permissions, or cleanup data.
 - `supabase-security-cleanup.sql`: cleanup and permission script used for the
   current public-read, approved-editor-write security model.
 - `supabase-match-roster.sql`: incremental migration for the match roster
-  lineup workflow and the `4-2-3-1` default formation.
+  lineup workflow, match-only guest lineup participants, and the `4-2-3-1`
+  default formation.
 - `supabase-player-foot-scores.sql`: incremental migration for editable
   left-foot and right-foot player scores.
 - `supabase-guest-players.sql`: historical guest-player migration reference for

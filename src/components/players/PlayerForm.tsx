@@ -46,10 +46,6 @@ export function PlayerForm({
           </Select>
         </label>
       </div>
-      <Select name="player_type" defaultValue={player?.player_type ?? "member"}>
-        <option value="member">선수</option>
-        <option value="guest">용병</option>
-      </Select>
       {player ? (
         <label className="flex items-center gap-2 text-sm text-slate-300">
           <input name="is_active" type="checkbox" defaultChecked={player.is_active} />

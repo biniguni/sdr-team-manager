@@ -17,6 +17,14 @@ type ExistingLineup = PeriodLineup & {
 
 const initialState: ActionResult = { ok: true, message: "" };
 
+function assignmentsFromLineup(lineup: ExistingLineup[]) {
+  return Object.fromEntries(
+    lineup
+      .map((entry) => [entry.position_slot_id, entry.match_roster_id ?? entry.player_id ?? ""])
+      .filter(([, participantId]) => participantId),
+  );
+}
+
 export function SimpleLineupForm({
   seasonId,
   matchId,
@@ -36,9 +44,7 @@ export function SimpleLineupForm({
   const periodLineup = existingLineups.filter((entry) => entry.period_id === selectedPeriodId);
   const initialFormationId = periodLineup[0]?.formation_id ?? formations[0]?.id ?? "";
   const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
-  const [assignments, setAssignments] = useState<Record<string, string>>(() =>
-    Object.fromEntries(periodLineup.map((entry) => [entry.position_slot_id, entry.player_id])),
-  );
+  const [assignments, setAssignments] = useState<Record<string, string>>(() => assignmentsFromLineup(periodLineup));
   const [state, formAction, pending] = useActionState(saveLineup, initialState);
 
   const selectedFormation = formations.find((formation) => formation.id === selectedFormationId);
@@ -52,7 +58,7 @@ export function SimpleLineupForm({
     const nextFormationId = lineup[0]?.formation_id ?? selectedFormationId;
     setSelectedPeriodId(periodId);
     setSelectedFormationId(nextFormationId);
-    setAssignments(Object.fromEntries(lineup.map((entry) => [entry.position_slot_id, entry.player_id])));
+    setAssignments(assignmentsFromLineup(lineup));
   }
 
   function changeFormation(formationId: string) {
