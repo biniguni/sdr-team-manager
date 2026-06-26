@@ -6,6 +6,7 @@ export type PlayerAggregate = {
   assists: number;
   match_count: number;
   points: number;
+  mom_count: number;
 };
 
 export function StatCards({ players, totalMatches }: { players: PlayerAggregate[]; totalMatches: number }) {
