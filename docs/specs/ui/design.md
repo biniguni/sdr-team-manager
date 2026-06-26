@@ -168,8 +168,9 @@ Current review workflow:
 - Decisions:
   - Player list first pass is management-focused: add, edit, deactivate, and
     check core player identity.
-  - Player-specific record views are deferred and may later belong in player
-    detail or the `통계` area.
+  - Player list remains management-focused. Player-specific record review now
+    lives in the Ranking detail modal unless the owner later decides to add
+    player profile pages.
   - Mobile player list should use rows with a clear left identity marker, central
     player details, and right-side status/action cues.
 
@@ -320,15 +321,43 @@ Current review workflow:
 
 ### Ranking
 
-- Current problem:
+- Current problem: The ranking screen started as a simple attacking-points table,
+  but the owner now needs quick player-specific record review without losing the
+  table context.
 - Desired direction:
+  - Keep the ranking table as the primary view.
+  - Ranking table columns should be: rank, player, number, appearances, goals,
+    assists, and overall match MOM.
+  - Do not show win rate or clean sheets in the ranking table; keep those inside
+    player detail.
+  - Clicking a player name should open a modal-style personal record view rather
+    than inserting a large detail panel above or below the table.
+  - Personal detail summary cards should be ordered:
+    appearances, win rate, goals, assists, clean sheets, MOM.
+  - Personal detail should include trend tabs for appearances, goals, and
+    assists.
+  - Position analysis should show position appearance distribution on the left
+    and position attacking points plus defense/midfield/attack MOM counts on the
+    right.
+  - Opponent records should replace any points column with MOM.
+  - Do not include season insight or rating-related sections until rating data
+    exists.
 - Mobile considerations:
-- Permission/account considerations:
+  - Keep the ranking table horizontally scrollable with sticky rank/player
+    columns.
+  - The personal detail modal should scroll internally so the user can return to
+    the ranking table by closing it.
+- Permission/account considerations: Ranking remains public-readable and uses
+  public-safe player fields only.
 - Review reference:
+  - `reference/member_ranking_reference1.png`
+  - `reference/member_ranking_reference2.png`
 - Decisions:
   - Use `순위` as the current menu/screen label.
   - Reconsider integration into a later `통계` area only after that area is
     designed.
+  - Ranking table MOM count means only the overall match MOM
+    (`matches.match_mom_player_id`), not defense/midfield/attack MOM.
 
 ### Login And Account State
 

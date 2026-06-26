@@ -137,20 +137,27 @@ First pass scope:
 - [ ] Review player list and player forms.
 - [ ] Keep player list focused on management clarity.
 - [ ] Use a tap-friendly row-list layout for mobile player lists.
-- [ ] Defer player-specific record views to a later player detail or `통계`
-      decision.
+- [x] Keep player-specific record review in the Ranking detail modal for now.
 - [ ] Review season list and season detail.
 - [ ] Review match list and match detail.
 - [ ] Use compact match cards for mobile match lists.
 - [ ] Use sports-app references for mobile match-card structure only, without
       adding bottom-tab navigation.
 - [ ] Review player match stats entry.
-- [ ] Review ranking screen.
+- [x] Review and update ranking screen:
+  - table columns are rank, player, number, appearances, goals, assists, MOM,
+  - table excludes win rate and clean sheets,
+  - player-name click opens a modal-style personal detail view,
+  - personal detail includes summary cards, trend tabs, position analysis, and
+    opponent records,
+  - season insight and rating sections are omitted because rating data does not
+    exist.
+- [ ] Verify the ranking detail modal on a real phone browser.
 
 ## Deferred Decisions
 
 - [ ] Keep expanded statistics as a later `통계` menu or section decision.
-- [ ] Use `순위` for the current ranking screen/menu.
+- [x] Use `순위` for the current ranking screen/menu.
 - [ ] Reconsider whether `순위` belongs under a future `통계` area after that
       area is designed.
 - [ ] Clarify whether player-specific record screens are needed.

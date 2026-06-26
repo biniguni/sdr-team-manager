@@ -5,6 +5,40 @@ This document preserves detailed historical progress entries. Use
 risk. Add to this file when older implementation detail should be kept without
 making `progress.md` long.
 
+## 2026-06-26 - Dashboard, Lineup, Ranking UI Updates
+
+### Completed
+
+- Adjusted dashboard summary ordering so total/win/draw/loss/win rate are first,
+  recent form is next, and goals/difference plus per-match scoring stats sit
+  below.
+- Limited the dashboard match-history panel to the latest 7 matches.
+- Renamed the dashboard personal stat heading to `개인별 주요통계`.
+- Replaced lineup match-only guest text badges with compact indicators in
+  lineup player cards and selection rows so mobile player names remain readable.
+- Added overall match MOM counts to Ranking, based only on
+  `matches.match_mom_player_id`.
+- Reworked Ranking so the table remains the primary view with rank, player,
+  number, appearances, goals, assists, and MOM columns.
+- Added a modal-style personal record view from Ranking player-name clicks.
+- Added Ranking personal detail sections for summary cards, trend tabs,
+  position analysis, and opponent records.
+- Excluded rating and season-insight sections because rating data does not
+  exist.
+- Updated docs to align current requirements, technical design, UI design,
+  copy-review wording, flowchart text, progress, and handoff notes.
+
+### Verified
+
+- `npm.cmd run lint` passed after Ranking modal/table changes.
+- `npm.cmd run build` passed after Ranking modal/table changes.
+- `git diff --check` passed; only line-ending warnings were reported.
+
+### Remaining Risk
+
+- Ranking detail modal, chart readability, and lineup compact guest indicators
+  still need real-phone review.
+
 ## 2026-05-20 - Legacy Design Note
 
 - Replaced the old Kiro design reference with the current `docs/specs/design.md`
@@ -411,7 +445,8 @@ making `progress.md` long.
 
 - Phase 5 code is implemented and builds successfully.
 - Dashboard data is derived from `matches`, `player_match_stats`, `players`, and selected `season`.
-- Ranking is sortable by matches, goals, assists, and attacking points.
+- At that point, Ranking was sortable by matches, goals, assists, and attacking
+  points. Current Ranking behavior is documented in the 2026-06-26 entry above.
 
 ### Next Steps
 

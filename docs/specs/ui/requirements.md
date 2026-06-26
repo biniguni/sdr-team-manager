@@ -62,7 +62,7 @@ user's point of view. Implementation details belong in `design.md` and
 - Match list and match detail
 - Lineup assignment
 - Player match stats entry
-- Ranking screen
+- Ranking screen and player record detail modal
 - Login, logout, account state, and permission cues
 - Mobile navigation and mobile-first layout issues
 
@@ -77,11 +77,12 @@ user's point of view. Implementation details belong in `design.md` and
   blank design.
 - Dashboard should keep current summary information while helping users move
   quickly into match workflows.
-- Expanded statistics should be considered separately from the first dashboard
-  cleanup, likely as a separate `통계` menu or section later.
-- Player-specific record screens are undecided and need later clarification.
-- Player list first pass should focus on management clarity. Player-specific
-  record views are deferred.
+- Expanded statistics beyond the current Ranking detail view should be
+  considered separately, likely as a separate `통계` menu or section later.
+- Player-specific record review currently lives in the Ranking player detail
+  modal rather than a separate player profile route.
+- Player list first pass should remain management-focused; player record review
+  should stay in Ranking unless the owner decides to add player profile pages.
 - Desktop layout should keep a left primary navigation and central work area.
 - A right-side panel is optional and should only be used when it helps the
   current workflow.
@@ -105,7 +106,7 @@ user's point of view. Implementation details belong in `design.md` and
 - Database schema changes
 - Supabase RLS policy changes
 - New authentication providers
-- New analytics or statistics logic
+- New analytics or statistics logic beyond the current Ranking detail expansion
 - Full visual rebrand
 - Dedicated substitutes management in lineup screens
 

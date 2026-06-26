@@ -288,15 +288,25 @@ Fill in `Owner change` with the final wording to apply.
 | Screen | Current / original | Suggested draft | Owner change |
 | --- | --- | --- | --- |
 | Empty state | Create a season first to view rankings. | 순위를 보려면 시즌을 먼저 생성하세요. | 개인 기록 순위를 보려면 시즌을 먼저 생성하세요. |
-| Page title | Attack Ranking | 공격포인트 순위 | 공격포인트 순위 |
-| Page subtitle | Goals, assists, and attacking points for `{season}` | `{season}의 득점, 도움, 공격포인트를 확인합니다. | `{season}의 득점, 도움, 공격포인트를 확인합니다. |
+| Page title | Personal Ranking | 개인 기록 순위 | 개인 기록 순위 |
+| Page subtitle | Appearances, goals, assists, clean sheets, and MOM for `{season}` | `{season}의 출전, 득점, 도움, 무실점, MOM을 확인합니다. | `{season}의 출전, 득점, 도움, 무실점, MOM을 확인합니다. |
 | Table header | Rank | 순위 | 순위 |
 | Table header | Player | 선수 | 선수 |
 | Table header | No. | 등번호 | 등번호 |
-| Table header | Matches | 경기 | 기 |
+| Table header | Matches | 출전 | 출전 |
 | Table header | Goals | 득점 | 득점 |
 | Table header | Assists | 도움 | 도움 |
-| Table header | Points | 공격P | 공격포인트 |
+| Table header | MOM | MOM | MOM |
+| Player detail title | Personal record | 개인 기록 | 개인 기록 |
+| Detail card | Appearances | 출전 | 출전 |
+| Detail card | Win rate | 승률 | 승률 |
+| Detail card | Clean sheets | 무실점 | 무실점 |
+| Detail chart tab | Appearance trend | 출전수 | 출전수 |
+| Detail chart tab | Goals trend | 득점 | 득점 |
+| Detail chart tab | Assists trend | 도움 | 도움 |
+| Detail section | Position analysis | 포지션 분석 | 포지션 분석 |
+| Detail section | Opponent records | 상대팀 성적 | 상대팀 성적 |
+| Button | Close detail | 닫기 | 닫기 |
 | Empty table | No player stats yet. | 아직 선수 기록이 없습니다. | 선수 기록이 없습니다. |
 
 ## Server Action Messages

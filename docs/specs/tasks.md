@@ -324,12 +324,11 @@
   - 레퍼런스 `match-panel` 스타일 적용
   - 요구사항: 요구사항 10
 
-- [x] 5.5 공격포인트 랭킹 테이블 구현
+- [x] 5.5 Dashboard personal stat table implemented
   - `src/components/dashboard/TopScorersTable.tsx` (CSC)
-  - 순위, 선수, 등번호, 경기수, 득점, 도움, 공격포인트 컬럼
-  - 컬럼 클릭 정렬 기능
-  - 레퍼런스 `table-wrap` 스타일 적용
-  - 요구사항: 요구사항 10
+  - Shows compact dashboard personal output.
+  - Dashboard summary table remains separate from the expanded Ranking screen.
+  - Requirement: dashboard/ranking summary.
 
 - [x] 5.6 대시보드 메인 페이지 구현
   - `src/app/(dashboard)/page.tsx` (RSC)
@@ -338,10 +337,30 @@
   - SeasonFilter 연동
   - 요구사항: 요구사항 10
 
-- [x] 5.7 공격포인트 랭킹 페이지 구현
+- [x] 5.7 Ranking page implemented
   - `src/app/(dashboard)/ranking/page.tsx` (RSC + CSC)
-  - TopScorersTable 전체 선수 표시, 시즌 필터 연동
-  - 요구사항: 요구사항 10
+  - Season filter connected.
+  - Expanded in 5.8 with MOM and player detail behavior.
+  - Requirement: dashboard/ranking summary.
+
+### 5-G. Current Ranking Expansion
+
+- [x] Ranking table now uses the current product columns:
+  - rank,
+  - player,
+  - number,
+  - appearances,
+  - goals,
+  - assists,
+  - overall match MOM.
+- [x] Ranking table excludes win rate and clean sheets.
+- [x] Player-name click opens a modal-style personal record view.
+- [x] Personal detail includes summary cards, appearance/goals/assists trend
+  tabs, position analysis, and opponent records.
+- [x] Ranking table MOM count uses only `matches.match_mom_player_id`.
+- [x] Rating and season-insight sections are omitted because rating data does
+  not exist.
+- [ ] Verify the Ranking detail modal on a real phone browser.
 
 ---
 
@@ -422,4 +441,5 @@ Phase 6  Auth / RLS / 배포
 - [x] Store lineup guests as match-only `match_roster` participants with a name and optional number.
 - [x] Do not insert newly added lineup guests into `players` or the current season squad.
 - [x] Store new lineup assignments by `match_roster_id`, while preserving `player_id` for registered-player compatibility.
-- [x] Show a `용병` badge where regular players and match-only guests appear together.
+- [x] Show match-only guests with a compact visual marker where regular players
+  and guests appear together, especially in mobile lineup cards.

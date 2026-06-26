@@ -73,8 +73,9 @@ feature with explicit RLS protection.
 - A match-only guest is not added to `players` or the current season squad.
 - Lineups use the match roster row, so regular players and match-only guests can
   both be assigned without treating guests as registered players.
-- Match-only guests should be visually marked with a guest badge where regular
-  players and guests appear together.
+- Match-only guests should be visually distinguishable where regular players
+  and guests appear together. In compact lineup/mobile contexts, use a small
+  marker rather than a full text badge so player names remain readable.
 - Match stats, MOM selections, rankings, and reports currently remain tied to
   registered players. If guest stats need to count later, add a separate product
   decision for guest result reporting.
@@ -157,7 +158,23 @@ feature with explicit RLS protection.
 
 - The dashboard summarizes selected-season record, goals for/against, recent
   matches, and top player stats.
-- Rankings are based on `player_match_stats`.
+- The dashboard match-history panel should show the latest 7 matches.
+- Rankings are based on registered-player match stats and match-level MOM
+  selections.
+- The ranking table should show rank, player, number, appearances, goals,
+  assists, and overall match MOM count. It should not show win rate or clean
+  sheets in the table.
+- Selecting a player from the ranking table should open a modal-style personal
+  record view without moving the ranking table down the page.
+- The personal record view should show summary cards in this order:
+  appearances, win rate, goals, assists, clean sheets, and MOM.
+- The personal record view should include trend tabs for appearances, goals,
+  and assists; position analysis; and opponent records. It should not include
+  recent rating, average rating, best rating, rating change, or season insight
+  sections while rating data does not exist.
+- Ranking MOM count means the overall match MOM only. Defense, midfield, and
+  attack MOM counts may appear in personal detail analysis but should not be
+  used as the table's MOM count.
 - Dashboard and ranking views should use public-safe player fields only.
 
 ## Source Of Truth

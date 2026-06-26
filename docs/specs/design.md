@@ -56,7 +56,7 @@ The app supports these product areas:
 | Guest players | Add match-only guests during lineup work | `match_roster` |
 | Match stats | Record played, goals, assists, and cards | `player_match_stats` |
 | Dashboard | Summarize season record and player output | `matches`, `player_match_stats` |
-| Rankings | Rank players from match stats | `player_match_stats`, `players` |
+| Rankings | Rank players and open per-player record details | `player_match_stats`, `matches`, `position_performance`, `players` |
 
 ## Technology Stack
 
@@ -124,6 +124,7 @@ src/
     layout/
     lineup/
     players/
+    ranking/
     stats/
     ui/
   lib/
@@ -150,7 +151,7 @@ src/
 | `/` | Dashboard for the selected season | Public-readable. |
 | `/lineup` | Active-season lineup planning | Planned central route; can accept `?matchId=...`. |
 | `/schedule` | Future calendar-style match schedule | Placeholder screen until the owner provides the FM reference. |
-| `/ranking` | Player ranking table | Built from player match stats. |
+| `/ranking` | Player ranking table and personal record modal | Built from player match stats, match-level MOM selections, and position summaries. |
 | `/players` | Player list and player editing | Editor controls hidden for non-editors. |
 | `/formations` | Formation management | Used by lineup board. |
 | `/seasons` | Season list | Entry point for season work. |
@@ -384,7 +385,19 @@ change official match results.
 | Dashboard summary | `matches` | Record and score totals by selected season. |
 | Dashboard stat cards | `player_match_stats` | Goals, assists, appearances, top output. |
 | Match history | `matches` | Recent or selected-season match list. |
-| Rankings | `player_match_stats` plus `players` | Public-safe player fields only. |
+| Rankings | `player_match_stats`, `matches`, `position_performance`, `players` | Public-safe player fields only. Table columns are rank, player, number, appearances, goals, assists, and overall match MOM count. |
+
+Ranking detail behavior:
+
+| Area | Behavior |
+| --- | --- |
+| Player selection | Clicking a player name opens a modal-style personal record view; the ranking table remains the primary page content. |
+| Summary cards | Show appearances, win rate, goals, assists, clean sheets, and MOM in that order. |
+| MOM count | Ranking table MOM is based only on `matches.match_mom_player_id`. Position-specific MOM fields are used only inside detail analysis. |
+| Trend chart | Supports tabs for appearance count, goals, and assists. |
+| Position analysis | Shows position appearance distribution from `position_performance`; shows position attacking points when stored plus defense/midfield/attack MOM counts. |
+| Opponent records | Show opponent-level appearances, win rate, goals, assists, clean sheets, and MOM. |
+| Deferred sections | Do not show rating summaries or season insight until those data concepts exist. |
 
 Design rule: derive dashboard and ranking data from stored records. Avoid
 manually maintained summary fields unless there is a clear performance or

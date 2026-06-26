@@ -7,9 +7,13 @@ import type { PlayerStatsRow } from "@/lib/dashboard";
 import type { Match, PositionPerformance } from "@/types";
 
 type TrendKey = "appearances" | "goals" | "assists";
-type SortKey = "match_count" | "win_rate" | "goals" | "assists" | "clean_sheets" | "mom_count";
-
+type SortKey = "match_count" | "goals" | "assists" | "mom_count";
 type PositionRow = Pick<PositionPerformance, "player_id" | "position_code" | "period_count" | "match_count" | "goals" | "assists">;
+type RankingRow = PlayerAggregate & {
+  win_rate: number;
+  appearance_rate: number;
+  clean_sheets: number;
+};
 
 const pieColors = ["#38bdf8", "#22c55e", "#a78bfa", "#f97316", "#facc15", "#fb7185", "#94a3b8"];
 
@@ -25,7 +29,7 @@ export function RankingView({
   positionRows: PositionRow[];
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("goals");
-  const [selectedPlayerId, setSelectedPlayerId] = useState(players[0]?.player.id ?? "");
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [trendKey, setTrendKey] = useState<TrendKey>("appearances");
 
   const rows = useMemo(
@@ -36,31 +40,116 @@ export function RankingView({
         .sort((a, b) => b[sortKey] - a[sortKey]),
     [players, stats, matches, sortKey],
   );
-  const selected = rows.find((row) => row.player.id === selectedPlayerId) ?? rows[0] ?? null;
+
+  const selected = selectedPlayerId ? rows.find((row) => row.player.id === selectedPlayerId) ?? null : null;
   const selectedStats = selected ? stats.filter((row) => row.player_id === selected.player.id) : [];
   const selectedPositions = selected ? positionRows.filter((row) => row.player_id === selected.player.id) : [];
-  const trendData = selected ? buildTrendData(selected.player.id, matches, selectedStats, trendKey) : [];
+  const trendData = selected ? buildTrendData(matches, selectedStats, trendKey) : [];
   const opponentRows = selected ? buildOpponentRows(selected.player.id, matches, selectedStats) : [];
   const positionalMom = selected ? countPositionalMom(selected.player.id, matches) : { defense: 0, midfield: 0, attack: 0 };
 
   return (
     <div className="grid gap-5">
+      <div className="overflow-x-auto rounded-lg border border-slate-800 bg-bg-secondary/80">
+        <table className="w-full min-w-[640px] border-collapse xl:min-w-0">
+          <thead className="bg-slate-950/70 text-left text-[11px] uppercase tracking-wide text-slate-500">
+            <tr>
+              <Th sticky="rank">순위</Th>
+              <Th sticky="player">선수</Th>
+              <Th center>등번호</Th>
+              <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>출전</Th>
+              <Th center onClick={() => setSortKey("goals")} active={sortKey === "goals"}>득점</Th>
+              <Th center onClick={() => setSortKey("assists")} active={sortKey === "assists"}>도움</Th>
+              <Th center onClick={() => setSortKey("mom_count")} active={sortKey === "mom_count"}>MOM</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.player.id} className={`border-t border-slate-800 text-sm hover:bg-slate-900/70 ${selected?.player.id === row.player.id ? "bg-sky-950/25" : ""}`}>
+                <td className="sticky left-0 z-10 w-[64px] bg-bg-secondary/95 px-3 py-3 text-center xl:static xl:bg-transparent">
+                  <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
+                </td>
+                <td className="sticky left-[64px] z-10 w-[132px] bg-bg-secondary/95 px-3 py-3 font-semibold xl:static xl:w-auto xl:bg-transparent xl:px-4">
+                  <button type="button" className="max-w-[120px] truncate text-left text-slate-100 hover:text-accent-blue" onClick={() => setSelectedPlayerId(row.player.id)}>
+                    {row.player.name}
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-center font-mono text-slate-400">#{row.player.number}</td>
+                <td className="px-4 py-3 text-center">{row.match_count}</td>
+                <td className="px-4 py-3 text-center font-bold text-accent-blue">{row.goals}</td>
+                <td className="px-4 py-3 text-center text-slate-300">{row.assists}</td>
+                <td className="px-4 py-3 text-center font-bold text-accent-purple">{row.mom_count}</td>
+              </tr>
+            ))}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-6 text-center text-sm text-slate-500">선수 기록이 없습니다.</td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+
       {selected ? (
-        <section className="grid gap-4 rounded-lg border border-slate-800 bg-bg-secondary/80 p-4">
+        <PlayerDetailDialog
+          player={selected}
+          trendKey={trendKey}
+          setTrendKey={setTrendKey}
+          trendData={trendData}
+          selectedPositions={selectedPositions}
+          positionalMom={positionalMom}
+          opponentRows={opponentRows}
+          onClose={() => setSelectedPlayerId(null)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function PlayerDetailDialog({
+  player,
+  trendKey,
+  setTrendKey,
+  trendData,
+  selectedPositions,
+  positionalMom,
+  opponentRows,
+  onClose,
+}: {
+  player: RankingRow;
+  trendKey: TrendKey;
+  setTrendKey: (key: TrendKey) => void;
+  trendData: { label: string; value: number; opponent: string }[];
+  selectedPositions: PositionRow[];
+  positionalMom: { defense: number; midfield: number; attack: number };
+  opponentRows: ReturnType<typeof buildOpponentRows>;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950/85 px-3 py-4">
+      <div className="mx-auto grid max-h-full w-full max-w-5xl grid-rows-[auto_1fr] overflow-hidden rounded-lg border border-slate-800 bg-bg-secondary shadow-2xl">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
+          <h2 className="text-lg font-black text-slate-100">개인 기록</h2>
+          <button type="button" className="rounded-md border border-slate-700 px-3 py-1.5 text-sm font-semibold text-slate-300 hover:bg-slate-900" onClick={onClose}>
+            닫기
+          </button>
+        </div>
+
+        <div className="grid gap-4 overflow-y-auto p-4">
           <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
-            <h2 className="text-xl font-black text-slate-100">{selected.player.name}</h2>
+            <h3 className="text-xl font-black text-slate-100">{player.player.name}</h3>
             <p className="mt-1 text-sm text-slate-400">
-              #{selected.player.number} · 출전률 {selected.appearance_rate}% · MOM {selected.mom_count}회
+              #{player.player.number} · 출전률 {player.appearance_rate}% · MOM {player.mom_count}회
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-            <MetricCard label="출전" value={`${selected.match_count}`} />
-            <MetricCard label="승률" value={`${selected.win_rate}%`} />
-            <MetricCard label="득점" value={`${selected.goals}`} tone="text-accent-blue" />
-            <MetricCard label="도움" value={`${selected.assists}`} tone="text-accent-orange" />
-            <MetricCard label="무실점" value={`${selected.clean_sheets}`} tone="text-accent-green" />
-            <MetricCard label="MOM" value={`${selected.mom_count}`} tone="text-accent-purple" />
+            <MetricCard label="출전" value={`${player.match_count}`} />
+            <MetricCard label="승률" value={`${player.win_rate}%`} />
+            <MetricCard label="득점" value={`${player.goals}`} tone="text-accent-blue" />
+            <MetricCard label="도움" value={`${player.assists}`} tone="text-accent-orange" />
+            <MetricCard label="무실점" value={`${player.clean_sheets}`} tone="text-accent-green" />
+            <MetricCard label="MOM" value={`${player.mom_count}`} tone="text-accent-purple" />
           </div>
 
           <section className="rounded-lg border border-slate-800 bg-slate-950 p-4">
@@ -158,58 +247,13 @@ export function RankingView({
               </tbody>
             </table>
           </section>
-        </section>
-      ) : null}
-
-      <div className="overflow-x-auto rounded-lg border border-slate-800 bg-bg-secondary/80">
-        <table className="w-full min-w-[760px] border-collapse xl:min-w-0">
-          <thead className="bg-slate-950/70 text-left text-[11px] uppercase tracking-wide text-slate-500">
-            <tr>
-              <Th sticky="rank">순위</Th>
-              <Th sticky="player">선수</Th>
-              <Th center>등번호</Th>
-              <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>출전</Th>
-              <Th center onClick={() => setSortKey("win_rate")} active={sortKey === "win_rate"}>승률</Th>
-              <Th center onClick={() => setSortKey("goals")} active={sortKey === "goals"}>득점</Th>
-              <Th center onClick={() => setSortKey("assists")} active={sortKey === "assists"}>도움</Th>
-              <Th center onClick={() => setSortKey("clean_sheets")} active={sortKey === "clean_sheets"}>무실점</Th>
-              <Th center onClick={() => setSortKey("mom_count")} active={sortKey === "mom_count"}>MOM</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={row.player.id} className={`border-t border-slate-800 text-sm hover:bg-slate-900/70 ${selected?.player.id === row.player.id ? "bg-sky-950/25" : ""}`}>
-                <td className="sticky left-0 z-10 w-[64px] bg-bg-secondary/95 px-3 py-3 text-center xl:static xl:bg-transparent">
-                  <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
-                </td>
-                <td className="sticky left-[64px] z-10 w-[132px] bg-bg-secondary/95 px-3 py-3 font-semibold xl:static xl:w-auto xl:bg-transparent xl:px-4">
-                  <button type="button" className="max-w-[120px] truncate text-left text-slate-100 hover:text-accent-blue" onClick={() => setSelectedPlayerId(row.player.id)}>
-                    {row.player.name}
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-center font-mono text-slate-400">#{row.player.number}</td>
-                <td className="px-4 py-3 text-center">{row.match_count}</td>
-                <td className="px-4 py-3 text-center">{row.win_rate}%</td>
-                <td className="px-4 py-3 text-center font-bold text-accent-blue">{row.goals}</td>
-                <td className="px-4 py-3 text-center text-slate-300">{row.assists}</td>
-                <td className="px-4 py-3 text-center text-accent-green">{row.clean_sheets}</td>
-                <td className="px-4 py-3 text-center font-bold text-accent-purple">{row.mom_count}</td>
-              </tr>
-            ))}
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-sm text-slate-500">선수 기록이 없습니다.</td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
+        </div>
       </div>
-
     </div>
   );
 }
 
-function buildRankingRow(player: PlayerAggregate, stats: PlayerStatsRow[], matches: Match[]) {
+function buildRankingRow(player: PlayerAggregate, stats: PlayerStatsRow[], matches: Match[]): RankingRow {
   const playerStats = stats.filter((row) => row.player_id === player.player.id && row.played);
   const playedMatchIds = new Set(playerStats.map((row) => row.match_id));
   const playedMatches = matches.filter((match) => playedMatchIds.has(match.id));
@@ -225,7 +269,7 @@ function buildRankingRow(player: PlayerAggregate, stats: PlayerStatsRow[], match
   };
 }
 
-function buildTrendData(playerId: string, matches: Match[], stats: PlayerStatsRow[], trendKey: TrendKey) {
+function buildTrendData(matches: Match[], stats: PlayerStatsRow[], trendKey: TrendKey) {
   const statsByMatchId = new Map(stats.map((row) => [row.match_id, row]));
   let appearanceTotal = 0;
 
@@ -239,7 +283,6 @@ function buildTrendData(playerId: string, matches: Match[], stats: PlayerStatsRo
         label: new Date(match.match_date).toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" }),
         value,
         opponent: match.opponent,
-        playerId,
       };
     });
 }
