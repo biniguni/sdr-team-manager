@@ -45,62 +45,13 @@ export function RankingView({
 
   return (
     <div className="grid gap-5">
-      <div className="overflow-x-auto rounded-lg border border-slate-800 bg-bg-secondary/80">
-        <table className="w-full min-w-[760px] border-collapse xl:min-w-0">
-          <thead className="bg-slate-950/70 text-left text-[11px] uppercase tracking-wide text-slate-500">
-            <tr>
-              <Th sticky="rank">순위</Th>
-              <Th sticky="player">선수</Th>
-              <Th center>등번호</Th>
-              <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>출전</Th>
-              <Th center onClick={() => setSortKey("win_rate")} active={sortKey === "win_rate"}>승률</Th>
-              <Th center onClick={() => setSortKey("goals")} active={sortKey === "goals"}>득점</Th>
-              <Th center onClick={() => setSortKey("assists")} active={sortKey === "assists"}>도움</Th>
-              <Th center onClick={() => setSortKey("clean_sheets")} active={sortKey === "clean_sheets"}>무실점</Th>
-              <Th center onClick={() => setSortKey("mom_count")} active={sortKey === "mom_count"}>MOM</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={row.player.id} className={`border-t border-slate-800 text-sm hover:bg-slate-900/70 ${selected?.player.id === row.player.id ? "bg-sky-950/25" : ""}`}>
-                <td className="sticky left-0 z-10 w-[64px] bg-bg-secondary/95 px-3 py-3 text-center xl:static xl:bg-transparent">
-                  <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
-                </td>
-                <td className="sticky left-[64px] z-10 w-[132px] bg-bg-secondary/95 px-3 py-3 font-semibold xl:static xl:w-auto xl:bg-transparent xl:px-4">
-                  <button type="button" className="max-w-[120px] truncate text-left text-slate-100 hover:text-accent-blue" onClick={() => setSelectedPlayerId(row.player.id)}>
-                    {row.player.name}
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-center font-mono text-slate-400">#{row.player.number}</td>
-                <td className="px-4 py-3 text-center">{row.match_count}</td>
-                <td className="px-4 py-3 text-center">{row.win_rate}%</td>
-                <td className="px-4 py-3 text-center font-bold text-accent-blue">{row.goals}</td>
-                <td className="px-4 py-3 text-center text-slate-300">{row.assists}</td>
-                <td className="px-4 py-3 text-center text-accent-green">{row.clean_sheets}</td>
-                <td className="px-4 py-3 text-center font-bold text-accent-purple">{row.mom_count}</td>
-              </tr>
-            ))}
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-sm text-slate-500">선수 기록이 없습니다.</td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-
       {selected ? (
         <section className="grid gap-4 rounded-lg border border-slate-800 bg-bg-secondary/80 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 p-4">
-            <div>
-              <h2 className="text-xl font-black text-slate-100">{selected.player.name}</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                #{selected.player.number} · 출전률 {selected.appearance_rate}% · MOM {selected.mom_count}회
-              </p>
-            </div>
-            <div className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-bold text-accent-purple">
-              MOM {selected.mom_count}
-            </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+            <h2 className="text-xl font-black text-slate-100">{selected.player.name}</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              #{selected.player.number} · 출전률 {selected.appearance_rate}% · MOM {selected.mom_count}회
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
@@ -209,6 +160,51 @@ export function RankingView({
           </section>
         </section>
       ) : null}
+
+      <div className="overflow-x-auto rounded-lg border border-slate-800 bg-bg-secondary/80">
+        <table className="w-full min-w-[760px] border-collapse xl:min-w-0">
+          <thead className="bg-slate-950/70 text-left text-[11px] uppercase tracking-wide text-slate-500">
+            <tr>
+              <Th sticky="rank">순위</Th>
+              <Th sticky="player">선수</Th>
+              <Th center>등번호</Th>
+              <Th center onClick={() => setSortKey("match_count")} active={sortKey === "match_count"}>출전</Th>
+              <Th center onClick={() => setSortKey("win_rate")} active={sortKey === "win_rate"}>승률</Th>
+              <Th center onClick={() => setSortKey("goals")} active={sortKey === "goals"}>득점</Th>
+              <Th center onClick={() => setSortKey("assists")} active={sortKey === "assists"}>도움</Th>
+              <Th center onClick={() => setSortKey("clean_sheets")} active={sortKey === "clean_sheets"}>무실점</Th>
+              <Th center onClick={() => setSortKey("mom_count")} active={sortKey === "mom_count"}>MOM</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.player.id} className={`border-t border-slate-800 text-sm hover:bg-slate-900/70 ${selected?.player.id === row.player.id ? "bg-sky-950/25" : ""}`}>
+                <td className="sticky left-0 z-10 w-[64px] bg-bg-secondary/95 px-3 py-3 text-center xl:static xl:bg-transparent">
+                  <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md font-bold ${rankClass(index)}`}>{index + 1}</span>
+                </td>
+                <td className="sticky left-[64px] z-10 w-[132px] bg-bg-secondary/95 px-3 py-3 font-semibold xl:static xl:w-auto xl:bg-transparent xl:px-4">
+                  <button type="button" className="max-w-[120px] truncate text-left text-slate-100 hover:text-accent-blue" onClick={() => setSelectedPlayerId(row.player.id)}>
+                    {row.player.name}
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-center font-mono text-slate-400">#{row.player.number}</td>
+                <td className="px-4 py-3 text-center">{row.match_count}</td>
+                <td className="px-4 py-3 text-center">{row.win_rate}%</td>
+                <td className="px-4 py-3 text-center font-bold text-accent-blue">{row.goals}</td>
+                <td className="px-4 py-3 text-center text-slate-300">{row.assists}</td>
+                <td className="px-4 py-3 text-center text-accent-green">{row.clean_sheets}</td>
+                <td className="px-4 py-3 text-center font-bold text-accent-purple">{row.mom_count}</td>
+              </tr>
+            ))}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="px-4 py-6 text-center text-sm text-slate-500">선수 기록이 없습니다.</td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+
     </div>
   );
 }

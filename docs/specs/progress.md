@@ -77,6 +77,9 @@ This is the short status note for future sessions. Detailed history belongs in
   reference-style detail panel with summary cards, trend tabs, position
   analysis, and opponent records. The detail cards are ordered as appearance,
   win rate, goals, assists, clean sheets, and MOM.
+- Ranking player detail now appears above the ranking table after selecting a
+  player, and the extra right-side MOM pill in the player name header was
+  removed.
 - Layout stability was tightened after the lineup menu zoom/width-shift report:
   the app now reserves scrollbar gutter, blocks horizontal page overflow, and
   constrains the lineup page grid, match-card strip, and pitch from widening the
@@ -140,6 +143,8 @@ The security cleanup is complete for the current owner workflow:
   ordering, recent-7 match-history limit, and personal-stat heading changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after adding Ranking MOM
   counts and player detail panels.
+- `npm.cmd run lint` and `npm.cmd run build` passed after moving the Ranking
+  player detail panel above the table and simplifying its name header.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup
