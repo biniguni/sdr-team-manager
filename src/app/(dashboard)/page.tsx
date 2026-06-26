@@ -97,7 +97,10 @@ export default async function DashboardHome({
             activeSquadPlayers={activeSquadPlayers}
             averageAttendance={averageAttendance}
           />
-          <StatCards players={playerRows} totalMatches={(matches as Match[]).length} />
+          <section className="grid gap-3">
+            <h2 className="text-sm font-bold text-slate-100">개인별 주요통계</h2>
+            <StatCards players={playerRows} totalMatches={(matches as Match[]).length} />
+          </section>
           <TopScorersTable players={playerRows} limit={5} />
         </div>
       </div>

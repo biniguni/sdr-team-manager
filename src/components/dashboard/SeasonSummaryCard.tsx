@@ -16,24 +16,18 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
   const scorelessMatches = completed.filter((match) => match.our_score === 0).length;
   const recent = [...completed]
     .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime())
-    .slice(-8);
+    .slice(-7);
 
   return (
     <section className="rounded-lg border border-slate-800 bg-bg-secondary/80 p-5">
-      <div className="flex flex-wrap items-center gap-5">
-        <div className="flex gap-5">
-          <RecordNumber label="전체" value={matches.length} tone="text-slate-100" />
-          <RecordNumber label="승" value={wins} tone="text-accent-blue" />
-          <RecordNumber label="무" value={draws} tone="text-slate-300" />
-          <RecordNumber label="패" value={losses} tone="text-accent-red" />
-        </div>
-        <div className="hidden h-16 w-px bg-slate-800 sm:block" />
-        <div className="grid flex-1 grid-cols-3 gap-4 text-center">
-          <SmallStat label="승률" value={`${winRate}%`} tone="text-accent-green" />
-          <SmallStat label="득실" value={`${goalsFor}:${goalsAgainst}`} />
-          <SmallStat label="득실차" value={goalDiff >= 0 ? `+${goalDiff}` : `${goalDiff}`} tone={goalDiff >= 0 ? "text-accent-green" : "text-accent-red"} />
-        </div>
+      <div className="grid grid-cols-5 gap-3 text-center">
+        <RecordNumber label="전체" value={matches.length} tone="text-slate-100" />
+        <RecordNumber label="승" value={wins} tone="text-accent-blue" />
+        <RecordNumber label="무" value={draws} tone="text-slate-300" />
+        <RecordNumber label="패" value={losses} tone="text-accent-red" />
+        <RecordNumber label="승률" value={`${winRate}%`} tone="text-accent-green" />
       </div>
+
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800 pt-4">
         <span className="mr-1 text-xs font-medium text-slate-500">최근 경기</span>
         {recent.map((match) => {
@@ -52,9 +46,12 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
             </span>
           );
         })}
-        {recent.length === 0 ? <span className="text-sm text-slate-500">진행한 경기가 없습니다.</span> : null}
+        {recent.length === 0 ? <span className="text-sm text-slate-500">진행된 경기가 없습니다.</span> : null}
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-800 pt-4 sm:grid-cols-4">
+
+      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-800 pt-4 sm:grid-cols-3">
+        <SmallStat label="득실" value={`${goalsFor}:${goalsAgainst}`} />
+        <SmallStat label="득실차" value={goalDiff >= 0 ? `+${goalDiff}` : `${goalDiff}`} tone={goalDiff >= 0 ? "text-accent-green" : "text-accent-red"} />
         <SmallStat label="경기당 득점" value={goalsForPerMatch} tone="text-accent-blue" />
         <SmallStat label="경기당 실점" value={goalsAgainstPerMatch} tone="text-accent-red" />
         <SmallStat label="무실점 경기" value={`${cleanSheets}`} tone="text-accent-green" />
@@ -64,10 +61,10 @@ export function SeasonSummaryCard({ matches }: { matches: Match[] }) {
   );
 }
 
-function RecordNumber({ label, value, tone }: { label: string; value: number; tone: string }) {
+function RecordNumber({ label, value, tone }: { label: string; value: number | string; tone: string }) {
   return (
-    <div className="text-center">
-      <div className={`text-3xl font-black ${tone}`}>{value}</div>
+    <div className="min-w-0 text-center">
+      <div className={`text-2xl font-black sm:text-3xl ${tone}`}>{value}</div>
       <div className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
     </div>
   );
@@ -75,7 +72,7 @@ function RecordNumber({ label, value, tone }: { label: string; value: number; to
 
 function SmallStat({ label, value, tone = "text-slate-100" }: { label: string; value: string; tone?: string }) {
   return (
-    <div>
+    <div className="rounded-md border border-slate-800 bg-slate-950/60 px-3 py-3 text-center">
       <div className={`text-xl font-extrabold ${tone}`}>{value}</div>
       <div className="mt-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</div>
     </div>

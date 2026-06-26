@@ -4,9 +4,9 @@ import { DndContext, DragEndEvent, DragOverlay, PointerSensor, TouchSensor, useD
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { addGuestToMatchRoster, addMatchRosterPlayer, removeMatchRosterPlayer, saveLineup } from "@/actions/lineups";
+import { GuestIndicator } from "@/components/lineup/GuestIndicator";
 import { LineupPitch } from "@/components/lineup/LineupPitch";
 import { PlayerDraggable } from "@/components/lineup/PlayerDraggable";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -382,7 +382,7 @@ export function LineupBoard({
                     <span className="truncate font-semibold text-slate-200">
                       {player.number === null ? "" : `#${player.number} `}
                       {player.name}
-                      {player.participant_type === "guest" ? <span className="ml-1 text-accent-blue">용병</span> : null}
+                      {player.participant_type === "guest" ? <GuestIndicator className="ml-1" /> : null}
                     </span>
                     {canEdit ? (
                       <button
@@ -429,7 +429,7 @@ export function LineupBoard({
                       ) : null}
                       {player ? (
                         <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400">
-                          {player.number === null ? "용병" : `#${player.number}`}
+                          {player.number === null ? <GuestIndicator /> : `#${player.number}`}
                         </span>
                       ) : null}
                     </span>
@@ -449,7 +449,7 @@ export function LineupBoard({
                       <span className="flex items-center gap-2">
                         {player.number === null ? "" : `#${player.number} `}
                         {player.name}
-                        {player.participant_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+                        {player.participant_type === "guest" ? <GuestIndicator /> : null}
                       </span>
                     </div>
                   ),
@@ -477,7 +477,7 @@ export function LineupBoard({
             <span className="flex items-center gap-2">
               {activeParticipant.number === null ? "" : `#${activeParticipant.number} `}
               {activeParticipant.name}
-              {activeParticipant.participant_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+              {activeParticipant.participant_type === "guest" ? <GuestIndicator /> : null}
             </span>
           </div>
         ) : null}
@@ -565,7 +565,7 @@ export function LineupBoard({
                   >
                     <span className="min-w-0 truncate font-semibold">{player.name}</span>
                     <span className="shrink-0 rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-400">
-                      {player.number === null ? "용병" : `#${player.number}`}
+                      {player.number === null ? <GuestIndicator /> : `#${player.number}`}
                       {isAssignedElsewhere ? " 등록됨" : ""}
                     </span>
                   </button>

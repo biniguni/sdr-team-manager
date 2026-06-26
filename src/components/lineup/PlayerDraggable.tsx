@@ -1,7 +1,7 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { Badge } from "@/components/ui/Badge";
+import { GuestIndicator } from "@/components/lineup/GuestIndicator";
 import type { LineupParticipant } from "@/types";
 
 export function PlayerDraggable({
@@ -41,7 +41,7 @@ export function PlayerDraggable({
           {participant.number === null ? "" : `#${participant.number} `}
           {participant.name}
         </span>
-        {participant.participant_type === "guest" ? <Badge tone="blue">용병</Badge> : null}
+        {participant.participant_type === "guest" ? <GuestIndicator /> : null}
       </span>
     </button>
   );

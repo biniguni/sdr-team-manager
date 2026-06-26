@@ -50,6 +50,9 @@ This is the short status note for future sessions. Detailed history belongs in
   current/original wording.
 - On `/lineup`, pitch position slots can now be tapped/clicked to open the same
   player picker used by the right-side position list.
+- On `/lineup`, match-only guest labels inside player cards and lineup selection
+  rows now use a compact blue dot indicator instead of the full `용병` text, so
+  mobile player names have more room.
 - Mobile UI polish now includes: tap the lineup field to open a capture-friendly
   enlarged lineup view, tap outside the mobile menu to close it, prevent common
   mobile browser auto-zoom triggers through mobile-sized form controls, keep
@@ -65,6 +68,11 @@ This is the short status note for future sessions. Detailed history belongs in
 - Dashboard layout was reorganized: season summary and match history are on the
   left, team composition and personal records are on the right. Result labels
   now use `승/무/패`, and top page titles share a responsive size pattern.
+- Dashboard summary ordering was adjusted so total/win/draw/loss/win rate stay
+  at the top, recent form stays in the middle, and goals/difference plus
+  per-match scoring stats sit below. The match-history panel now shows only the
+  latest 7 matches, and the personal records heading now reads
+  `개인별 주요통계`.
 - Layout stability was tightened after the lineup menu zoom/width-shift report:
   the app now reserves scrollbar gutter, blocks horizontal page overflow, and
   constrains the lineup page grid, match-card strip, and pitch from widening the
@@ -111,6 +119,8 @@ The security cleanup is complete for the current owner workflow:
   owner-approved UI copy.
 - `npm.cmd run lint` and `npm.cmd run build` passed after enabling pitch-slot
   tap/click player selection.
+- `npm.cmd run lint` and `npm.cmd run build` passed after replacing lineup
+  guest text badges with compact indicators.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the mobile lineup,
   menu, dashboard ranking, viewport, and schedule placeholder changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after removing the global
@@ -122,6 +132,8 @@ The security cleanup is complete for the current owner workflow:
 - `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard
   reorganization, title-size alignment, player-filter active state fix, and
   Korean result-label changes.
+- `npm.cmd run lint` and `npm.cmd run build` passed after the dashboard summary
+  ordering, recent-7 match-history limit, and personal-stat heading changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after the lineup
   zoom/width-shift layout stability changes.
 - `npm.cmd run lint` and `npm.cmd run build` passed after making mobile lineup

@@ -3,11 +3,13 @@ import { calculateMatchResult, formatMatchResult, resultTone } from "@/lib/match
 import type { Match, Player } from "@/types";
 
 export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; playersById: Map<string, Player> }) {
+  const recentMatches = matches.slice(0, 7);
+
   return (
     <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800 bg-bg-secondary/80">
-      <div className="border-b border-slate-800 px-5 py-4 text-sm font-bold">경기 기록</div>
+      <div className="border-b border-slate-800 px-5 py-4 text-sm font-bold">최근 경기</div>
       <div className="grid min-h-0 max-h-[640px] flex-1 gap-3 overflow-y-auto p-3 xl:max-h-none">
-        {matches.map((match) => {
+        {recentMatches.map((match) => {
           const result = calculateMatchResult(match.our_score, match.opponent_score);
 
           return (
@@ -37,7 +39,7 @@ export function MatchHistoryPanel({ matches, playersById }: { matches: Match[]; 
             </article>
           );
         })}
-        {matches.length === 0 ? <p className="p-3 text-sm text-slate-500">등록된 경기가 없습니다.</p> : null}
+        {recentMatches.length === 0 ? <p className="p-3 text-sm text-slate-500">등록된 경기가 없습니다.</p> : null}
       </div>
     </section>
   );
